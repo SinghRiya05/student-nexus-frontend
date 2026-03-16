@@ -10,12 +10,23 @@ import Footer from "@/components/layouts/Footer";
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const searchParams = useSearchParams();
-  const mode = (searchParams.get("mode") as "login" | "signup") || "login";
+  const mode = (searchParams.get("mode") as
+   "login" |
+   "signup"|
+   "verify-otp"|
+   "reset-password"|
+   "forgot-password"
+  ) || "login";
+
+  const type = searchParams.get("type") as
+  | "signup"
+  | "reset-password"
+  | undefined;
 
   if (!isLoggedIn) {
     return (
       <AuthLayout>
-        <Auth mode={mode} />
+        <Auth mode={mode} type={type} />
       </AuthLayout>
     );
   }

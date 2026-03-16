@@ -2,43 +2,28 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { useState, useEffect } from "react";
 import {
   Eye, EyeOff, ArrowRight, GraduationCap,
   ShieldCheck, Users, Network, Briefcase, BookOpen, Star,
+  Loader2,
 } from "lucide-react";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
 const loginSchema = z.object({
   email: z.string().email({ message: "Enter a valid university email." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   remember: z.boolean().optional(),
 });
 type LoginFormValues = z.infer<typeof loginSchema>;
-
-// ─── Network nodes ────────────────────────────────────────────────────────────
-const nodes = [
-  { id: "you",    x: 50, y: 50, label: "You",          role: "student",       size: 44, color: "#6366f1" },
-  { id: "peer1",  x: 22, y: 24, label: "Arjun",        role: "Peer · IIT",    size: 34, color: "#8b5cf6" },
-  { id: "peer2",  x: 78, y: 22, label: "Priya",        role: "Peer · NIT",    size: 34, color: "#8b5cf6" },
-  { id: "senior", x: 83, y: 55, label: "Rahul",        role: "Senior · 3yr",  size: 36, color: "#06b6d4" },
-  { id: "alumni", x: 68, y: 82, label: "Sneha",        role: "Alumni · Google",size:38, color: "#10b981" },
-  { id: "alum2",  x: 30, y: 80, label: "Vikram",       role: "Alumni · Amazon",size:36, color: "#10b981" },
-  { id: "mentor", x: 15, y: 58, label: "Prof. Sharma", role: "Faculty",       size: 36, color: "#f59e0b" },
-  { id: "collab", x: 50, y: 14, label: "BITS Student", role: "Cross-Univ",    size: 30, color: "#ec4899" },
-];
-
-const edges = [
-  ["you","peer1"],["you","peer2"],["you","senior"],["you","alumni"],
-  ["you","alum2"],["you","mentor"],["you","collab"],
-  ["peer1","mentor"],["peer2","collab"],["senior","alumni"],["alumni","alum2"],
-];
 
 const taglines = [
   "Connect with verified peers across 500+ universities.",
@@ -48,22 +33,11 @@ const taglines = [
   "Build your academic network. Shape your career.",
 ];
 
-const roleBadgeClass: Record<string, string> = {
-  student:          "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-  "Peer · IIT":     "bg-violet-500/20 text-violet-300 border-violet-500/30",
-  "Peer · NIT":     "bg-violet-500/20 text-violet-300 border-violet-500/30",
-  "Senior · 3yr":   "bg-cyan-500/20   text-cyan-300   border-cyan-500/30",
-  "Alumni · Google":"bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-  "Alumni · Amazon":"bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-  Faculty:          "bg-amber-500/20  text-amber-300  border-amber-500/30",
-  "Cross-Univ":     "bg-pink-500/20   text-pink-300   border-pink-500/30",
-};
-
 const statPills = [
-  { icon: Users,        value: "50K+", label: "Students"     },
-  { icon: GraduationCap,value: "500+", label: "Universities" },
-  { icon: Briefcase,    value: "12K+", label: "Alumni"       },
-  { icon: BookOpen,     value: "200+", label: "Courses"      },
+  { icon: Users,         value: "50K+", label: "Students"     },
+  { icon: GraduationCap, value: "500+", label: "Universities" },
+  { icon: Briefcase,     value: "12K+", label: "Alumni"       },
+  { icon: BookOpen,      value: "200+", label: "Courses"      },
 ];
 
 const trustItems = [
@@ -72,76 +46,143 @@ const trustItems = [
   { icon: Star,        text: "Peer learning & alumni mentorship"    },
 ];
 
-// ─── SVG Network Graph ────────────────────────────────────────────────────────
-function NetworkGraph({ active }: { active: string | null }) {
+// ─── Communication Diagram ────────────────────────────────────────────────────
+function CommunicationDiagram() {
   return (
-    <svg viewBox="0 0 100 100" className="h-full w-full" style={{ overflow: "visible" }}>
-      {/* Edges */}
-      {edges.map(([a, b], i) => {
-        const na = nodes.find(n => n.id === a)!;
-        const nb = nodes.find(n => n.id === b)!;
-        const lit = active === a || active === b;
-        return (
-          <line key={i}
-            x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
-            stroke={lit ? "#6366f1" : "rgba(255,255,255,0.07)"}
-            strokeWidth={lit ? "0.55" : "0.28"}
-            style={{ transition: "stroke 0.5s, stroke-width 0.5s" }}
-          />
-        );
-      })}
-      {/* Nodes */}
-      {nodes.map(node => {
-        const lit  = active === node.id;
-        const isYou = node.id === "you";
-        const r    = (node.size / 2) / 8;
-        return (
-          <g key={node.id} transform={`translate(${node.x},${node.y})`}>
-            {lit && (
-              <circle r={r + 1.8} fill="none" stroke={node.color}
-                strokeWidth="0.4" opacity="0.45"
-                style={{ animation: "snPing 1.6s ease-out infinite" }} />
-            )}
-            <circle r={r + 0.9} fill={node.color}
-              opacity={lit ? 0.28 : 0.09}
-              style={{ transition: "opacity 0.5s" }} />
-            <circle r={r}
-              fill={isYou ? "#6366f1" : "#181630"}
-              stroke={node.color}
-              strokeWidth={isYou ? "0.65" : "0.35"}
-              style={{ transition: "all 0.5s", filter: lit ? `drop-shadow(0 0 3px ${node.color})` : "none" }}
-            />
-            <circle r={isYou ? r * 0.36 : r * 0.3} fill={node.color} opacity={0.9} />
-          </g>
-        );
-      })}
-    </svg>
+    <div className="relative h-full w-full flex items-center justify-center">
+      <style>{`
+        @keyframes flowDash  { to { stroke-dashoffset: -24; } }
+        .sn-flow1 { stroke-dasharray: 6 6; animation: flowDash 1.8s linear infinite; }
+        .sn-flow2 { stroke-dasharray: 6 6; animation: flowDash 2.2s linear infinite reverse; }
+        .sn-flow3 { stroke-dasharray: 6 6; animation: flowDash 2.0s linear infinite; }
+        .sn-flow4 { stroke-dasharray: 6 6; animation: flowDash 2.4s linear infinite reverse; }
+      `}</style>
+
+      <svg
+        viewBox="0 0 420 340"
+        className="w-full h-full"
+        style={{ maxHeight: "100%", maxWidth: "100%" }}
+      >
+        <defs>
+          <marker id="sn-arrow" viewBox="0 0 10 10" refX="8" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke"
+              strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </marker>
+        </defs>
+
+        {/* ── Connection lines ── */}
+        <line x1="128" y1="108" x2="185" y2="158"
+          stroke="#8b5cf6" strokeWidth="1.5" fill="none"
+          className="sn-flow1"
+          markerEnd="url(#sn-arrow)" markerStart="url(#sn-arrow)" />
+        <line x1="128" y1="232" x2="185" y2="182"
+          stroke="#10b981" strokeWidth="1.5" fill="none"
+          className="sn-flow2"
+          markerEnd="url(#sn-arrow)" markerStart="url(#sn-arrow)" />
+        <line x1="292" y1="108" x2="235" y2="158"
+          stroke="#f59e0b" strokeWidth="1.5" fill="none"
+          className="sn-flow3"
+          markerEnd="url(#sn-arrow)" markerStart="url(#sn-arrow)" />
+        <line x1="292" y1="232" x2="235" y2="182"
+          stroke="#f87171" strokeWidth="1.5" fill="none"
+          className="sn-flow4"
+          markerEnd="url(#sn-arrow)" markerStart="url(#sn-arrow)" />
+
+        {/* ── Centre: Message Hub ── */}
+        <rect x="160" y="148" width="100" height="64" rx="14"
+          fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.5)" strokeWidth="1.5"/>
+        <rect x="178" y="158" width="44" height="30" rx="7"
+          fill="rgba(99,102,241,0.85)"/>
+        <rect x="183" y="163" width="14" height="2.5" rx="1.2" fill="rgba(255,255,255,0.8)"/>
+        <rect x="183" y="168" width="20" height="2.5" rx="1.2" fill="rgba(255,255,255,0.8)"/>
+        <rect x="183" y="173" width="10" height="2.5" rx="1.2" fill="rgba(255,255,255,0.8)"/>
+        <polygon points="182,188 190,188 182,196" fill="rgba(99,102,241,0.85)"/>
+        <text x="210" y="162" textAnchor="middle" fontSize="9" fontWeight="600"
+          fill="rgba(255,255,255,0.9)" fontFamily="sans-serif">MSG</text>
+        <text x="210" y="204" textAnchor="middle" fontSize="9" fontWeight="700"
+          fill="white" fontFamily="sans-serif">Message</text>
+
+        {/* ── Node: Student (top-left) ── */}
+        <rect x="60" y="56" width="96" height="88" rx="14"
+          fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.4)" strokeWidth="1"/>
+        <ellipse cx="108" cy="96" rx="18" ry="5" fill="rgba(139,92,246,0.7)"/>
+        <rect x="98" y="84" width="20" height="13" rx="3" fill="rgba(109,40,217,0.8)"/>
+        <rect x="93" y="82" width="30" height="5" rx="2" fill="rgba(109,40,217,0.9)"/>
+        <line x1="123" y1="82" x2="127" y2="95"
+          stroke="rgba(139,92,246,0.8)" strokeWidth="1.5" strokeLinecap="round"/>
+        <circle cx="127" cy="96" r="2.5" fill="rgba(139,92,246,0.9)"/>
+        <text x="108" y="120" textAnchor="middle" fontSize="10" fontWeight="700"
+          fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">Student</text>
+        <text x="108" y="133" textAnchor="middle" fontSize="8" fontWeight="400"
+          fill="rgba(255,255,255,0.45)" fontFamily="sans-serif">Learns &amp; connects</text>
+
+        {/* ── Node: Alumni (bottom-left) ── */}
+        <rect x="60" y="196" width="96" height="88" rx="14"
+          fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.35)" strokeWidth="1"/>
+        <rect x="90" y="226" width="36" height="26" rx="4" fill="rgba(16,185,129,0.75)"/>
+        <rect x="100" y="221" width="16" height="7" rx="3" fill="rgba(5,150,105,0.9)"/>
+        <line x1="90" y1="237" x2="126" y2="237" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
+        <line x1="108" y1="226" x2="108" y2="252" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
+        <text x="108" y="266" textAnchor="middle" fontSize="10" fontWeight="700"
+          fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">Alumni</text>
+        <text x="108" y="279" textAnchor="middle" fontSize="8"
+          fill="rgba(255,255,255,0.45)" fontFamily="sans-serif">Mentors &amp; guides</text>
+
+        {/* ── Node: Teacher (top-right) ── */}
+        <rect x="264" y="56" width="96" height="88" rx="14"
+          fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.35)" strokeWidth="1"/>
+        <rect x="296" y="82" width="28" height="22" rx="3" fill="rgba(217,119,6,0.8)"/>
+        <line x1="301" y1="89" x2="319" y2="89" stroke="rgba(255,255,255,0.75)" strokeWidth="1.3"/>
+        <line x1="301" y1="94" x2="316" y2="94" stroke="rgba(255,255,255,0.75)" strokeWidth="1.3"/>
+        <line x1="301" y1="99" x2="314" y2="99" stroke="rgba(255,255,255,0.75)" strokeWidth="1.3"/>
+        <polygon points="326,104 330,96 322,98" fill="rgba(245,158,11,0.9)"/>
+        <text x="312" y="120" textAnchor="middle" fontSize="10" fontWeight="700"
+          fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">Teacher</text>
+        <text x="312" y="133" textAnchor="middle" fontSize="8"
+          fill="rgba(255,255,255,0.45)" fontFamily="sans-serif">Teaches &amp; assigns</text>
+
+        {/* ── Node: Peer (bottom-right) ── */}
+        <rect x="264" y="196" width="96" height="88" rx="14"
+          fill="rgba(248,113,113,0.1)" stroke="rgba(248,113,113,0.35)" strokeWidth="1"/>
+        <circle cx="304" cy="224" r="9" fill="rgba(239,68,68,0.75)"/>
+        <path d="M288,252 Q288,238 304,238 Q320,238 320,252Z"
+          fill="rgba(239,68,68,0.7)"/>
+        <circle cx="322" cy="222" r="7" fill="rgba(239,68,68,0.5)"/>
+        <path d="M310,252 Q312,240 322,240 Q332,240 332,252Z"
+          fill="rgba(239,68,68,0.45)"/>
+        <text x="312" y="266" textAnchor="middle" fontSize="10" fontWeight="700"
+          fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">Peer</text>
+        <text x="312" y="279" textAnchor="middle" fontSize="8"
+          fill="rgba(255,255,255,0.45)" fontFamily="sans-serif">Collaborates</text>
+
+        {/* ── "2-way" labels ── */}
+        <text x="150" y="128" textAnchor="middle" fontSize="7.5"
+          fill="rgba(139,92,246,0.7)" fontFamily="sans-serif">2-way</text>
+        <text x="150" y="222" textAnchor="middle" fontSize="7.5"
+          fill="rgba(16,185,129,0.7)" fontFamily="sans-serif">2-way</text>
+        <text x="270" y="128" textAnchor="middle" fontSize="7.5"
+          fill="rgba(245,158,11,0.7)" fontFamily="sans-serif">2-way</text>
+        <text x="270" y="222" textAnchor="middle" fontSize="7.5"
+          fill="rgba(248,113,113,0.7)" fontFamily="sans-serif">2-way</text>
+      </svg>
+    </div>
   );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function LoginPage() {
-  const [showPw,       setShowPw]       = useState(false);
-  const [isLoading,    setIsLoading]    = useState(false);
-  const [activeNode,   setActiveNode]   = useState<string | null>(null);
-  const [hoveredNode,  setHoveredNode]  = useState<string | null>(null);
-  const [tagIdx,       setTagIdx]       = useState(0);
-  const [tagFade,      setTagFade]      = useState(true);
+  const router = useRouter();
+  const [showPw,    setShowPw]    = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tagIdx,    setTagIdx]    = useState(0);
+  const [tagFade,   setTagFade]   = useState(true);
 
-  // Rotate taglines
   useEffect(() => {
     const t = setInterval(() => {
       setTagFade(false);
       setTimeout(() => { setTagIdx(i => (i + 1) % taglines.length); setTagFade(true); }, 350);
     }, 3000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Animate network nodes
-  useEffect(() => {
-    const ids = nodes.map(n => n.id);
-    let i = 0;
-    const t = setInterval(() => { setActiveNode(ids[i++ % ids.length]); }, 1600);
     return () => clearInterval(t);
   }, []);
 
@@ -157,53 +198,26 @@ export default function LoginPage() {
     setIsLoading(false);
   }
 
-  const displayed = hoveredNode ?? activeNode;
-
   return (
     <>
-      <style>{`
-        @keyframes snFadeUp { from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);} }
-        @keyframes snPing   { 0%{transform:scale(1);opacity:.55;} 100%{transform:scale(2.4);opacity:0;} }
-        @keyframes snDrift1 { from{transform:translate(0,0) scale(1);}     to{transform:translate(32px,22px) scale(1.08);} }
-        @keyframes snDrift2 { from{transform:translate(0,0);}              to{transform:translate(-22px,-32px);} }
-        @keyframes snDrift3 { from{transform:translate(0,0) scale(1);}     to{transform:translate(-16px,16px) scale(1.1);} }
-        @keyframes snShimmer{ 0%{background-position:-200% center;} 100%{background-position:200% center;} }
-        @keyframes snFadeIn { from{opacity:0;} to{opacity:1;} }
-        .sn-shimmer {
-          background: linear-gradient(90deg,#818cf8,#67e8f9,#a78bfa,#818cf8);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: snShimmer 4s linear infinite;
-        }
-      `}</style>
-
-      {/* ── Root wrapper: h-screen, two columns ── */}
       <div className="flex h-screen w-full overflow-hidden">
 
-        {/* ══════════════════════════════════════════════════════════
-            LEFT PANEL — dark, interactive, fits any screen height
-        ══════════════════════════════════════════════════════════ */}
+        {/* ══ LEFT PANEL ══ */}
         <div className="relative hidden w-[52%] shrink-0 overflow-hidden bg-[#0a0918] lg:flex lg:flex-col">
 
-          {/* Ambient orbs — purely decorative */}
           <div className="pointer-events-none absolute -left-36 -top-36 h-[480px] w-[480px] rounded-full blur-[90px]"
-            style={{ background:"radial-gradient(circle,rgba(99,102,241,0.32) 0%,transparent 70%)", animation:"snDrift1 14s ease-in-out infinite alternate" }} />
+            style={{ background: "radial-gradient(circle,rgba(99,102,241,0.32) 0%,transparent 70%)", animation: "snDrift1 14s ease-in-out infinite alternate" }} />
           <div className="pointer-events-none absolute -bottom-28 -right-20 h-[400px] w-[400px] rounded-full blur-[90px]"
-            style={{ background:"radial-gradient(circle,rgba(6,182,212,0.18) 0%,transparent 70%)", animation:"snDrift2 18s ease-in-out infinite alternate" }} />
+            style={{ background: "radial-gradient(circle,rgba(6,182,212,0.18) 0%,transparent 70%)", animation: "snDrift2 18s ease-in-out infinite alternate" }} />
           <div className="pointer-events-none absolute left-[48%] top-[38%] h-[280px] w-[280px] rounded-full blur-[80px]"
-            style={{ background:"radial-gradient(circle,rgba(139,92,246,0.16) 0%,transparent 70%)", animation:"snDrift3 22s ease-in-out infinite alternate" }} />
-
-          {/* Subtle grid texture */}
+            style={{ background: "radial-gradient(circle,rgba(139,92,246,0.16) 0%,transparent 70%)", animation: "snDrift3 22s ease-in-out infinite alternate" }} />
           <div className="pointer-events-none absolute inset-0 opacity-[0.035]"
-            style={{ backgroundImage:"linear-gradient(rgba(255,255,255,0.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.4) 1px,transparent 1px)", backgroundSize:"36px 36px" }} />
+            style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.4) 1px,transparent 1px)", backgroundSize: "36px 36px" }} />
 
-          {/* ── Inner flex column: fills height, no overflow ── */}
-          <div className="relative z-10 flex h-full flex-col px-10 py-8 gap-0">
+          <div className="relative z-10 flex h-full flex-col px-10 py-8">
 
-            {/* Logo — fixed height */}
-            <div className="shrink-0" style={{ animation:"snFadeUp 0.5s ease both" }}>
+            {/* Logo */}
+            <div className="shrink-0" style={{ animation: "snFadeUp 0.5s ease both" }}>
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_18px_rgba(99,102,241,0.5)]">
                   <GraduationCap size={18} />
@@ -219,93 +233,52 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Tagline — fixed height */}
-            <div className="mt-5 shrink-0" style={{ animation:"snFadeUp 0.5s 0.08s ease both" }}>
+            {/* Tagline */}
+            <div className="mt-5 shrink-0" style={{ animation: "snFadeUp 0.5s 0.08s ease both" }}>
               <p className="text-[0.78rem] font-medium text-white/45 transition-opacity duration-300 min-h-[1.4rem]"
                 style={{ opacity: tagFade ? 1 : 0 }}>
                 ✦ &nbsp;{taglines[tagIdx]}
               </p>
             </div>
 
-            {/* Hero heading — fixed height */}
-            <div className="mt-2 shrink-0" style={{ animation:"snFadeUp 0.5s 0.14s ease both" }}>
+            {/* Heading */}
+            <div className="mt-2 shrink-0" style={{ animation: "snFadeUp 0.5s 0.14s ease both" }}>
               <h1 className="text-[1.95rem] font-bold leading-[1.18] -tracking-[0.03em] text-white">
                 Your Academic<br />
                 <span className="sn-shimmer">Universe Awaits</span>
               </h1>
             </div>
 
-            {/* ── Network Graph — flex-1, takes remaining space ── */}
-            <div className="relative mt-4 min-h-0 flex-1" style={{ animation:"snFadeUp 0.5s 0.2s ease both" }}>
-              <div className="relative h-full w-full">
-                <NetworkGraph active={displayed} />
-
-                {/* Invisible hover targets over each node */}
-                {nodes.map(node => (
-                  <div
-                    key={node.id}
-                    className="absolute cursor-pointer"
-                    style={{
-                      left: `${node.x}%`, top: `${node.y}%`,
-                      width: `${node.size + 8}px`, height: `${node.size + 8}px`,
-                      transform: "translate(-50%,-50%)",
-                    }}
-                    onMouseEnter={() => setHoveredNode(node.id)}
-                    onMouseLeave={() => setHoveredNode(null)}
-                  >
-                    {hoveredNode === node.id && (
-                      <div
-                        className="pointer-events-none absolute z-20 whitespace-nowrap rounded-lg border border-white/10 bg-[#13112b]/95 px-2.5 py-1.5 shadow-xl backdrop-blur-sm"
-                        style={{ bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", animation:"snFadeIn 0.18s ease both" }}
-                      >
-                        <p className="text-[0.72rem] font-semibold text-white">{node.label}</p>
-                        <span className={`mt-0.5 inline-block rounded-full border px-1.5 py-0.5 text-[0.6rem] font-medium ${roleBadgeClass[node.role] ?? "bg-white/10 text-white/50 border-white/10"}`}>
-                          {node.role}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* Node legend — bottom right */}
-                <div className="absolute bottom-1 right-0 flex flex-col gap-1 rounded-xl border border-white/[0.07] bg-[#0a0918]/80 px-2.5 py-2 backdrop-blur-sm">
-                  {[
-                    { color:"#6366f1", label:"You"        },
-                    { color:"#8b5cf6", label:"Peers"      },
-                    { color:"#06b6d4", label:"Seniors"    },
-                    { color:"#10b981", label:"Alumni"     },
-                    { color:"#f59e0b", label:"Faculty"    },
-                    { color:"#ec4899", label:"Cross-Univ" },
-                  ].map(item => (
-                    <div key={item.label} className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background:item.color }} />
-                      <span className="text-[0.6rem] text-white/40">{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* ── Diagram ── */}
+            <div
+              className="relative mt-4 min-h-0 flex-1"
+              style={{ animation: "snFadeUp 0.5s 0.2s ease both", animationFillMode: "both" }}
+            >
+              <CommunicationDiagram />
             </div>
 
-            {/* Trust badges — fixed height */}
-            <div className="mt-3 shrink-0 flex flex-col gap-1.5" style={{ animation:"snFadeUp 0.5s 0.28s ease both" }}>
+            {/* Trust badges */}
+            <div className="mt-3 shrink-0 flex flex-col gap-1.5" style={{ animation: "snFadeUp 0.5s 0.28s ease both" }}>
               {trustItems.map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-2">
                   <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-indigo-500/15 text-indigo-400">
                     <Icon size={11} strokeWidth={2} />
                   </div>
-                  <span className="text-[0.72rem] text-white/42">{text}</span>
+                  <span className="text-[0.72rem] text-white/40">{text}</span>
                 </div>
               ))}
             </div>
 
-            {/* Stats strip — fixed height, pinned to bottom */}
-            <div className="mt-4 shrink-0 grid grid-cols-4 gap-2 border-t border-white/[0.07] pt-4"
-              style={{ animation:"snFadeUp 0.5s 0.35s ease both" }}>
+            {/* Stats strip */}
+            <div
+              className="mt-4 shrink-0 grid grid-cols-4 gap-2 border-t border-white/[0.07] pt-4"
+              style={{ animation: "snFadeUp 0.5s 0.35s ease both" }}
+            >
               {statPills.map(({ icon: Icon, value, label }) => (
                 <div key={label} className="flex flex-col items-center gap-0.5 rounded-xl border border-white/[0.07] bg-white/[0.03] py-2 px-1">
                   <Icon size={11} className="text-indigo-400" strokeWidth={2} />
                   <p className="text-[0.95rem] font-bold -tracking-wide text-white">{value}</p>
-                  <p className="text-[0.58rem] uppercase tracking-[0.04em] text-white/28">{label}</p>
+                  <p className="text-[0.58rem] uppercase tracking-[0.04em] text-white/25">{label}</p>
                 </div>
               ))}
             </div>
@@ -313,19 +286,15 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════
-            RIGHT PANEL — clean white / light, form centered
-        ══════════════════════════════════════════════════════════ */}
-        <div className="relative flex flex-1 items-center justify-center overflow-y-auto bg-white px-8 py-10">
+        {/* ══ RIGHT PANEL ══ */}
+        <div className="relative flex flex-1 items-center justify-center bg-white px-8 py-10">
 
-          {/* Soft indigo glow top-right */}
           <div className="pointer-events-none absolute -right-24 -top-24 h-[380px] w-[380px] rounded-full bg-indigo-100/60 blur-[80px]" />
           <div className="pointer-events-none absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-violet-100/40 blur-[70px]" />
 
           <div className="relative z-10 mx-auto w-full max-w-[400px]"
-            style={{ animation:"snFadeUp 0.65s 0.15s ease both" }}>
+            style={{ animation: "snFadeUp 0.65s 0.15s ease both" }}>
 
-            {/* Mobile-only logo */}
             <div className="mb-7 flex items-center gap-2 lg:hidden">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
                 <GraduationCap size={17} />
@@ -335,7 +304,6 @@ export default function LoginPage() {
               </span>
             </div>
 
-            {/* Header */}
             <div className="mb-7">
               <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[0.67rem] font-semibold uppercase tracking-[0.1em] text-indigo-600">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
@@ -349,17 +317,13 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* ── React Hook Form ── */}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
-                {/* Email */}
                 <FormField control={form.control} name="email"
                   render={({ field }) => (
                     <FormItem className="flex flex-col gap-1.5">
-                      <FormLabel className="text-[0.78rem] font-semibold text-gray-700">
-                        University Email
-                      </FormLabel>
+                      <FormLabel className="text-[0.78rem] font-semibold text-gray-700">University Email</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="you@university.edu" autoComplete="email"
                           className="h-11 w-full rounded-[10px] border border-gray-200 bg-gray-50 px-3.5 text-[0.875rem] text-gray-900 shadow-none placeholder:text-gray-400 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 focus-visible:ring-offset-0"
@@ -370,13 +334,10 @@ export default function LoginPage() {
                   )}
                 />
 
-                {/* Password */}
                 <FormField control={form.control} name="password"
                   render={({ field }) => (
                     <FormItem className="flex flex-col gap-1.5">
-                      <FormLabel className="text-[0.78rem] font-semibold text-gray-700">
-                        Password
-                      </FormLabel>
+                      <FormLabel className="text-[0.78rem] font-semibold text-gray-700">Password</FormLabel>
                       <FormControl>
                         <div className="relative w-full">
                           <Input
@@ -398,7 +359,6 @@ export default function LoginPage() {
                   )}
                 />
 
-                {/* Remember + Forgot */}
                 <FormField control={form.control} name="remember"
                   render={({ field }) => (
                     <FormItem>
@@ -408,55 +368,42 @@ export default function LoginPage() {
                             className="h-4 w-4 rounded-[4px] border-gray-300 data-[state=checked]:border-indigo-600 data-[state=checked]:bg-indigo-600" />
                           Remember me
                         </label>
-                        <a href="#" className="text-[0.79rem] font-semibold text-indigo-600 transition-opacity hover:opacity-70">
+                        <Button 
+                        onClick={()=>router.push("?mode=forgot-password")}
+                        className="text-[0.79rem] font-semibold text-indigo-600 transition-opacity hover:opacity-70">
                           Forgot password?
-                        </a>
+                        </Button>
                       </div>
                     </FormItem>
                   )}
                 />
 
-                {/* Submit */}
-                <button type="submit" disabled={isLoading}
-                  className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-indigo-600 to-violet-600 text-[0.88rem] font-semibold text-white shadow-[0_4px_18px_rgba(99,102,241,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_26px_rgba(99,102,241,0.45)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55">
-                  {isLoading ? (
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  ) : (
-                    <>Enter Your Network <ArrowRight size={15} strokeWidth={2.5} /></>
-                  )}
-                </button>
+<Button type="submit" disabled={isLoading} className="w-full py-6 bg-blue-700">
+  
+  {isLoading ? (
+    <Loader2 className="h-4 w-4 animate-spin" />
+  ) : (
+    <>
+      Enter Your Network
+      <ArrowRight className="h-4 w-4" />
+    </>
+  )}
+</Button>
 
               </form>
             </Form>
 
-            {/* Divider */}
-            <div className="my-5 flex items-center gap-3 text-[0.73rem] text-gray-400">
-              <span className="h-px flex-1 bg-gray-200" />
-              or continue with
-              <span className="h-px flex-1 bg-gray-200" />
-            </div>
-
-            {/* Google SSO */}
-            <button type="button"
-              className="flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-gray-200 bg-white text-[0.84rem] font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:border-indigo-300 hover:shadow-md">
-              <svg width="17" height="17" viewBox="0 0 48 48" className="shrink-0" aria-hidden="true">
-                <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-9 20-20 0-1.3-.1-2.7-.4-4z"/>
-                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.9 0-14.7 4.4-18.4 10.7z"/>
-                <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.3 35.3 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7l-6.5 5C9.5 39.7 16.3 44 24 44z"/>
-                <path fill="#1976D2" d="M43.6 20H24v8h11.3c-1 2.7-2.8 5-5.2 6.5l6.2 5.2C40.3 36.1 44 30.5 44 24c0-1.3-.1-2.7-.4-4z"/>
-              </svg>
-              Continue with Google
-            </button>
-
-            {/* Sign up */}
+            
             <p className="mt-6 text-center text-[0.8rem] text-gray-500">
               New to StudentNexus?{" "}
-              <a href="#" className="font-bold text-indigo-600 transition-opacity hover:opacity-75">
+              <Link
+                href="?mode=signup"
+                className="font-bold text-indigo-600 transition-opacity hover:opacity-75"
+              >
                 Create your verified account →
-              </a>
+              </Link>
             </p>
 
-            {/* Verification strip */}
             <div className="mt-5 flex items-center justify-center gap-1.5 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
               <ShieldCheck size={12} className="shrink-0 text-emerald-500" />
               <span className="text-[0.67rem] text-gray-400">
