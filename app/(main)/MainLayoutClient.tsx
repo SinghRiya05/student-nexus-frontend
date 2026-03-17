@@ -8,7 +8,7 @@ import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") as "login" | "signup") || "login";
 
