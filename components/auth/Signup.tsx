@@ -53,39 +53,6 @@ const step2Schema = z.object({
 const fullSchema = step1Schema.merge(step2Schema);
 type FullFormValues = z.infer<typeof fullSchema>;
 
-// ─── Left panel info cards ────────────────────────────────────────────────────
-const infoCards = [
-  {
-    icon: ShieldCheck,
-    color: "#10b981",
-    bg: "rgba(16,185,129,0.12)",
-    border: "rgba(16,185,129,0.28)",
-    title: "100% Verified",
-    desc: "Every account is authenticated via official university email — no fake profiles.",
-  },
-  {
-    icon: Award,
-    color: "#f59e0b",
-    bg: "rgba(245,158,11,0.12)",
-    border: "rgba(245,158,11,0.28)",
-    title: "Build Your Profile",
-    desc: "Showcase your skills, courses, and achievements to peers and alumni.",
-  },
-  
-  {
-    icon: Clock,
-    color: "#8b5cf6",
-    bg: "rgba(139,92,246,0.12)",
-    border: "rgba(139,92,246,0.28)",
-    title: "Takes 2 Minutes",
-    desc: "Quick two-step registration — fill your details and you're in.",
-  },
-];
-
-const stepLabels = ["Personal Info", "Academic Details"];
-
-
-
 // ─── Shared input class (mirrors Login page style) ────────────────────────────
 const inputCls =
   "h-11 w-full rounded-[10px] border border-gray-200 bg-gray-50 pl-10 pr-4 " +
@@ -131,104 +98,7 @@ export default function SignupPage() {
 
   return (
     <>
-      <div className="flex h-screen w-full overflow-hidden">
-
-        {/* ══════════════ LEFT PANEL ══════════════ */}
-        <div className="relative hidden w-[52%] shrink-0 overflow-hidden bg-[#0a0918] lg:flex lg:flex-col">
-
-          {/* Ambient orbs */}
-          <div className="pointer-events-none absolute -left-36 -top-36 h-[480px] w-[480px] rounded-full blur-[90px]"
-            style={{ background: "radial-gradient(circle,rgba(99,102,241,0.32) 0%,transparent 70%)", animation: "snDrift1 14s ease-in-out infinite alternate" }} />
-          <div className="pointer-events-none absolute -bottom-28 -right-20 h-[400px] w-[400px] rounded-full blur-[90px]"
-            style={{ background: "radial-gradient(circle,rgba(6,182,212,0.18) 0%,transparent 70%)", animation: "snDrift2 18s ease-in-out infinite alternate" }} />
-          <div className="pointer-events-none absolute left-[48%] top-[38%] h-[280px] w-[280px] rounded-full blur-[80px]"
-            style={{ background: "radial-gradient(circle,rgba(139,92,246,0.16) 0%,transparent 70%)", animation: "snDrift3 22s ease-in-out infinite alternate" }} />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.035]"
-            style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.4) 1px,transparent 1px)", backgroundSize: "36px 36px" }} />
-
-          {/* Content column */}
-          <div className="relative z-10 flex h-full flex-col px-10 py-8">
-
-            {/* Logo */}
-            <div className="shrink-0" style={{ animation: "snFadeUp 0.5s ease both" }}>
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_18px_rgba(99,102,241,0.5)]">
-                  <GraduationCap size={18} />
-                </div>
-                <div>
-                  <p className="text-[1.15rem] font-bold leading-none text-white -tracking-wide">
-                    Student<span className="text-indigo-400">Nexus</span>
-                  </p>
-                  <p className="text-[0.58rem] uppercase tracking-[0.14em] text-white/30 mt-0.5">
-                    Verified Academic Network
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Hero */}
-            <div className="mt-6 shrink-0" style={{ animation: "snFadeUp 0.5s 0.1s ease both" }}>
-              <p className="text-[0.75rem] font-medium text-white/40 mb-2">
-                ✦ &nbsp;Join 50,000+ verified students across India
-              </p>
-              <h1 className="text-[2rem] font-bold leading-[1.16] -tracking-[0.03em] text-white">
-                Your Academic<br />
-                <span className="sn-shimmer">Journey Starts Here</span>
-              </h1>
-            </div>
-
-            {/* Info cards */}
-            <div className="mt-8 min-h-0 flex-1 flex flex-col gap-3" style={{ animation: "snFadeUp 0.5s 0.18s ease both" }}>
-              {infoCards.map(({ icon: Icon, color, bg, border, title, desc }) => (
-                <div key={title}
-                  className="flex items-start gap-3 rounded-2xl px-4 py-3.5"
-                  style={{ background: bg, border: `1px solid ${border}` }}>
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
-                    style={{ background: `${color}22` }}>
-                    <Icon size={15} style={{ color }} strokeWidth={2} />
-                  </div>
-                  <div>
-                    <p className="text-[0.78rem] font-bold text-white/90 leading-none mb-1">{title}</p>
-                    <p className="text-[0.68rem] text-white/40 leading-relaxed">{desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Step tracker */}
-            <div className="mt-5 shrink-0" style={{ animation: "snFadeUp 0.5s 0.26s ease both" }}>
-              <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-                {stepLabels.map((label, i) => {
-                  const idx = (i + 1) as 1 | 2;
-                  const active = step === idx;
-                  const done = step > idx;
-                  return (
-                    <React.Fragment key={label}>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.6rem] font-bold transition-all duration-300"
-                          style={{
-                            background: done ? "#10b981" : active ? "#6366f1" : "rgba(255,255,255,0.08)",
-                            color: done || active ? "#fff" : "rgba(255,255,255,0.3)",
-                          }}>
-                          {done ? <CheckCircle2 size={12} /> : idx}
-                        </div>
-                        <span className="text-[0.65rem] font-semibold transition-colors duration-300"
-                          style={{ color: active ? "rgba(255,255,255,0.9)" : done ? "#10b981" : "rgba(255,255,255,0.3)" }}>
-                          {label}
-                        </span>
-                      </div>
-                      {i < stepLabels.length - 1 && (
-                        <div className="flex-1 h-px transition-all duration-500"
-                          style={{ background: step > 1 ? "rgba(16,185,129,0.4)" : "rgba(255,255,255,0.08)" }} />
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div className=" h-screen w-full overflow-hidden">
         {/* ══════════════ RIGHT PANEL ══════════════ */}
         <div className="relative flex flex-1 items-center justify-center bg-white px-5 py-6 ">
 
