@@ -98,15 +98,17 @@ export default function SignupPage() {
 
   return (
     <>
-      <div className=" h-screen w-full overflow-hidden">
+      <div className="flex h-screen w-full flex-col overflow-hidden">
         {/* ══════════════ RIGHT PANEL ══════════════ */}
-        <div className="relative flex flex-1 items-center justify-center bg-white px-5 py-6 ">
+        <div className="relative flex min-h-full flex-1 items-center justify-center overflow-hidden bg-slate-50/30 px-4 py-8">
+          
+          {/* Ambient Orbs */}
+          <div className="pointer-events-none absolute -right-20 -top-20 h-[400px] w-[400px] rounded-full bg-indigo-100/50 blur-[80px]" />
+          <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-violet-100/50 blur-[80px]" />
 
-          <div className="pointer-events-none absolute -right-24 -top-24 h-[380px] w-[380px] rounded-full bg-indigo-100/60 blur-[80px]" />
-          <div className="pointer-events-none absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-violet-100/40 blur-[70px]" />
-
-          <div className="relative z-10 mx-auto w-full max-w-[420px] py-4"
-            style={{ animation: "snFadeUp 0.65s 0.15s ease both" }}>
+          {/* Card */}
+          <div className="relative z-10 mx-auto w-full max-w-[440px] rounded-[24px] border border-white bg-white/70 p-8 shadow-[0_8px_40px_rgba(0,0,0,0.06)] backdrop-blur-2xl"
+            style={{ animation: "snFadeUp 0.4s ease both" }}>
 
             {/* Mobile logo */}
             <div className="mb-7 flex items-center gap-2 lg:hidden">
@@ -363,6 +365,7 @@ export default function SignupPage() {
 
                   {step === 2 && (
                     <Button
+                      type="button"
                       variant={"outline"}
                       onClick={handleBack}
                       className=""

@@ -11,7 +11,7 @@ import {
   ArrowRight,
   GraduationCap,
   ShieldCheck,
-  
+
   Loader2,
 } from "lucide-react";
 import {
@@ -43,9 +43,9 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPw, setShowPw] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
- 
 
-  
+
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "", remember: false },
@@ -60,14 +60,16 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className=" h-screen w-full overflow-hidden">
-        <div className="relative flex flex-1 items-center justify-center bg-white px-8 py-10">
-          <div className="pointer-events-none absolute -right-24 -top-24 h-[380px] w-[380px] rounded-full bg-indigo-100/60 blur-[80px]" />
-          <div className="pointer-events-none absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-violet-100/40 blur-[70px]" />
+      <div className="flex h-screen w-full flex-col overflow-hidden">
+        <div className="relative flex min-h-full flex-1 items-center justify-center overflow-hidden bg-slate-50/30 px-4 py-8">
+          {/* Ambient Orbs */}
+          <div className="pointer-events-none absolute -right-20 -top-20 h-[400px] w-[400px] rounded-full bg-indigo-100/50 blur-[80px]" />
+          <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-violet-100/50 blur-[80px]" />
 
+          {/* Card */}
           <div
-            className="relative z-10 mx-auto w-full max-w-[400px]"
-            style={{ animation: "snFadeUp 0.65s 0.15s ease both" }}
+            className="relative z-10 mx-auto w-full max-w-[430px] rounded-[24px] p-8  backdrop-blur-2xl"
+            style={{ animation: "snFadeUp 0.4s ease both" }}
           >
             <div className="mb-7 flex items-center gap-2 lg:hidden">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
@@ -166,6 +168,8 @@ export default function LoginPage() {
                           Remember me
                         </label>
                         <Button
+                          type="button"
+                          variant={"link"}
                           onClick={() => router.push("?mode=forgot-password")}
                           className="text-[0.79rem] font-semibold text-indigo-600 transition-opacity hover:opacity-70"
                         >
