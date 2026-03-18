@@ -7,6 +7,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ArrowRight, Mail, ArrowLeft, SendHorizonal, GraduationCap } from "lucide-react";
 import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import {
   Form,
   FormField,
   FormItem,
@@ -37,6 +45,7 @@ export default function ForgotPassword() {
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
+    // TODO: Make API call here for Forgot Password
     await new Promise((r) => setTimeout(r, 1500));
     console.log("Send OTP to:", values.email);
     setIsSubmitting(false);
@@ -48,101 +57,31 @@ export default function ForgotPassword() {
 
   return (
     <>
-      <style>{`
-        @keyframes fpFadeUp {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fpSlideIn {
-          from { opacity: 0; transform: scale(0.92) translateY(10px); }
-          to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes fpCheckBounce {
-          0%   { transform: scale(0.4); opacity: 0; }
-          60%  { transform: scale(1.2); }
-          80%  { transform: scale(0.95); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes fpPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.3); }
-          50%       { box-shadow: 0 0 0 10px rgba(99,102,241,0); }
-        }
-        .fp-card  { animation: fpSlideIn 0.45s cubic-bezier(0.22,1,0.36,1) both; }
-        .fp-row1  { animation: fpFadeUp 0.4s 0.05s ease both; }
-        .fp-row2  { animation: fpFadeUp 0.4s 0.12s ease both; }
-        .fp-row3  { animation: fpFadeUp 0.4s 0.18s ease both; }
-        .fp-row4  { animation: fpFadeUp 0.4s 0.24s ease both; }
-        .fp-row5  { animation: fpFadeUp 0.4s 0.30s ease both; }
-        .fp-check { animation: fpCheckBounce 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
-        .fp-icon-pulse { animation: fpPulse 2s ease-in-out infinite; }
-
-        .fp-input {
-          height: 46px;
-          border-radius: 12px;
-          border: 1.5px solid #e5e7eb;
-          background: #fafafa;
-          font-size: 0.9rem;
-          padding-left: 2.75rem;
-          transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
-        }
-        .fp-input:focus {
-          border-color: #6366f1;
-          background: #ffffff;
-          box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
-          outline: none;
-        }
-        .fp-input::placeholder { color: #9ca3af; }
-
-        .fp-btn {
-          height: 48px;
-          border-radius: 13px;
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-          box-shadow: 0 4px 16px rgba(99,102,241,0.3);
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: white;
-          transition: all 0.2s ease;
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-        }
-        .fp-btn:not(:disabled):hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(99,102,241,0.38);
-        }
-        .fp-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-      `}</style>
-
       <div className="relative flex min-h-full flex-1 items-center justify-center overflow-hidden bg-slate-50/30 px-4 py-8 w-full">
         {/* Ambient Orbs */}
         <div className="pointer-events-none absolute -right-20 -top-20 h-[400px] w-[400px] rounded-full bg-indigo-100/50 blur-[80px]" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-violet-100/50 blur-[80px]" />
 
-        <div className="fp-card relative z-10 w-full max-w-[420px]">
-          {/* Card */}
-          <div className="rounded-[24px] border border-white bg-white/70 p-8 shadow-[0_8px_40px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
-
-            {/* Logo */}
-            <div className="fp-row1 mb-8 flex items-center justify-center gap-2.5">
-              <div className="fp-icon-pulse flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
-                <GraduationCap size={20} />
+        <div className="relative z-10 w-full max-w-[420px] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+          <Card className="rounded-[24px] border-none ring-0 bg-transparent shadow-none">
+            <CardHeader className="p-8 pb-6">
+              {/* Logo */}
+              <div className="mb-8 flex items-center justify-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_0_0_rgba(99,102,241,0.3)] animate-[pulse_2s_ease-in-out_infinite]">
+                  <GraduationCap size={20} />
+                </div>
+                <div>
+                  <p className="text-[1.08rem] font-bold leading-none text-gray-900">
+                    Student<span className="text-indigo-500">Nexus</span>
+                  </p>
+                  <p className="mt-0.5 text-[0.55rem] uppercase tracking-[0.14em] text-gray-400">
+                    Verified Academic Network
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[1.08rem] font-bold leading-none text-gray-900">
-                  Student<span className="text-indigo-500">Nexus</span>
-                </p>
-                <p className="mt-0.5 text-[0.55rem] uppercase tracking-[0.14em] text-gray-400">
-                  Verified Academic Network
-                </p>
-              </div>
-            </div>
 
-            {!sent ? (
-              <>
-                {/* Icon */}
-                <div className="fp-row1 mb-5 flex flex-col items-center text-center">
+              {!sent && (
+                <div className="mb-5 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100 shadow-[0_4px_14px_rgba(99,102,241,0.12)]">
                     <Mail size={28} className="text-indigo-500" strokeWidth={1.7} />
                   </div>
@@ -152,14 +91,19 @@ export default function ForgotPassword() {
                       Password Recovery
                     </span>
                   </div>
-                  <h2 className="mt-2 text-[1.5rem] font-bold tracking-tight text-gray-900">
+                  <CardTitle className="mt-2 text-[1.5rem] font-bold tracking-tight text-gray-900">
                     Forgot your password?
-                  </h2>
-                  <p className="mt-1.5 text-[0.84rem] leading-relaxed text-gray-500">
+                  </CardTitle>
+                  <CardDescription className="mt-1.5 text-[0.84rem] leading-relaxed text-gray-500">
                     No worries! Enter your registered email and we'll send you a verification code.
-                  </p>
+                  </CardDescription>
                 </div>
+              )}
+            </CardHeader>
 
+            <CardContent className="px-8 pb-8">
+            {!sent ? (
+              <>
                 {/* Form */}
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -167,7 +111,7 @@ export default function ForgotPassword() {
                       control={form.control}
                       name="email"
                       render={({ field, fieldState }) => (
-                        <FormItem className="fp-row2">
+                        <FormItem className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
                           <Label className="text-[0.8rem] font-semibold text-gray-700">
                             Email address
                           </Label>
@@ -178,10 +122,10 @@ export default function ForgotPassword() {
                                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
                                 strokeWidth={1.8}
                               />
-                              <input
+                              <Input
                                 type="email"
                                 placeholder="you@university.edu"
-                                className={`fp-input w-full ${fieldState.error ? "!border-red-400 !bg-red-50 focus:!border-red-500 focus:!shadow-[0_0_0_4px_rgba(239,68,68,0.1)]" : ""}`}
+                                className={`h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 text-sm transition-all focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/10 ${fieldState.error ? "!border-red-400 !bg-red-50 focus-visible:!ring-red-500/10" : ""}`}
                                 {...field}
                               />
                             </div>
@@ -191,30 +135,30 @@ export default function ForgotPassword() {
                       )}
                     />
 
-                    <div className="fp-row3 pt-1">
-                      <button type="submit" disabled={isSubmitting} className="fp-btn">
+                    <div className="pt-1 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both">
+                      <Button type="submit" disabled={isSubmitting} className="h-12 w-full rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 font-semibold text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(99,102,241,0.38)] disabled:opacity-55 disabled:hover:translate-y-0">
                         {isSubmitting ? (
                           <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                         ) : (
                           <>
-                            <SendHorizonal size={16} strokeWidth={2.2} />
+                            <SendHorizonal size={16} strokeWidth={2.2} className="mr-1.5" />
                             Send Verification Code
                           </>
                         )}
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 </Form>
 
                 {/* Divider */}
-                <div className="fp-row4 my-5 flex items-center gap-3">
+                <div className="my-5 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-both">
                   <div className="h-px flex-1 bg-gray-100" />
                   <span className="text-[0.7rem] text-gray-400">or</span>
                   <div className="h-px flex-1 bg-gray-100" />
                 </div>
 
                 {/* Back to login */}
-                <div className="fp-row5 text-center">
+                <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300 fill-mode-both">
                   <button
                     type="button"
                     onClick={() => router.push("/?mode=login")}
@@ -228,7 +172,7 @@ export default function ForgotPassword() {
             ) : (
               /* ── Success state ── */
               <div className="flex flex-col items-center py-4 text-center">
-                <div className="fp-check mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 border-2 border-emerald-200">
+                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 border-2 border-emerald-200 animate-in zoom-in-50 duration-500 delay-100">
                   <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
                     <circle cx="24" cy="24" r="22" fill="rgba(52,211,153,0.15)" />
                     <path d="M14 25l8 8 13-14" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
@@ -242,7 +186,8 @@ export default function ForgotPassword() {
                 <p className="mt-3 text-[0.74rem] text-gray-400">Redirecting to verification…</p>
               </div>
             )}
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Help text */}
           <p className="mt-5 text-center text-[0.72rem] text-gray-400">

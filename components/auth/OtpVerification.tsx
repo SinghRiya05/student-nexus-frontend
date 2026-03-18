@@ -9,6 +9,15 @@ import {
   GraduationCap, ShieldCheck, Mail, RefreshCw, ArrowRight, ArrowLeft,
 } from "lucide-react";
 import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
   Form, FormField, FormItem, FormControl,
 } from "@/components/ui/form";
 
@@ -106,6 +115,7 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
     if (otp.length < 6) return;
     setIsVerifying(true);
     setErrorMsg("");
+    // TODO: Make API call here for OTP Verification
     await new Promise((r) => setTimeout(r, 1800));
 
     if (otp === "123456") {
@@ -132,6 +142,7 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
     setDigits(Array(6).fill(""));
     setErrorMsg("");
     form.clearErrors();
+    // TODO: Make API call here for OTP Resend
     await new Promise((r) => setTimeout(r, 1000));
     setIsResending(false);
     setCooldown(RESEND_COOLDOWN);
@@ -141,14 +152,6 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
   return (
     <>
       <style>{`
-        @keyframes ovFadeUp {
-          from { opacity:0; transform:translateY(18px); }
-          to   { opacity:1; transform:translateY(0); }
-        }
-        @keyframes ovSlideIn {
-          from { opacity:0; transform:scale(0.93) translateY(10px); }
-          to   { opacity:1; transform:scale(1) translateY(0); }
-        }
         @keyframes ovShake {
           0%,100%{ transform:translateX(0); }
           15%    { transform:translateX(-7px); }
@@ -158,87 +161,8 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
           75%    { transform:translateX(-2px); }
           90%    { transform:translateX(2px); }
         }
-        @keyframes ovCheckBounce {
-          0%   { transform:scale(0.4); opacity:0; }
-          60%  { transform:scale(1.18); }
-          80%  { transform:scale(0.95); }
-          100% { transform:scale(1);   opacity:1; }
-        }
-        @keyframes ovPulseRing {
-          0%   { transform:scale(1); opacity:0.55; }
-          100% { transform:scale(1.65); opacity:0; }
-        }
-        .ov-card        { animation: ovSlideIn 0.45s cubic-bezier(0.22,1,0.36,1) both; }
-        .ov-row1        { animation: ovFadeUp 0.4s 0.05s ease both; }
-        .ov-row2        { animation: ovFadeUp 0.4s 0.12s ease both; }
-        .ov-row3        { animation: ovFadeUp 0.4s 0.18s ease both; }
-        .ov-row4        { animation: ovFadeUp 0.4s 0.24s ease both; }
-        .ov-row5        { animation: ovFadeUp 0.4s 0.3s  ease both; }
-        .ov-shake       { animation: ovShake 0.55s cubic-bezier(.36,.07,.19,.97) both; }
-        .ov-check       { animation: ovCheckBounce 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
-        .ov-pulse-ring  { animation: ovPulseRing 1.8s ease-out infinite; }
-
-        .ov-otp-box {
-          width: 52px; height: 60px;
-          text-align: center;
-          font-size: 1.5rem; font-weight: 700;
-          border-radius: 13px;
-          border: 2px solid #e5e7eb;
-          background: #fafafa;
-          color: #111827;
-          outline: none;
-          caret-color: transparent;
-          transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
-          -webkit-appearance: none; -moz-appearance: textfield;
-        }
-        .ov-otp-box:focus {
-          border-color: #6366f1;
-          background: #fff;
-          box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
-          transform: translateY(-3px) scale(1.07);
-        }
-        .ov-otp-box.filled {
-          border-color: #8b5cf6;
-          background: #faf5ff;
-          color: #5b21b6;
-          transform: translateY(-1px);
-        }
-        .ov-otp-box.has-error {
-          border-color: #f87171;
-          background: #fff1f2;
-          color: #b91c1c;
-        }
-        .ov-otp-box.success {
-          border-color: #10b981;
-          background: #ecfdf5;
-          color: #065f46;
-        }
-        .ov-otp-box::-webkit-inner-spin-button,
-        .ov-otp-box::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-        .ov-verify-btn {
-          height: 48px;
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-          border-radius: 13px;
-          box-shadow: 0 4px 16px rgba(99,102,241,0.28);
-          width: 100%;
-          display: flex; align-items: center; justify-content: center; gap: 6px;
-          color: white; font-size: 0.9rem; font-weight: 600;
-          transition: all 0.2s ease;
-          border: none; cursor: pointer;
-        }
-        .ov-verify-btn:not(:disabled):hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 26px rgba(99,102,241,0.38);
-        }
-        .ov-verify-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .ov-progress-bar {
-          height: 3px;
-          background: linear-gradient(90deg, #6366f1, #8b5cf6);
-          border-radius: 99px;
-          transition: width 0.25s ease;
-        }
+        .hidden-spin-buttons::-webkit-inner-spin-button,
+        .hidden-spin-buttons::-webkit-outer-spin-button { -webkit-appearance: none; }
       `}</style>
 
       <div className="relative flex min-h-full flex-1 items-center justify-center overflow-hidden bg-slate-50/30 px-4 py-8 w-full">
@@ -246,29 +170,56 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
         <div className="pointer-events-none absolute -right-20 -top-20 h-[400px] w-[400px] rounded-full bg-indigo-100/50 blur-[80px]" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-violet-100/50 blur-[80px]" />
 
-        <div className="ov-card relative z-10 w-full max-w-[440px]">
-          {/* Card */}
-          <div className="rounded-[24px] border border-white bg-white/70 p-8 shadow-[0_8px_40px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
-
-            {/* Logo */}
-            <div className="ov-row1 mb-7 flex items-center justify-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_18px_rgba(99,102,241,0.35)]">
-                <GraduationCap size={20} />
+        <div className="relative z-10 w-full max-w-[440px] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+          <Card className="rounded-[24px] border-none ring-0 bg-transparent shadow-none">
+            <CardHeader className="p-8 pb-6">
+              {/* Logo */}
+              <div className="mb-7 flex items-center justify-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_18px_rgba(99,102,241,0.35)]">
+                  <GraduationCap size={20} />
+                </div>
+                <div>
+                  <p className="text-[1.08rem] font-bold leading-none text-gray-900">
+                    Student<span className="text-indigo-500">Nexus</span>
+                  </p>
+                  <p className="mt-0.5 text-[0.55rem] uppercase tracking-[0.14em] text-gray-400">
+                    Verified Academic Network
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[1.08rem] font-bold leading-none text-gray-900">
-                  Student<span className="text-indigo-500">Nexus</span>
-                </p>
-                <p className="mt-0.5 text-[0.55rem] uppercase tracking-[0.14em] text-gray-400">
-                  Verified Academic Network
-                </p>
-              </div>
-            </div>
 
-            {/* ── Success State ── */}
+              {/* ── Success State ── */}
+              {!isVerified && (
+                <div className="mb-6 text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="relative mx-auto mb-4 h-16 w-16">
+                    <div className="absolute inset-0 rounded-full border-2 border-indigo-200 animate-[pulse_1.8s_ease-out_infinite]" />
+                    <div className="absolute inset-0 rounded-full border-2 border-indigo-100 animate-[pulse_1.8s_ease-out_infinite]" style={{ animationDelay: "0.7s" }} />
+                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 border-2 border-indigo-100">
+                      <Mail size={26} className="text-indigo-500" strokeWidth={1.7} />
+                    </div>
+                  </div>
+
+                  <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
+                    <span className="text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-indigo-600">
+                      {type === "signup" ? "Email Verification" : "Password Reset"}
+                    </span>
+                  </div>
+                  <CardTitle className="mt-2 text-[1.5rem] font-bold tracking-tight text-gray-900">
+                    Check your inbox
+                  </CardTitle>
+                  <CardDescription className="mt-1.5 text-[0.84rem] leading-relaxed text-gray-500">
+                    We sent a 6-digit code to{" "}
+                    <span className="font-semibold text-gray-800">{email}</span>
+                  </CardDescription>
+                </div>
+              )}
+            </CardHeader>
+
+            <CardContent className="px-8 pb-8">
             {isVerified ? (
               <div className="flex flex-col items-center py-4 text-center">
-                <div className="ov-check mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 border-2 border-emerald-200">
+                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 border-2 border-emerald-200 animate-in zoom-in-50 duration-500">
                   <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
                     <circle cx="24" cy="24" r="22" fill="rgba(52,211,153,0.15)" />
                     <path d="M14 25l8 8 13-14" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
@@ -281,36 +232,11 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
               </div>
             ) : (
               <>
-                {/* Header */}
-                <div className="ov-row1 mb-6 text-center">
-                  <div className="relative mx-auto mb-4 h-16 w-16">
-                    <div className="ov-pulse-ring absolute inset-0 rounded-full border-2 border-indigo-200" />
-                    <div className="ov-pulse-ring absolute inset-0 rounded-full border-2 border-indigo-100" style={{ animationDelay: "0.7s" }} />
-                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 border-2 border-indigo-100">
-                      <Mail size={26} className="text-indigo-500" strokeWidth={1.7} />
-                    </div>
-                  </div>
-
-                  <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
-                    <span className="text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-indigo-600">
-                      {type === "signup" ? "Email Verification" : "Password Reset"}
-                    </span>
-                  </div>
-                  <h2 className="mt-2 text-[1.5rem] font-bold tracking-tight text-gray-900">
-                    Check your inbox
-                  </h2>
-                  <p className="mt-1.5 text-[0.84rem] leading-relaxed text-gray-500">
-                    We sent a 6-digit code to{" "}
-                    <span className="font-semibold text-gray-800">{email}</span>
-                  </p>
-                </div>
-
                 {/* Progress bar */}
                 {filledCount > 0 && (
-                  <div className="ov-row2 mb-4">
+                  <div className="mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
                     <div className="h-[3px] w-full rounded-full bg-gray-100">
-                      <div className="ov-progress-bar" style={{ width: `${progress}%` }} />
+                      <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-300" style={{ width: `${progress}%` }} />
                     </div>
                     <p className="mt-1 text-right text-[0.66rem] text-gray-400">{filledCount}/6 digits</p>
                   </div>
@@ -325,7 +251,7 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
                         <FormItem>
                           <FormControl>
                             <div
-                              className={`ov-row2 flex justify-center gap-2 ${shakeError ? "ov-shake" : ""}`}
+                              className={`flex justify-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both ${shakeError ? "animate-[ovShake_0.55s_cubic-bezier(.36,.07,.19,.97)_both]" : ""}`}
                             >
                               {digits.map((d, idx) => (
                                 <input
@@ -342,10 +268,10 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
                                   disabled={isVerifying}
                                   aria-label={`OTP digit ${idx + 1}`}
                                   className={[
-                                    "ov-otp-box",
-                                    errorMsg      ? "has-error"
-                                    : d           ? "filled"
-                                    : "",
+                                    "h-[60px] w-[52px] text-center text-2xl font-bold rounded-xl border-2 outline-none transition-all focus:scale-105 focus:-translate-y-1 focus:bg-white focus:shadow-[0_0_0_4px_rgba(99,102,241,0.12)] hidden-spin-buttons",
+                                    errorMsg ? "border-red-400 bg-red-50 text-red-700"
+                                    : d ? "border-violet-500 bg-violet-50 text-violet-800 -translate-y-[1px]"
+                                    : "border-gray-200 bg-gray-50 text-gray-900 focus:border-indigo-500"
                                   ].join(" ")}
                                 />
                               ))}
@@ -361,23 +287,23 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
                     />
 
                     {/* Verify button */}
-                    <div className="ov-row3">
-                      <button
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-both">
+                      <Button
                         type="submit"
                         disabled={filledCount < 6 || isVerifying}
-                        className="ov-verify-btn"
+                        className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 font-semibold text-white shadow-[0_4px_16px_rgba(99,102,241,0.28)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_26px_rgba(99,102,241,0.38)] disabled:opacity-50 disabled:hover:translate-y-0"
                       >
                         {isVerifying
                           ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                           : <><span>Verify & Continue</span><ArrowRight size={16} strokeWidth={2.5} /></>
                         }
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 </Form>
 
                 {/* Resend */}
-                <div className="ov-row4 mt-4 flex items-center justify-center gap-4">
+                <div className="mt-4 flex items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-both">
                   <button
                     type="button"
                     onClick={handleResend}
@@ -396,20 +322,25 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
                     <ArrowLeft size={13} strokeWidth={2.5} /> Change email
                   </button>
                 </div>
+              </>
+            )}
+            </CardContent>
 
+            {!isVerified && (
+              <CardFooter className="flex-col pb-6 border-none bg-transparent">
                 {/* Divider */}
-                <div className="ov-row4 my-5 h-px bg-gray-100" />
+                <div className="w-full my-5 h-px bg-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-both" />
 
                 {/* Trust strip */}
-                <div className="ov-row5 flex items-center justify-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5">
+                <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300 fill-mode-both">
                   <ShieldCheck size={13} className="shrink-0 text-emerald-500" />
                   <span className="text-[0.65rem] text-gray-400">
                     Never share your OTP · Secured · Trusted by 500+ institutions
                   </span>
                 </div>
-              </>
+              </CardFooter>
             )}
-          </div>
+          </Card>
 
           {/* Dev hint */}
           {!isVerified && (

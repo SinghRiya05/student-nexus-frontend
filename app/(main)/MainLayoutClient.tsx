@@ -8,20 +8,20 @@ import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") as
-   "login" |
-   "signup"|
-   "verify-otp"|
-   "reset-password"|
-   "forgot-password"
+    "login" |
+    "signup" |
+    "verify-otp" |
+    "reset-password" |
+    "forgot-password"
   ) || "login";
 
   const type = searchParams.get("type") as
-  | "signup"
-  | "reset-password"
-  | undefined;
+    | "signup"
+    | "reset-password"
+    | undefined;
 
   if (!isLoggedIn) {
     return (
@@ -32,7 +32,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-100">
       <Header />
       <main className="flex flex-1 flex-col">{children}</main>
       <Footer />
@@ -40,7 +40,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function MainLayoutClient({children,}: {children: React.ReactNode;}) {
+export default function MainLayoutClient({ children, }: { children: React.ReactNode; }) {
   return (
     <Suspense
       fallback={
