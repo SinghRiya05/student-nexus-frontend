@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 /* ─── Data ────────────────────────────────────────────────── */
-
 const taglines = [
   "Connect with verified peers across 500+ universities.",
   "Get mentored by alumni at top companies worldwide.",
