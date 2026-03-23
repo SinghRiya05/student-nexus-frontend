@@ -81,69 +81,97 @@ const users = [
 ];
 
 export default function UserList() {
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <Card className="border-none shadow-sm bg-white overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600" />
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-indigo-600">
-              <Users size={18} className="font-semibold" />
-              <span className="text-xs font-bold uppercase tracking-wider">Access Control</span>
-            </div>
-            <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">User Directory</CardTitle>
-            <CardDescription className="text-slate-500">Manage system users, assigned roles and account permissions.</CardDescription>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Left Section */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-indigo-600">
+            <Users size={18} />
+            <span className="text-xs font-semibold uppercase tracking-widest">
+              Access Control
+            </span>
           </div>
-          <div>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 px-6 h-12 rounded-xl transition-all hover:scale-[1.02]">
-              <Plus className="mr-2 h-5 w-5" />
-              Invite New User
-            </Button>
+
+          <h2 className="text-xl font-bold text-slate-900">User Directory</h2>
+
+          <p className="text-sm text-slate-500">
+            Manage system users, assigned roles and account permissions.
+          </p>
+        </div>
+
+        {/* Right Section */}
+        <div className="flex w-full md:w-auto items-center gap-3 justify-between md:justify-end">
+          {/* Search Bar */}
+          <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 w-full sm:w-72">
+            <Search size={16} className="ml-3 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              className="flex-1 px-2 py-2 outline-none text-sm bg-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">
+              Search
+            </button>
           </div>
-        </CardHeader>
-      </Card>
+
+          {/* Create Button */}
+          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg whitespace-nowrap">
+            <Plus className="mr-2 h-4 w-4" />
+            Invite
+          </Button>
+        </div>
+      </div>
 
       {/* Users Table Section */}
-      <Card className="border-none shadow-sm bg-white overflow-hidden">
-        <CardHeader className="p-6 border-b border-slate-50 flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="text-xl font-semibold text-slate-800">System Users</CardTitle>
-            <p className="text-sm text-slate-400 mt-1">Total: {users.length} users registered</p>
-          </div>
-          <div className="flex items-center gap-3">
-             <div className="relative hidden sm:block">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search by name or email..." 
-                  className="bg-slate-50 border-none rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-1 focus:ring-indigo-500 transition-all w-64"
-                />
-             </div>
-          </div>
-        </CardHeader>
+      <Card className="border-none shadow-sm bg-white overflow-hidden py-0">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-slate-50/50">
-                <TableRow className="hover:bg-transparent border-slate-100">
-                  <TableHead className="w-[300px] font-bold text-slate-700 py-4">Full Name</TableHead>
-                  <TableHead className="font-bold text-slate-700">Role</TableHead>
-                  <TableHead className="font-bold text-slate-700">Status</TableHead>
-                  <TableHead className="font-bold text-slate-700">Joined Date</TableHead>
-                  <TableHead className="text-right font-bold text-slate-700 pr-8">Actions</TableHead>
+              <TableHeader className="bg-primary ">
+                <TableRow className="hover:bg-transparent border-slate-100 ">
+                  <TableHead className="w-[300px] font-bold text-white py-4">
+                    Full Name
+                  </TableHead>
+                  <TableHead className="font-bold text-white">Role</TableHead>
+                  <TableHead className="font-bold text-white">Status</TableHead>
+                  <TableHead className="font-bold text-white">
+                    Joined Date
+                  </TableHead>
+                  <TableHead className="text-right font-bold text-white pr-8">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id} className="group hover:bg-slate-50/50 transition-colors border-slate-100">
+                {filteredUsers.map((user) => (
+                  <TableRow
+                    key={user.id}
+                    className="group hover:bg-slate-50/50 transition-colors border-slate-100"
+                  >
                     <TableCell className="font-medium py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs ring-1 ring-indigo-100">
-                          {user.name.split(' ').map(n => n[0]).join('')}
+                          {user.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </div>
                         <div>
-                          <span className="text-slate-900 font-bold block">{user.name}</span>
+                          <span className="text-slate-900 font-bold block">
+                            {user.name}
+                          </span>
                           <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
                             <Mail size={10} />
                             {user.email}
@@ -152,23 +180,32 @@ export default function UserList() {
                       </div>
                     </TableCell>
                     <TableCell>
-                       <div className="flex items-center gap-2">
-                          <ShieldCheck size={14} className={
-                            user.role === 'Admin' ? 'text-amber-500' : 
-                            user.role === 'Teacher' ? 'text-emerald-500' :
-                            'text-slate-400'
-                          } />
-                          <span className="text-sm font-semibold text-slate-700">{user.role}</span>
-                       </div>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck
+                          size={14}
+                          className={
+                            user.role === "Admin"
+                              ? "text-amber-500"
+                              : user.role === "Teacher"
+                              ? "text-emerald-500"
+                              : "text-slate-400"
+                          }
+                        />
+                        <span className="text-sm font-semibold text-slate-700">
+                          {user.role}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.65rem] font-black uppercase tracking-widest border ${
-                        user.status === "Active" 
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                        : user.status === "Pending"
-                        ? "bg-blue-50 text-blue-700 border-blue-100"
-                        : "bg-rose-50 text-rose-700 border-rose-100"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.65rem] font-black uppercase tracking-widest border ${
+                          user.status === "Active"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                            : user.status === "Pending"
+                            ? "bg-blue-50 text-blue-700 border-blue-100"
+                            : "bg-rose-50 text-rose-700 border-rose-100"
+                        }`}
+                      >
                         {user.status === "Active" && <CheckCircle2 size={10} />}
                         {user.status === "Pending" && <Clock size={10} />}
                         {user.status === "Disabled" && <XCircle size={10} />}
@@ -176,17 +213,25 @@ export default function UserList() {
                       </span>
                     </TableCell>
                     <TableCell className="text-slate-500 font-medium italic text-sm">
-                       {user.joinedDate}
+                      {user.joinedDate}
                     </TableCell>
                     <TableCell className="text-right pr-8">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-100 rounded-full">
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0 hover:bg-slate-100 rounded-full"
+                          >
                             <MoreHorizontal className="h-4 w-4 text-slate-600" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[180px] rounded-xl shadow-xl border-slate-100 p-1">
-                          <DropdownMenuLabel className="text-[0.65rem] text-slate-400 px-3 py-2 uppercase font-black tracking-widest">User Actions</DropdownMenuLabel>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-[180px] rounded-xl shadow-xl border-slate-100 p-1"
+                        >
+                          <DropdownMenuLabel className="text-[0.65rem] text-slate-400 px-3 py-2 uppercase font-black tracking-widest">
+                            User Actions
+                          </DropdownMenuLabel>
                           <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
                             Edit Permissions
                           </DropdownMenuItem>
@@ -205,8 +250,14 @@ export default function UserList() {
               </TableBody>
             </Table>
           </div>
+          <div className="p-5">
+            <p className="text-sm text-slate-400 ">
+              Total: {filteredUsers.length} users registered
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+

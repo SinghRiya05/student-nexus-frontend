@@ -18,12 +18,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { 
-  MoreHorizontal, 
-  Plus, 
-  GraduationCap, 
-  MapPin, 
-  Globe, 
+import {
+  MoreHorizontal,
+  Plus,
+  GraduationCap,
+  MapPin,
+  Globe,
   Link as LinkIcon,
   Search,
   LayoutGrid
@@ -40,112 +40,122 @@ const universities = [
   {
     id: "1",
     name: "Stanford University",
-    location: "California, USA",
-    website: "stanford.edu",
-    type: "Private",
-    rank: "#1",
-    established: "1885",
+    domain: "Engineering & Technology",
+    country: "USA",
+    state: "California",
+    website: "https://stanford.edu",
   },
   {
     id: "2",
     name: "Harvard University",
-    location: "Massachusetts, USA",
-    website: "harvard.edu",
-    type: "Private",
-    rank: "#2",
-    established: "1636",
+    domain: "Business & Law",
+    country: "USA",
+    state: "Massachusetts",
+    website: "https://harvard.edu",
   },
   {
     id: "3",
     name: "University of Oxford",
-    location: "Oxford, UK",
-    website: "ox.ac.uk",
-    type: "Public",
-    rank: "#3",
-    established: "1096",
+    domain: "Arts & Humanities",
+    country: "UK",
+    state: "Oxford",
+    website: "https://ox.ac.uk",
   },
   {
     id: "4",
     name: "MIT",
-    location: "Massachusetts, USA",
-    website: "web.mit.edu",
-    type: "Private",
-    rank: "#4",
-    established: "1861",
+    domain: "Science & Technology",
+    country: "USA",
+    state: "Massachusetts",
+    website: "https://web.mit.edu",
   },
   {
     id: "5",
     name: "University of Cambridge",
-    location: "Cambridge, UK",
-    website: "cam.ac.uk",
-    type: "Public",
-    rank: "#5",
-    established: "1209",
+    domain: "Research & Science",
+    country: "UK",
+    state: "Cambridge",
+    website: "https://cam.ac.uk",
   },
 ];
 
 export default function UniversityList() {
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  const filteredUniversities = universities.filter((uni) =>
+    uni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    uni.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    uni.state.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <Card className="border-none shadow-sm bg-white overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600" />
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-indigo-600">
-              <GraduationCap size={18} className="font-semibold" />
-              <span className="text-xs font-bold uppercase tracking-wider">Institution Management</span>
-            </div>
-            <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">Universities</CardTitle>
-            <CardDescription className="text-slate-500">Manage global universities, their rankings and institutional details.</CardDescription>
-          </div>
-          <div>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 px-6 h-12 rounded-xl transition-all hover:scale-[1.02]">
-              <Plus className="mr-2 h-5 w-5" />
-              Add University
-            </Button>
-          </div>
-        </CardHeader>
-      </Card>
+ <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
+  {/* Left Section */}
+  <div className="space-y-1">
+    <div className="flex items-center gap-2 text-indigo-600">
+      <GraduationCap size={18} />
+      <span className="text-xs font-semibold uppercase tracking-widest">
+        Institution Management
+      </span>
+    </div>
+
+    <h2 className="text-xl font-bold text-slate-900">
+      Universities
+    </h2>
+
+    <p className="text-sm text-slate-500">
+      Manage global universities, their rankings and institutional details.
+    </p>
+  </div>
+
+  {/* Right Section */}
+  <div className="flex w-full md:w-auto items-center gap-3 justify-between md:justify-end">
+
+    {/* Search Bar */}
+    <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 w-full sm:w-72">
+      <Search size={16} className="ml-3 text-slate-400" />
+      <input
+        type="text"
+        placeholder="Search universities..."
+        className="flex-1 px-2 py-2 outline-none text-sm bg-transparent"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <button className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">
+        Search
+      </button>
+    </div>
+
+    {/* Create Button */}
+    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg whitespace-nowrap">
+      <Plus className="mr-2 h-4 w-4" />
+      Create
+    </Button>
+
+  </div>
+
+</div>
       {/* University Table Section */}
-      <Card className="border-none shadow-sm bg-white overflow-hidden">
-        <CardHeader className="p-6 border-b border-slate-50 flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="text-xl font-semibold text-slate-800">Global Institutions</CardTitle>
-            <p className="text-sm text-slate-400 mt-1">Total: {universities.length} institutions listed</p>
-          </div>
-          <div className="flex items-center gap-3">
-             <div className="relative hidden sm:block">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search university..." 
-                  className="bg-slate-50 border-none rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-1 focus:ring-indigo-500 transition-all w-64"
-                />
-             </div>
-            <Button variant="outline" size="sm" className="rounded-lg h-9">
-              <LayoutGrid size={14} className="mr-2" />
-              Grid View
-            </Button>
-          </div>
-        </CardHeader>
+      <Card className="border-none shadow-sm bg-white overflow-hidden py-0">
+      
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-slate-50/50">
-                <TableRow className="hover:bg-transparent border-slate-100">
-                  <TableHead className="w-[350px] font-bold text-slate-700 py-4">University Name</TableHead>
-                  <TableHead className="font-bold text-slate-700">Location</TableHead>
-                  <TableHead className="font-bold text-slate-700">Website</TableHead>
-                  <TableHead className="font-bold text-slate-700">Type</TableHead>
-                  <TableHead className="font-bold text-slate-700">Established</TableHead>
-                  <TableHead className="font-bold text-slate-700 text-center">World Rank</TableHead>
-                  <TableHead className="text-right font-bold text-slate-700 pr-8">Actions</TableHead>
+            <Table >
+              <TableHeader className="bg-primary ">
+                <TableRow className="hover:bg-transparent border-slate-100 ">
+                  <TableHead className="w-[350px] font-bold text-white py-4">University Name</TableHead>
+                  <TableHead className="font-bold text-white">Country</TableHead>
+                  <TableHead className="font-bold text-white">State</TableHead>
+                  <TableHead className="font-bold text-white">Domain</TableHead>
+                  
+                  <TableHead className="text-right font-bold text-white pr-8">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {universities.map((uni) => (
+                {filteredUniversities.map((uni) => (
                   <TableRow key={uni.id} className="group hover:bg-slate-50/50 transition-colors border-slate-100">
                     <TableCell className="font-medium py-5">
                       <div className="flex items-center gap-3">
@@ -153,38 +163,27 @@ export default function UniversityList() {
                           <GraduationCap size={18} />
                         </div>
                         <div>
-                           <span className="text-slate-900 font-semibold block">{uni.name}</span>
+                          <span className="text-slate-900 font-semibold block">{uni.name}</span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-slate-600">
                         <MapPin size={14} className="text-slate-400" />
-                        {uni.location}
+                        {uni.country}
                       </div>
                     </TableCell>
+                    
+                    
+                    <TableCell>
+                      <span className="text-slate-600 font-medium">{uni.state}</span>
+                    </TableCell>
+                    
                     <TableCell>
                       <a href={`https://${uni.website}`} target="_blank" className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors font-medium">
                         <LinkIcon size={14} />
                         {uni.website}
                       </a>
-                    </TableCell>
-                    <TableCell>
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${
-                        uni.type === "Private" 
-                        ? "bg-amber-50 text-amber-700 border border-amber-100" 
-                        : "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                      }`}>
-                        {uni.type}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-slate-600 font-medium">{uni.established}</span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                       <span className="bg-slate-900 text-white px-3 py-1 rounded-lg text-xs font-bold">
-                          {uni.rank}
-                       </span>
                     </TableCell>
                     <TableCell className="text-right pr-8">
                       <DropdownMenu>
@@ -211,8 +210,10 @@ export default function UniversityList() {
               </TableBody>
             </Table>
           </div>
+           <div className="p-5"><p className="text-sm text-slate-400 ">Total: {filteredUniversities.length} institutions listed</p></div>
         </CardContent>
       </Card>
+     
     </div>
   );
 }

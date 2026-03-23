@@ -85,70 +85,99 @@ const states = [
 ];
 
 export default function StateList() {
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  const filteredStates = states.filter((state) =>
+    state.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    state.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    state.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <Card className="border-none shadow-sm bg-white overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600" />
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-indigo-600">
-              <MapPin size={18} className="font-semibold" />
-              <span className="text-xs font-bold uppercase tracking-wider">Geographic Management</span>
-            </div>
-            <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">States & Provinces</CardTitle>
-            <CardDescription className="text-slate-500">Manage regional sub-divisions, cities and local institutions.</CardDescription>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Left Section */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-indigo-600">
+            <MapPin size={18} />
+            <span className="text-xs font-semibold uppercase tracking-widest">
+              Geographic Management
+            </span>
           </div>
-          <div>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 px-6 h-12 rounded-xl transition-all hover:scale-[1.02]">
-              <Plus className="mr-2 h-5 w-5" />
-              Add State/Province
-            </Button>
+
+          <h2 className="text-xl font-bold text-slate-900">States & Provinces</h2>
+
+          <p className="text-sm text-slate-500">
+            Manage regional sub-divisions, cities and local institutions.
+          </p>
+        </div>
+
+        {/* Right Section */}
+        <div className="flex w-full md:w-auto items-center gap-3 justify-between md:justify-end">
+          {/* Search Bar */}
+          <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 w-full sm:w-72">
+            <Search size={16} className="ml-3 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search states..."
+              className="flex-1 px-2 py-2 outline-none text-sm bg-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">
+              Search
+            </button>
           </div>
-        </CardHeader>
-      </Card>
+
+          {/* Create Button */}
+          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg whitespace-nowrap">
+            <Plus className="mr-2 h-4 w-4" />
+            Create
+          </Button>
+        </div>
+      </div>
 
       {/* States Table Section */}
-      <Card className="border-none shadow-sm bg-white overflow-hidden">
-        <CardHeader className="p-6 border-b border-slate-50 flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="text-xl font-semibold text-slate-800">State Registry</CardTitle>
-            <p className="text-sm text-slate-400 mt-1">Total: {states.length} states listed</p>
-          </div>
-          <div className="flex items-center gap-3">
-             <div className="relative hidden sm:block">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Filter by country or name..." 
-                  className="bg-slate-50 border-none rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-1 focus:ring-indigo-500 transition-all w-64"
-                />
-             </div>
-          </div>
-        </CardHeader>
+      <Card className="border-none shadow-sm bg-white overflow-hidden py-0">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-slate-50/50">
-                <TableRow className="hover:bg-transparent border-slate-100">
-                  <TableHead className="w-[300px] font-bold text-slate-700 py-4">State/Province</TableHead>
-                  <TableHead className="font-bold text-slate-700">Country</TableHead>
-                  <TableHead className="font-bold text-slate-700">Code</TableHead>
-                  <TableHead className="font-bold text-slate-700 text-center">Universities</TableHead>
-                  <TableHead className="font-bold text-slate-700 text-center">Cities</TableHead>
-                  <TableHead className="font-bold text-slate-700 text-right pr-12">Population</TableHead>
-                  <TableHead className="text-right font-bold text-slate-700 pr-8">Actions</TableHead>
+              <TableHeader className="bg-primary ">
+                <TableRow className="hover:bg-transparent border-slate-100 ">
+                  <TableHead className="w-[300px] font-bold text-white py-4">
+                    State/Province
+                  </TableHead>
+                  <TableHead className="font-bold text-white">Country</TableHead>
+                  <TableHead className="font-bold text-white">Code</TableHead>
+                  <TableHead className="font-bold text-white text-center">
+                    Universities
+                  </TableHead>
+                  <TableHead className="font-bold text-white text-center">
+                    Cities
+                  </TableHead>
+                  <TableHead className="font-bold text-white text-right pr-12">
+                    Population
+                  </TableHead>
+                  <TableHead className="text-right font-bold text-white pr-8">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {states.map((state) => (
-                  <TableRow key={state.id} className="group hover:bg-slate-50/50 transition-colors border-slate-100">
+                {filteredStates.map((state) => (
+                  <TableRow
+                    key={state.id}
+                    className="group hover:bg-slate-50/50 transition-colors border-slate-100"
+                  >
                     <TableCell className="font-medium py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
                           <MapPin size={18} />
                         </div>
-                        <span className="text-slate-900 font-semibold">{state.name}</span>
+                        <span className="text-slate-900 font-semibold">
+                          {state.name}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -163,30 +192,38 @@ export default function StateList() {
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                       <div className="flex items-center justify-center gap-1.5 text-indigo-600 font-bold">
-                          <Building size={12} />
-                          {state.universities}
-                       </div>
+                      <div className="flex items-center justify-center gap-1.5 text-indigo-600 font-bold">
+                        <Building size={12} />
+                        {state.universities}
+                      </div>
                     </TableCell>
                     <TableCell className="text-center text-slate-600 font-medium">
-                       {state.cities}
+                      {state.cities}
                     </TableCell>
                     <TableCell className="text-right pr-12">
-                       <div className="flex items-center justify-end gap-1.5 text-slate-500">
-                          <Users size={12} />
-                          {state.population}
-                       </div>
+                      <div className="flex items-center justify-end gap-1.5 text-slate-500">
+                        <Users size={12} />
+                        {state.population}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right pr-8">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-200/50 rounded-full">
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0 hover:bg-slate-200/50 rounded-full"
+                          >
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4 text-slate-600" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[160px] rounded-xl shadow-xl border-slate-100 p-1">
-                          <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">Actions</DropdownMenuLabel>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-[160px] rounded-xl shadow-xl border-slate-100 p-1"
+                        >
+                          <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
+                            Actions
+                          </DropdownMenuLabel>
                           <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
                             Edit State
                           </DropdownMenuItem>
@@ -202,8 +239,14 @@ export default function StateList() {
               </TableBody>
             </Table>
           </div>
+          <div className="p-5">
+            <p className="text-sm text-slate-400 ">
+              Total: {filteredStates.length} states listed
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+
