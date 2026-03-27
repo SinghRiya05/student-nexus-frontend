@@ -29,7 +29,7 @@ const AdminDashboardLayout = ({ children }: AdminDashboardLayoutProps) => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
-        <Header />
+        <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-6 pt-6 overflow-y-auto overflow-x-hidden">
           <div className="max-w-[1400px] mx-auto w-full">
             {children}

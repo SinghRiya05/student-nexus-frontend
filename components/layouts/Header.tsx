@@ -18,11 +18,16 @@ import {
   Briefcase,
   Menu,
   X,
+  Home,
+  Calendar,
 } from "lucide-react";
 
 const NAV_LINKS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-
+  { href: "/", label: "Home", icon: Home },
+  { href: "/network", label: "Network", icon: Users },
+  { href: "/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/events", label: "Events", icon: Calendar },
 ];
 
 const NOTIFICATIONS = [
@@ -31,7 +36,11 @@ const NOTIFICATIONS = [
   { id: 3, text: "Your profile was viewed 12 times", time: "3h ago", unread: false },
 ];
 
-export default function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -238,7 +247,13 @@ export default function Header() {
             {/* Mobile hamburger */}
             <button
               className="ml-1 flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 lg:hidden"
-              onClick={() => setMobileOpen((v) => !v)}
+              onClick={() => {
+                if (onMenuClick) {
+                  onMenuClick();
+                } else {
+                  setMobileOpen((v) => !v);
+                }
+              }}
             >
               {mobileOpen ? <X size={18} /> : <Menu size={18} />}
             </button>

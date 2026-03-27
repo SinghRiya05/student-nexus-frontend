@@ -17,6 +17,8 @@ import {
   BookOpen,
   Settings2,
   Map,
+  ShieldCheck,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,41 +37,51 @@ const navItems = [
   },
   {
     title: "University",
-    href: "/university",
+    href: "/dashboard/university",
     icon: GraduationCap,
   },
   {
     title: "Semester",
-    href: "/semester",
+    href: "/dashboard/semester",
     icon: CalendarCheck,
   },
   {
     title: "Countries",
-    href: "/countries",
+    href: "/dashboard/countries",
     icon: Globe,
   },
   {
     title: "State",
-    href: "/state",
+    href: "/dashboard/state",
     icon: MapPin,
   },
   {
     title: "Users",
-    href: "/users",
+    href: "/dashboard/users",
     icon: Users,
   },
   {
+    title: "Roles",
+    href: "/dashboard/roles",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Permissions",
+    href: "/dashboard/permissions",
+    icon: Lock,
+  },
+  {
     title: "Courses",
-    href: "/courses",
+    href: "/dashboard/courses",
     icon: BookOpen,
   },
   {
     title: "Settings",
-    href: "/settings",
+    href: "/dashboard/settings",
     icon: Settings2,
     subItems: [
-      { title: "Profile Settings", href: "/settings/profile" },
-      { title: "Company Settings", href: "/settings/company" },
+      { title: "Profile Settings", href: "/dashboard/settings/profile" },
+      { title: "Company Settings", href: "/dashboard/settings/company" },
     ],
   },
 ];
