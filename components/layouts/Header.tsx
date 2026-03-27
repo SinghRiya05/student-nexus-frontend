@@ -18,11 +18,16 @@ import {
   Briefcase,
   Menu,
   X,
+  Home,
+  Calendar,
 } from "lucide-react";
 
 const NAV_LINKS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-
+  { href: "/", label: "Home", icon: Home },
+  { href: "/network", label: "Network", icon: Users },
+  { href: "/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/events", label: "Events", icon: Calendar },
 ];
 
 const NOTIFICATIONS = [

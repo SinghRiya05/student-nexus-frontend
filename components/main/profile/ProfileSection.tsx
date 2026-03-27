@@ -288,7 +288,7 @@ export default function ProfileSection() {
                 <div className="absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-violet-100/40 blur-[90px]" />
             </div>
 
-            <div className="flex min-h-screen flex-col gap-6 bg-transparent lg:flex-row">
+            <div className="flex min-h-screen flex-col gap-6 bg-transparent max-w-7xl mx-auto lg:flex-row">
                 {/* ══════════ LEFT SIDEBAR ══════════ */}
                 <aside className="flex w-full mt-5 px-5 lg:px-0 shrink-0 flex-col gap-4 self-start lg:sticky lg:top-20 lg:w-[300px]">
                     {/* Profile Card */}
