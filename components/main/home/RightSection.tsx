@@ -55,7 +55,7 @@ export default function RightSection() {
                 <div className="space-y-4 pt-6 border-t border-gray-100">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                            <Users className="w-4 h-4 text-blue-500" />
+                            <Users className="w-4 h-4 text-primary" />
                             Discover Groups
                         </h3>
                     </div>
@@ -63,7 +63,7 @@ export default function RightSection() {
                         {groups.map((group, idx) => (
                             <div key={idx} className="flex items-center justify-between group">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 font-bold group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold group-hover:bg-primary group-hover:text-white transition-all">
                                         {group.name[0]}
                                     </div>
                                     <div className="text-left">
@@ -71,12 +71,12 @@ export default function RightSection() {
                                         <p className="text-[10px] text-gray-400 uppercase tracking-tighter">{group.members}</p>
                                     </div>
                                 </div>
-                                <button className="text-blue-500 hover:text-blue-700 p-2 rounded-full hover:bg-blue-50 transition-all">
+                                <button className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-primary/10 transition-all">
                                     <PlusIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         ))}
-                        <Button className="w-full rounded-2xl bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20 py-4 text-xs font-bold">
+                        <Button className="w-full rounded-2xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 py-4 text-xs font-bold">
                             Join Community
                         </Button>
                     </div>

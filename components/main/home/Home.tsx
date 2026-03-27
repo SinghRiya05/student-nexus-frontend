@@ -8,7 +8,7 @@ import { motion } from "motion/react"
 
 const Home = () => {
   return (
-    <div className="min-h-screen w-full bg-slate-50/50 light-mesh-bg selection:bg-primary/10  ">
+    <div className="min-h-screen w-full  ">
       <main className="w-full max-w-[90rem] mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
           {/* Left Sidebar - Hidden on small/medium, visible on large */}

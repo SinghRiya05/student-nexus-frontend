@@ -10,75 +10,134 @@ import Link from 'next/link'
 
 export default function LeftSection() {
     const menuItems = [
-        { label: "My Feed", icon: LayoutGrid, href: "/", color: "text-purple-500" },
-        { label: "Universities", icon: School, href: "/universities", color: "text-yellow-500" },
-        { label: "Professors", icon: UserRound, href: "/professors", color: "text-primary" },
-        { label: "Saved Event", icon: Bookmark, href: "/events/saved", color: "text-green-500" },
-        { label: "Settings", icon: Settings, href: "/settings", color: "text-red-500" },
+        { label: "My Feed", icon: LayoutGrid, href: "/", color: "text-purple-500", bg: "bg-purple-500/10" },
+        { label: "Universities", icon: School, href: "/universities", color: "text-amber-500", bg: "bg-amber-500/10" },
+        { label: "Professors", icon: UserRound, href: "/professors", color: "text-primary", bg: "bg-primary/10" },
+        { label: "Saved Event", icon: Bookmark, href: "/events/saved", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+        { label: "Settings", icon: Settings, href: "/settings", color: "text-rose-500", bg: "bg-rose-500/10" },
     ]
 
     return (
-        <aside className="w-full space-y-4">
+        <aside className="w-full space-y-6">
             {/* User Profile Card */}
-            <Card className="glass-card border-none rounded-none overflow-hidden hover:shadow-2xl transition-all duration-300">
-                <CardContent className="p-0">
-                    <div className="h-15 bg-gradient-to-r from-primary/20 to-blue-400/20" />
-                    <div className="px-6 -mt-10 flex flex-col items-center text-center">
-                        <div className="relative group">
-                            <div className="w-24 h-24 rounded-full bg-white p-1 shadow-lg ring-2 ring-primary/20">
-                                <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center overflow-hidden">
-                                    <User className="w-15 h-15 text-primary/40" />
-                                </div>
-                            </div>
-                            <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <Card className="glass-card border-none rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-500 group">
+                    <CardContent className="p-0">
+                        {/* Premium Gradient Header */}
+                        <div className="h-24 bg-gradient-to-br from-primary via-primary/80 to-primary/40 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
                         </div>
+                        
+                        <div className="px-6 -mt-12 flex flex-col items-center text-center pb-6">
+                            <div className="relative">
+                                <motion.div 
+                                    whileHover={{ scale: 1.05 }}
+                                    className="w-24 h-24 rounded-3xl bg-white p-1.5 shadow-2xl ring-4 ring-white/50 backdrop-blur-sm"
+                                >
+                                    <div className="w-full h-full rounded-2xl bg-gray-50 flex items-center justify-center overflow-hidden">
+                                        <img
+                                            src="/user.jpg"
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                </motion.div>
+                                <motion.div 
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    delay={0.5}
+                                    className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 border-4 border-white rounded-full shadow-lg"
+                                />
+                            </div>
 
-                        <div className="mt-2">
-                            <h2 className="text-lg font-bold text-gray-800">Riya Singh</h2>
-                            <p className="text-primary text-xs font-semibold">BCA Student</p>
-                        </div>
+                            <div className="mt-4">
+                                <h2 className="text-xl font-black text-gray-900 tracking-tight">Riya Singh</h2>
+                                <p className="text-primary font-bold text-sm tracking-wide mt-0.5">BCA Student</p>
+                            </div>
 
-                        <div className="w-full mt-2 pt-2 border-t border-gray-100 flex flex-col gap-3">
-                            <div className="flex items-center gap-3 text-gray-600">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                    <Building2 className="w-4 h-4 text-primary" />
+                            <div className="w-full mt-6 pt-6 border-t border-gray-100/50 flex flex-col gap-4">
+                                <div className="flex items-center gap-4 group/item">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-all duration-300">
+                                        <Building2 className="w-5 h-5" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">University</p>
+                                        <p className="text-sm font-bold text-gray-700">BBD University</p>
+                                    </div>
                                 </div>
-                                <span className="text-xs font-semibold">BBD University</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-600">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                    <Calendar className="w-4 h-4 text-primary" />
+                                <div className="flex items-center gap-4 group/item">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-all duration-300">
+                                        <Calendar className="w-5 h-5" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Session</p>
+                                        <p className="text-sm font-bold text-gray-700 tracking-tight">2025 - 2026</p>
+                                    </div>
                                 </div>
-                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">2025 - 2026</span>
                             </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </motion.div>
 
             {/* Navigation Menu */}
-            <Card className="glass-card border-none rounded-none overflow-hidden hover:shadow-2xl transition-all duration-300">
-                <CardContent className=" space-y-0.5">
-                    {menuItems.map((item, idx) => (
-                        <Link
-                            key={idx}
-                            href={item.href}
-                            className="group flex items-center justify-between p-1 rounded-xl hover:bg-white/50 transition-all duration-300"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-8 h-8 rounded-xl bg-secondary shadow-sm ring-1 ring-blue-500 text-gray-500 flex items-center justify-center transition-all duration-300 group-hover:ring-primary/50 group-hover:text-primary group-hover:shadow-[0_0_15px_rgba(var(--primary),0.3)] ${item.color}`}>
-                                    <item.icon className="w-4 h-4" />
-                                </div>
-                                <span className="font-bold text-[12px] text-gray-500 group-hover:text-primary">
-                                    {item.label}
-                                </span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-300 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-primary" />
-                        </Link>
-                    ))}
-                </CardContent>
-            </Card>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+            >
+                <Card className="glass-card border-none rounded-3xl overflow-hidden p-3 shadow-xl">
+                    <div className="px-3 py-2">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Main Menu</p>
+                        <div className="space-y-1">
+                            {menuItems.map((item, idx) => (
+                                <Link
+                                    key={idx}
+                                    href={item.href}
+                                    className="group flex items-center justify-between p-2 rounded-2xl transition-all duration-300 hover:bg-white/80 hover:shadow-md active:scale-95"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={cn(
+                                            "w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:shadow-lg",
+                                            item.bg,
+                                            item.color,
+                                            "group-hover:scale-110"
+                                        )}>
+                                            <item.icon className="w-5 h-5" />
+                                        </div>
+                                        <span className="font-bold text-sm text-gray-500 group-hover:text-gray-900 transition-colors">
+                                            {item.label}
+                                        </span>
+                                    </div>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/0 group-hover:bg-primary transition-all duration-300 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100" />
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </Card>
+            </motion.div>
 
+            {/* Quick Stats or Promo */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="bg-primary rounded-3xl p-6 text-white text-center relative overflow-hidden group cursor-pointer"
+            >
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                    <GraduationCap className="w-16 h-16" />
+                </div>
+                <h3 className="font-black text-lg leading-tight relative z-10">Premium Member</h3>
+                <p className="text-white/70 text-xs mt-2 relative z-10 leading-relaxed">Unlock all exclusive features and university insights.</p>
+                <button className="mt-4 w-full bg-white text-primary font-black py-2.5 rounded-2xl text-xs hover:bg-opacity-90 transition-all active:scale-95 shadow-lg">
+                    Upgrade Now
+                </button>
+            </motion.div>
         </aside>
     )
 }
