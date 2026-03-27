@@ -27,7 +27,10 @@ import {
   Search,
   CheckCircle2,
   XCircle,
-  Clock
+  Clock,
+  UserCog,
+  Edit2,
+  Trash2
 } from "lucide-react";
 import {
   Card,
@@ -36,57 +39,92 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import AssignRoleDialog from "./AssignRoleDialog";
 
 const users = [
   {
     id: "1",
     name: "Aarav Sharma",
     email: "aarav@university.edu",
+    phone: "+91 9876543210",
+    universityName: "LPU University",
+    courseName: "B.Tech CSE",
+    semester: "Semester 4",
     role: "Admin",
     status: "Active",
-    joinedDate: "2026-01-10",
   },
   {
     id: "2",
     name: "Ishani Gupta",
     email: "ishani@university.edu",
+    phone: "+91 9876543211",
+    universityName: "Delhi University",
+    courseName: "B.Sc Physics",
+    semester: "Semester 2",
     role: "Teacher",
     status: "Active",
-    joinedDate: "2026-02-15",
   },
   {
     id: "3",
     name: "Vihaan Reddy",
     email: "vihaan@student.edu",
+    phone: "+91 9876543212",
+    universityName: "Anna University",
+    courseName: "B.E ECE",
+    semester: "Semester 6",
     role: "Student",
     status: "Pending",
-    joinedDate: "2026-03-01",
   },
   {
     id: "4",
     name: "Ananya Iyer",
     email: "ananya@university.edu",
+    phone: "+91 9876543213",
+    universityName: "Mumbai University",
+    courseName: "B.Com",
+    semester: "Semester 3",
     role: "Support",
     status: "Disabled",
-    joinedDate: "2025-12-20",
   },
   {
     id: "5",
     name: "Kabir Verma",
     email: "kabir@student.edu",
+    phone: "+91 9876543214",
+    universityName: "LPU University",
+    courseName: "B.Tech CSE",
+    semester: "Semester 1",
     role: "Student",
     status: "Active",
-    joinedDate: "2026-03-05",
   },
 ];
 
 export default function UserList() {
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = React.useState(false);
+  const [selectedUser, setSelectedUser] = React.useState<any>(null);
+
+  const handleManageRole = (user: any) => {
+    setSelectedUser(user);
+    setIsRoleDialogOpen(true);
+  };
+  
+  // API CALL PLACE: Fetch users data from backend
+  // useEffect(() => {
+  //   const fetchUsers = async () => {
+  //     const response = await fetch('/api/users');
+  //     const data = await response.json();
+  //     setUsers(data);
+  //   };
+  //   fetchUsers();
+  // }, []);
 
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.universityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.courseName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -127,6 +165,7 @@ export default function UserList() {
           </div>
 
           {/* Create Button */}
+          {/* API CALL PLACE: Handle user invitation / creation */}
           <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg whitespace-nowrap">
             <Plus className="mr-2 h-4 w-4" />
             Invite
@@ -141,17 +180,14 @@ export default function UserList() {
             <Table>
               <TableHeader className="bg-primary ">
                 <TableRow className="hover:bg-transparent border-slate-100 ">
-                  <TableHead className="w-[300px] font-bold text-white py-4">
-                    Full Name
-                  </TableHead>
+                  <TableHead className="font-bold text-white py-4 min-w-[200px]">Name</TableHead>
+                  <TableHead className="font-bold text-white">Email</TableHead>
+                  <TableHead className="font-bold text-white">Phone</TableHead>
+                  <TableHead className="font-bold text-white">Course</TableHead>
+                  <TableHead className="font-bold text-white">University</TableHead>
                   <TableHead className="font-bold text-white">Role</TableHead>
                   <TableHead className="font-bold text-white">Status</TableHead>
-                  <TableHead className="font-bold text-white">
-                    Joined Date
-                  </TableHead>
-                  <TableHead className="text-right font-bold text-white pr-8">
-                    Actions
-                  </TableHead>
+                  <TableHead className="text-right font-bold text-white pr-8">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -163,21 +199,24 @@ export default function UserList() {
                     <TableCell className="font-medium py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs ring-1 ring-indigo-100">
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                          {user.name[0]}
                         </div>
-                        <div>
-                          <span className="text-slate-900 font-bold block">
-                            {user.name}
-                          </span>
-                          <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
-                            <Mail size={10} />
-                            {user.email}
-                          </div>
-                        </div>
+                        <span className="text-slate-900 font-bold block">
+                          {user.name}
+                        </span>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-slate-600 font-medium">
+                      {user.email}
+                    </TableCell>
+                    <TableCell className="text-slate-600 font-medium whitespace-nowrap">
+                      {user.phone}
+                    </TableCell>
+                    <TableCell className="text-slate-600 font-medium whitespace-nowrap">
+                      {user.courseName}
+                    </TableCell>
+                    <TableCell className="text-slate-600 font-medium whitespace-nowrap">
+                      {user.universityName}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -212,9 +251,6 @@ export default function UserList() {
                         {user.status}
                       </span>
                     </TableCell>
-                    <TableCell className="text-slate-500 font-medium italic text-sm">
-                      {user.joinedDate}
-                    </TableCell>
                     <TableCell className="text-right pr-8">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -232,15 +268,27 @@ export default function UserList() {
                           <DropdownMenuLabel className="text-[0.65rem] text-slate-400 px-3 py-2 uppercase font-black tracking-widest">
                             User Actions
                           </DropdownMenuLabel>
+                          {/* API CALL PLACE: Edit User */}
                           <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
-                            Edit Permissions
+                            <Edit2 size={14} className="mr-2" />
+                            Edit User
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
-                            View Profile
+                          
+                          {/* Assign Role action */}
+                          <DropdownMenuItem 
+                            onClick={() => handleManageRole(user)}
+                            className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer"
+                          >
+                            <UserCog size={14} className="mr-2" />
+                            Assign Role
                           </DropdownMenuItem>
+                          
                           <DropdownMenuSeparator className="bg-slate-100" />
+                          
+                          {/* API CALL PLACE: Delete User */}
                           <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
-                            Suspend Account
+                            <Trash2 size={14} className="mr-2" />
+                            Delete User
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -257,6 +305,12 @@ export default function UserList() {
           </div>
         </CardContent>
       </Card>
+
+      <AssignRoleDialog 
+        isOpen={isRoleDialogOpen} 
+        setIsOpen={setIsRoleDialogOpen} 
+        user={selectedUser} 
+      />
     </div>
   );
 }

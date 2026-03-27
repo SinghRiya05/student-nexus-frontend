@@ -4,10 +4,8 @@ import React from "react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -159,16 +157,15 @@ export default function SemesterList() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm font-medium h-full">
-              Search
-            </button>
           </div>
 
           {/* Create Button */}
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 h-11 rounded-lg whitespace-nowrap w-full sm:w-auto shadow-sm">
-            <Plus className="mr-2 h-4 w-4" />
-            Create
-          </Button>
+          <Link href="/dashboard/semester/create">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 h-11 rounded-lg whitespace-nowrap w-full sm:w-auto shadow-sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Create
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -243,9 +240,11 @@ export default function SemesterList() {
                           <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
                             Actions
                           </DropdownMenuLabel>
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
-                            Edit Period
-                          </DropdownMenuItem>
+                          <Link href={`/dashboard/semester/edit/${sem.id}`}>
+                            <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                              Edit Period
+                            </DropdownMenuItem>
+                          </Link>
                           <DropdownMenuSeparator className="bg-slate-100" />
                           <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
                             Delete Semester

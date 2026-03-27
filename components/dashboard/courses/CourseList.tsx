@@ -32,10 +32,8 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 const courses = [
   {
@@ -128,16 +126,15 @@ export default function CourseList() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">
-              Search
-            </button>
           </div>
 
           {/* Create Button */}
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg whitespace-nowrap">
-            <Plus className="mr-2 h-4 w-4" />
-            Create
-          </Button>
+          <Link href="/dashboard/courses/create">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg whitespace-nowrap">
+              <Plus className="mr-2 h-4 w-4" />
+              Create
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -230,9 +227,11 @@ export default function CourseList() {
                           <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
                             Actions
                           </DropdownMenuLabel>
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
-                            Edit Course
-                          </DropdownMenuItem>
+                          <Link href={`/dashboard/courses/edit/${course.id}`}>
+                            <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                              Edit Course
+                            </DropdownMenuItem>
+                          </Link>
                           <DropdownMenuSeparator className="bg-slate-100" />
                           <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
                             Delete Course

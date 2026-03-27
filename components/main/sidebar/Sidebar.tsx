@@ -17,6 +17,8 @@ import {
   BookOpen,
   Settings2,
   Map,
+  ShieldCheck,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,16 @@ const navItems = [
     title: "Users",
     href: "/dashboard/users",
     icon: Users,
+  },
+  {
+    title: "Roles",
+    href: "/dashboard/roles",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Permissions",
+    href: "/dashboard/permissions",
+    icon: Lock,
   },
   {
     title: "Courses",
