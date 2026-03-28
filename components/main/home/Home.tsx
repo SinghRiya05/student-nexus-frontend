@@ -1,46 +1,34 @@
 "use client"
 
 import React from 'react'
-import LeftSection from './LeftSection'
 import MainContent from './MainContent'
 import RightSection from './RightSection'
 import { motion } from "motion/react"
 
 const Home = () => {
   return (
-    <div className="min-h-screen w-full  ">
-      <main className="w-full max-w-[90rem] mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
-          {/* Left Sidebar - Hidden on small/medium, visible on large */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className=" lg:block lg:col-span-2  top-10 h-fit"
-          >
-            <LeftSection />
-          </motion.div>
+    <div className="flex flex-col xl:flex-row gap-8">
+      {/* Main Content Area */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex-1 min-w-0"
+      >
+        <MainContent />
+      </motion.div>
 
-          {/* Main Content Area - Full width on small/medium, 6 columns on large */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="col-span-1 lg:col-span-6 scrollbar-hide"
-          >
-            <MainContent />
-          </motion.div>
-
-          {/* Right Sidebar - Hidden on small/medium, visible on large */}
-          <motion.div
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className=" lg:block lg:col-span-2 top-10 h-fit"
-          >
-            <RightSection />
-          </motion.div>
+      {/* Right Sidebar - Hidden on small/medium, visible on large */}
+      <motion.div
+        initial={{ x: 20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="hidden xl:block w-80 shrink-0"
+      >
+        <div className="sticky top-24">
+          <RightSection />
         </div>
-      </main>
+      </motion.div>
     </div>
   )
 }

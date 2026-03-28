@@ -1,653 +1,341 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { profileSchema, ProfileValues } from "./profileSchema";
+import React, { useState } from "react";
 import Image from "next/image";
 import {
     Camera,
-    GraduationCap,
-    Briefcase,
     MapPin,
-    BookOpen,
     Users,
-    Tag,
-    FileText,
-    Upload,
-    Github,
-    Linkedin,
-    Globe,
-    X,
-    Check,
+    Briefcase,
+    GraduationCap,
+    Plus,
+    Edit3,
+    MoreHorizontal,
     ChevronRight,
+    UserPlus,
+    LayoutGrid,
+    MessageSquare,
+    Code
 } from "lucide-react";
-import {
-    Form,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormControl,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
+// ─── Sections ─────────────────────────────────────────────────────────────
 
-
-// ─── Helpers ──────────────────────────────────────────────────────────────
-function SectionCard({
-    title,
-    description,
-    icon: Icon,
-    accent = "indigo",
-    children,
-}: {
-    title: string;
-    description?: string;
-    icon: React.ElementType;
-    accent?: string;
-    children: React.ReactNode;
-}) {
-    const accents: Record<string, string> = {
-        indigo: "from-indigo-500 to-violet-600",
-        rose: "from-rose-500 to-pink-600",
-        emerald: "from-emerald-500 to-teal-600",
-        amber: "from-amber-500 to-orange-500",
-    };
-
-    return (
-        <Card className="group relative overflow-hidden rounded-[1.25rem] border-gray-100 bg-white/70 shadow-sm backdrop-blur-md transition-all duration-300 hover:bg-white/90 hover:shadow-md">
-            {/* Subtle top border highlight */}
-            <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accents[accent]} opacity-50`} />
-
-            <CardHeader className="pb-2 pt-7 px-7 flex flex-row items-start gap-4 space-y-0">
-                <div
-                    className={`mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${accents[accent]} text-white shadow-sm ring-4 ring-white transition-transform duration-300 group-hover:scale-110`}
-                >
-                    <Icon size={20} />
-                </div>
-                <div className="flex-1">
-                    <CardTitle className="text-[1.05rem] font-bold text-gray-900">{title}</CardTitle>
-                    {description && (
-                        <p className="mt-1 text-[0.8rem] text-gray-500">{description}</p>
-                    )}
-                </div>
-            </CardHeader>
-
-            <CardContent className="px-7 pb-7 pt-2">
-                <div className="rounded-2xl bg-gray-50/50 p-5 ring-1 ring-inset ring-gray-100/50">
-                    {children}
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-function FieldGrid({ children }: { children: React.ReactNode }) {
-    return (
-        <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
-            {children}
+const AboutMe = ({ bio }: { bio?: string }) => (
+    <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+        <div className="flex items-center gap-3 mb-6">
+            <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 transition-transform group-hover:scale-110">
+                <Users size={20} />
+            </div>
+            <h3 className="text-xl font-black text-[#1a1a3b]">About Me</h3>
         </div>
-    );
-}
+        <p className="text-gray-500 font-medium leading-[1.8] text-[15px]">
+            {bio || "Tell us about yourself, your goals, and interests. Click 'Edit Profile' to share your story with the community."}
+        </p>
+    </div>
+);
 
-function StyledField({
-    control,
-    name,
-    label,
-    placeholder,
-    disabled,
-    type = "text",
-}: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    control: any;
-    name: keyof ProfileValues;
-    label: string;
-    placeholder: string;
-    disabled?: boolean;
-    type?: string;
-}) {
-    return (
-        <FormField
-            control={control}
-            name={name}
-            disabled={disabled}
-            render={({ field }) => (
-                <FormItem className="space-y-1.5">
-                    <FormLabel className="text-[0.78rem] font-semibold text-gray-700">
-                        {label}
-                    </FormLabel>
-                    <FormControl>
-                        <Input
-                            type={type}
-                            placeholder={placeholder}
-                            className="h-11 rounded-xl border-gray-200 bg-white text-[0.85rem] shadow-sm transition-all placeholder:text-gray-400 focus-visible:border-indigo-400 focus-visible:ring-4 focus-visible:ring-indigo-400/10"
-                            {...field}
-                        />
-                    </FormControl>
-                    <FormMessage className="text-[0.72rem] text-red-500" />
-                </FormItem>
-            )}
-        />
-    );
-}
+const StatCard = ({ label, value, subtext, color }: { label: string; value: string; subtext: string; color: string }) => (
+    <div className={`p-8 rounded-2xl border-2 border-transparent transition-all hover:translate-y-[-4px] cursor-pointer ${color}`}>
+        <p className="text-[10px] font-black uppercase tracking-widest mb-3 opacity-60">{label}</p>
+        <div className="flex items-baseline gap-2 mb-1">
+            <span className="text-4xl font-black">{value}</span>
+            <span className="text-sm font-bold opacity-60">{subtext}</span>
+        </div>
+    </div>
+);
 
-// ─── Describe Yourself Modal ───────────────────────────────────────────────
-function DescribeModal({
-    open,
-    onClose,
-    value,
-    onChange,
-}: {
-    open: boolean;
-    onClose: () => void;
-    value: string;
-    onChange: (v: string) => void;
-}) {
-    const [draft, setDraft] = useState(value);
-    if (!open) return null;
+function ExperienceItem({ icon: Icon, title, role, date, description }: any) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-            <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-                <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-[0.98rem] font-bold text-gray-900">
-                        Describe Yourself
-                    </h3>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 transition-colors hover:text-gray-700"
-                    >
-                        <X size={17} />
-                    </button>
-                </div>
-                <textarea
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    rows={6}
-                    placeholder="Write a short bio about yourself, your goals, and what makes you stand out..."
-                    className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/15"
-                />
-                <div className="mt-1 text-right text-[0.68rem] text-gray-400">
-                    {draft.length}/500 characters
-                </div>
-                <div className="mt-4 flex gap-2">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-semibold text-gray-500 transition hover:bg-gray-50"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={() => {
-                            onChange(draft);
-                            onClose();
-                        }}
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-                    >
-                        <Check size={14} /> Save
-                    </button>
-                </div>
+        <div className="flex gap-5 group cursor-default">
+            <div className="shrink-0 h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all border border-gray-100 group-hover:border-blue-100">
+                <Icon size={24} />
+            </div>
+            <div>
+                <h4 className="text-lg font-black text-[#1a1a3b] group-hover:text-blue-600 transition-colors uppercase tracking-tight">{title}</h4>
+                <p className="text-sm font-black text-gray-500 mb-2">{role} <span className="mx-2 text-gray-300">•</span> {date}</p>
+                <p className="text-[0.85rem] text-gray-400 font-bold leading-relaxed max-w-2xl">
+                    {description || `A brief overview of your role and achievements at ${title}. Complete your profile to share your journey.`}
+                </p>
             </div>
         </div>
     );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────
-export default function ProfileSection() {
-    const [bio, setBio] = useState("");
-    const [bioOpen, setBioOpen] = useState(false);
-    const [saved, setSaved] = useState(false);
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-    const form = useForm<ProfileValues>({
-        resolver: zodResolver(profileSchema),
-        defaultValues: {
-            firstName: "Riya",
-            lastName: "Singh",
-            email: "riya.singh@university.edu",
-            phone: "+91 9876543210",
-            interestBadge: "", // To be filled manually
-            profession: "Student", // From Signup role
-            universityName: "Delhi University", // From Signup university
-            courseName: "B.Tech Computer Science", // From Signup course
-            currentSemester: "6", // From Signup semester
-            batchName: "", // To be filled manually
-            completionYear: "", // To be filled manually
-            admissionDate: "", // To be filled manually
-            country: "", // To be filled manually
-            state: "", // To be filled manually
-            city: "", // To be filled manually
-            pinCode: "", // To be filled manually
-        },
+export default function ProfileSection() {
+    const router = useRouter();
+    const [stats] = useState([
+        { label: "Cumulative GPA", value: "8.9", subtext: "/ 10", color: "bg-blue-50/50 text-blue-600 border-blue-100 hover:border-blue-300 shadow-sm shadow-blue-50" },
+        { label: "Credits Earned", value: "124", subtext: "Units", color: "bg-emerald-50/50 text-emerald-600 border-emerald-100 hover:border-emerald-300 shadow-sm shadow-emerald-50" },
+        { label: "Current Term", value: "6th", subtext: "Sem", color: "bg-rose-50/50 text-rose-600 border-rose-100 hover:border-rose-300 shadow-sm shadow-rose-50" }
+    ]);
+
+    // Profile state
+    const [profile, setProfile] = useState<any>({
+        firstName: "Riya",
+        lastName: "Singh",
+        courseName: "BCA Student",
+        universityName: "BBD University",
+        completionYear: "2025 - 2026",
+        bio: "",
+        skills: [],
+        experience: []
     });
 
-    // Automatically pre-fill the form with data saved during signup
-    useEffect(() => {
-        const signupData = localStorage.getItem("signupData");
-        if (signupData) {
+    React.useEffect(() => {
+        const profileData = localStorage.getItem("profileData");
+        if (profileData) {
             try {
-                const data = JSON.parse(signupData);
-                form.reset({
-                    ...form.getValues(),
-                    ...data,
+                const data = JSON.parse(profileData);
+                const skillsData = data.skills;
+                const skillsArray = Array.isArray(skillsData)
+                    ? skillsData.map((s: any) => typeof s === 'object' ? s.name : s)
+                    : (typeof skillsData === 'string' ? skillsData.split(",").map((s: string) => s.trim()).filter(Boolean) : []);
+
+                setProfile({
+                    firstName: data.firstName || "Riya",
+                    lastName: data.lastName || "Singh",
+                    courseName: data.courseName || "BCA Student",
+                    universityName: data.universityName || "BBD University",
+                    completionYear: data.completionYear || "2025 - 2026",
+                    bio: data.bio || "",
+                    skills: skillsArray,
+                    experience: data.projects || [] // projects maps to experience in view
                 });
             } catch (err) {
-                console.error("Failed to parse signup data:", err);
+                console.error("Failed to parse profile data:", err);
             }
         }
-    }, [form]);
+    }, []);
 
-    const { watch } = form;
-    const firstName = watch("firstName");
-    const lastName = watch("lastName");
-    const profession = watch("profession");
-    const interestBadge = watch("interestBadge");
-    const universityName = watch("universityName");
-    const courseName = watch("courseName");
-    const batchName = watch("batchName");
+    const classmates = [
+        { name: "John", img: "https://i.pravatar.cc/150?u=1" },
+        { name: "Sara", img: "https://i.pravatar.cc/150?u=2" },
+        { name: "Mike", img: "https://i.pravatar.cc/150?u=3" },
+    ];
 
-    const onSubmit = async (values: ProfileValues) => {
-        // TODO: Make API call here to save profile data
-        console.log("Profile data:", values, { bio });
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-    };
+    const groups = [
+        { name: "Dev Society BBD", members: "840 Members", icon: LayoutGrid, color: "text-indigo-600 bg-indigo-50" },
+        { name: "Design Collective", members: "2.1k Members", icon: Edit3, color: "text-emerald-600 bg-emerald-50" }
+    ];
 
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setAvatarUrl(url);
-        }
-    };
-
-    const skills = ["React", "Next.js", "TypeScript", "Node.js", "Tailwind"];
+    const activities = [
+        { text: "Shared a new project 'Nexus UI Framework' to the Dev Society.", date: "2 hours ago", color: "bg-blue-500" },
+        { text: "Earned 'Top Contributor' badge in Hackathon Prep group.", date: "Yesterday", color: "bg-emerald-500" },
+        { text: "Followed 3 new professors in the Computer Science department.", date: "3 days ago", color: "bg-indigo-500" }
+    ];
 
     return (
-        <div className="relative">
-            <DescribeModal
-                open={bioOpen}
-                onClose={() => setBioOpen(false)}
-                value={bio}
-                onChange={setBio}
-            />
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* 1. Hero Header */}
+            <div className="relative bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
+                {/* Cover Photo */}
+                <div className="h-64 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-linear-to-r from-indigo-600/20 to-purple-600/20 mix-blend-multiply" />
+                    <img
+                        src="https://images.unsplash.com/photo-1707343843437-caacff5cfa74?w=1600&q=80"
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                        alt="Cover"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
 
-            {/* Ambient background */}
-            <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-                <div className="absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-indigo-100/40 blur-[90px]" />
-                <div className="absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-violet-100/40 blur-[90px]" />
+                {/* Profile Info Overlay Row */}
+                <div className="px-10 pb-10 flex flex-col md:flex-row items-end justify-between -mt-16 relative z-10 gap-8">
+                    <div className="flex flex-col md:flex-row items-end gap-8 flex-1">
+                        {/* Avatar */}
+                        <div className="relative group">
+                            <div className="h-44 w-44 rounded-[2.5rem] border-10 border-white overflow-hidden shadow-2xl bg-white">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2ouios_lhgXqc2jp7Mq-OcL_Utm9--mcX154rRS0412JQKRZkcX78lXb4rJyYrGQ89EUiBnSKbmjTbTizXd_rLbMDgx_iDfMYqxsAVJCpaaZzIiL2pGubDVFUoOU2IzFNEjdPJ8efhIjopDqX67xS-pGZjdgdBM2kTpG-VYO65j3PRjfdmusUe5V7nY4F83Uxir3MKiO0uXimenU1ScyWKf34s19hoLZ3y6hB5JwAz1_l_YIJxaxr5rKBQR7ExC31lw6gsgcSg2w" className="w-full h-full object-cover" alt="Profile" />
+                            </div>
+                            <button className="absolute bottom-4 right-4 h-10 w-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center border-4 border-white shadow-xl hover:bg-blue-700 transition-all hover:scale-110">
+                                <Camera size={18} />
+                            </button>
+                        </div>
+
+                        {/* Text Info */}
+                        <div className="pb-3 space-y-3">
+                            <h2 className="text-[40px] font-black text-[#1a1a3b] leading-tight flex items-center gap-3">
+                                {profile.firstName} {profile.lastName}
+                                <div className="h-3 w-3 bg-green-500 rounded-full border-2 border-white shadow-sm" />
+                            </h2>
+                            <div className="flex flex-wrap items-center gap-6 text-gray-500 font-bold text-sm">
+                                <div className="flex items-center gap-2">
+                                    <GraduationCap className="w-5 h-5 text-indigo-500" />
+                                    {profile.courseName}
+                                </div>
+                                <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
+                                    <MapPin className="w-5 h-5 text-rose-500" />
+                                    {profile.universityName}
+                                </div>
+                                <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
+                                    <Users className="w-5 h-5 text-emerald-500" />
+                                    {profile.completionYear}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-4 pb-4">
+                        <Button
+                            onClick={() => router.push("/profile/edit")}
+                            variant="outline"
+                            className="h-14 px-8 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-3 shadow-sm"
+                        >
+                            <Edit3 className="w-5 h-5 text-blue-600" />
+                            Edit Profile
+                        </Button>
+                        <Button className="h-14 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm flex gap-3 shadow-xl shadow-blue-500/30">
+                            <UserPlus className="w-5 h-5" />
+                            Connect
+                        </Button>
+                    </div>
+                </div>
             </div>
 
-            <div className="flex min-h-screen flex-col gap-6 bg-transparent max-w-7xl mx-auto lg:flex-row">
-                {/* ══════════ LEFT SIDEBAR ══════════ */}
-                <aside className="flex w-full mt-5 px-5 lg:px-0 shrink-0 flex-col gap-4 self-start lg:sticky lg:top-20 lg:w-[300px]">
-                    {/* Profile Card */}
-                    <Card className="overflow-hidden py-0 rounded-2xl border-gray-100 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-gray-200 hover:bg-white/95 hover:shadow-md">
-                        {/* Top gradient banner */}
-                        <div className="h-20 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600" />
+            {/* 2. Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
+                {/* Left Column (Main Content) */}
+                <div className="lg:col-span-7 space-y-8">
+                    <AboutMe bio={profile.bio} />
 
-                        <CardContent className="px-5 pb-5 pt-0">
-                            {/* Avatar */}
-                            <div className="relative -mt-10 mb-3 flex justify-center">
-                                <div className="relative">
-                                    {avatarUrl ? (
-                                        <div className="relative h-20 w-20 overflow-hidden rounded-2xl border-4 border-white shadow-md">
-                                            <Image
-                                                src={avatarUrl}
-                                                alt="Profile"
-                                                fill
-                                                unoptimized
-                                                className="object-cover"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-indigo-400 to-violet-600 text-3xl font-bold text-white shadow-md">
-                                            {firstName ? firstName[0]?.toUpperCase() : "?"}
-                                        </div>
-                                    )}
-                                    <label
-                                        htmlFor="avatar-upload"
-                                        className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-white shadow-sm transition hover:bg-indigo-700"
-                                    >
-                                        <Camera size={12} />
-                                    </label>
-                                    <input
-                                        id="avatar-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={handleAvatarChange}
-                                    />
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {stats.map((stat, i) => (
+                            <StatCard key={i} {...stat} />
+                        ))}
+                    </div>
+
+                    {/* Experience & Projects */}
+                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <Briefcase size={20} />
                                 </div>
+                                <h3 className="text-xl font-black text-[#1a1a3b]">Experience & Projects</h3>
                             </div>
-
-                            {/* Name & Role */}
-                            <div className="mb-3 text-center">
-                                <h2 className="text-[1.05rem] font-bold text-gray-900">
-                                    {firstName || lastName
-                                        ? `${firstName} ${lastName}`.trim()
-                                        : "Your Name"}
-                                </h2>
-                                <p className="mt-0.5 text-[0.78rem] text-gray-500">
-                                    {profession || "Your Role"}
-                                </p>
-                            </div>
-
-                            {/* Interest Badge */}
-                            {interestBadge && (
-                                <div className="mb-3 flex justify-center">
-                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[0.72rem] font-semibold text-indigo-700">
-                                        <Tag size={10} />
-                                        {interestBadge}
-                                    </span>
+                            <Button variant="ghost" onClick={() => router.push("/profile/edit")} className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl">
+                                Add New
+                            </Button>
+                        </div>
+                        <div className="space-y-6">
+                            {profile.experience.length > 0 ? (
+                                profile.experience.map((exp: any, i: number) => (
+                                    <React.Fragment key={i}>
+                                        <ExperienceItem
+                                            title={exp.title}
+                                            role={exp.role}
+                                            date={exp.date}
+                                            description={exp.description}
+                                            icon={Briefcase}
+                                        />
+                                        {i < profile.experience.length - 1 && <div className="h-px bg-gray-100 w-full" />}
+                                    </React.Fragment>
+                                ))
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-10 text-center opacity-40">
+                                    <Briefcase className="w-12 h-12 mb-4" />
+                                    <p className="font-bold">No projects or experience added yet.</p>
                                 </div>
                             )}
-
-                            {/* Describe Yourself Button */}
-                            <button
-                                onClick={() => setBioOpen(true)}
-                                className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-[0.79rem] font-semibold text-gray-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
-                            >
-                                <FileText size={14} />
-                                {bio ? "Edit Bio" : "Describe Yourself"}
-                            </button>
-
-                            {bio && (
-                                <p className="mb-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-[0.73rem] leading-relaxed text-gray-600 line-clamp-3">
-                                    {bio}
-                                </p>
-                            )}
-
-                            {/* Quick Info Boxes */}
-                            <div className="space-y-2">
-                                {[
-                                    { icon: Briefcase, label: "Role", value: profession || "—" },
-                                    {
-                                        icon: GraduationCap,
-                                        label: "University",
-                                        value: universityName || "—",
-                                    },
-                                    { icon: BookOpen, label: "Course", value: courseName || "—" },
-                                    { icon: Users, label: "Batch", value: batchName || "—" },
-                                ].map(({ icon: Icon, label, value }) => (
-                                    <div
-                                        key={label}
-                                        className="flex items-center gap-2.5 rounded-xl border border-gray-100 bg-gray-50/80 px-3 py-2.5"
-                                    >
-                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
-                                            <Icon size={13} className="text-indigo-500" />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-[0.62rem] font-semibold uppercase tracking-wide text-gray-400">
-                                                {label}
-                                            </p>
-                                            <p className="truncate text-[0.77rem] font-medium text-gray-800">
-                                                {value}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
+                        </div>
                     </Card>
 
-                    {/* Skills Card */}
-                    <Card className="rounded-2xl border-gray-100 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-gray-200 hover:bg-white/95 hover:shadow-md">
-                        <CardHeader className="p-5 pb-3 flex flex-row items-center justify-between space-y-0">
-                            <CardTitle className="text-[0.82rem] font-bold text-gray-900">Skills</CardTitle>
-                            <button className="text-[0.72rem] font-semibold text-indigo-600 transition hover:opacity-70">
-                                + Add
-                            </button>
-                        </CardHeader>
-                        <CardContent className="p-5 pt-0">
-                            <div className="flex flex-wrap gap-1.5">
-                                {skills.map((skill) => (
-                                    <span
-                                        key={skill}
-                                        className="rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[0.68rem] font-semibold text-indigo-700"
-                                    >
+                    {/* Skills */}
+                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                <Users size={20} />
+                            </div>
+                            <h3 className="text-xl font-black text-[#1a1a3b]">Skills</h3>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            {profile.skills.length > 0 ? (
+                                profile.skills.map((skill: string, i: number) => (
+                                    <span key={i} className={`px-6 py-3 rounded-2xl font-black text-sm transition-all cursor-default shadow-sm
+                                        ${i % 3 === 0 ? 'bg-indigo-50 text-indigo-600' : i % 3 === 1 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}
+                                        hover:scale-105
+                                    `}>
                                         {skill}
                                     </span>
-                                ))}
-                            </div>
-                        </CardContent>
+                                ))
+                            ) : (
+                                <div className="w-full flex flex-col items-center justify-center py-10 text-center opacity-40">
+                                    <Code className="w-12 h-12 mb-4" />
+                                    <p className="font-bold">No skills added yet.</p>
+                                </div>
+                            )}
+                        </div>
                     </Card>
+                </div>
 
-                    {/* Social Links Card */}
-                    <Card className="rounded-2xl border-gray-100 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-gray-200 hover:bg-white/95 hover:shadow-md">
-                        <CardHeader className="p-5 pb-3">
-                            <CardTitle className="text-[0.82rem] font-bold text-gray-900">
-                                Social Links
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-5 pt-0">
-                            <div className="space-y-2">
-                                {[
-                                    { icon: Github, label: "GitHub", placeholder: "github.com/..." },
-                                    {
-                                        icon: Linkedin,
-                                        label: "LinkedIn",
-                                        placeholder: "linkedin.com/in/...",
-                                    },
-                                    { icon: Globe, label: "Portfolio", placeholder: "yoursite.com" },
-                                ].map(({ icon: Icon, label, placeholder }) => (
-                                    <div
-                                        key={label}
-                                        className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2"
-                                    >
-                                        <Icon size={13} className="shrink-0 text-gray-400" />
-                                        <input
-                                            type="url"
-                                            placeholder={placeholder}
-                                            className="w-full bg-transparent text-[0.73rem] text-gray-700 placeholder:text-gray-300 focus:outline-none"
-                                        />
+                {/* Right Column (Sidebar) */}
+                <div className="lg:col-span-3 space-y-8">
+                    {/* Classmates & Friends */}
+                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="font-black text-[#1a1a3b] text-base">Classmates & Friends</h3>
+                            <span className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-2 py-1 rounded-lg">142</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex -space-x-4">
+                                {classmates.map((c, i) => (
+                                    <div key={i} className="h-12 w-12 rounded-2xl border-4 border-white overflow-hidden shadow-sm">
+                                        <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
                                     </div>
                                 ))}
                             </div>
-                        </CardContent>
-                    </Card>
-                </aside>
-
-                {/* ══════════ RIGHT FORM AREA ══════════ */}
-                <div className="min-w-0 flex-1 px-5 lg:px-0 pb-6 lg:py-6">
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="flex flex-col gap-5"
-                        >
-                            {/* ─── Section 1: General ─── */}
-                            <SectionCard
-                                title="General Information"
-                                description="Your basic profile details and contact information."
-                                icon={Briefcase}
-                                accent="indigo"
-                            >
-                                <FieldGrid>
-                                    <StyledField
-                                        control={form.control}
-                                        name="firstName"
-                                        label="First Name"
-                                        placeholder="Riya"
-                                        disabled={true}
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="lastName"
-                                        label="Last Name"
-                                        placeholder="Singh"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="email"
-                                        label="Email Address"
-                                        placeholder="riya@university.edu"
-                                        type="email"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="phone"
-                                        label="Phone Number"
-                                        placeholder="+91 9876543210"
-                                        type="tel"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="interestBadge"
-                                        label="Interest Badge"
-                                        placeholder="e.g. Open Source Enthusiast"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="profession"
-                                        label="Profession"
-                                        placeholder="e.g. Fullstack Developer"
-                                    />
-                                </FieldGrid>
-                            </SectionCard>
-
-                            {/* ─── Section 2: Educational ─── */}
-                            <SectionCard
-                                title="Academic Details"
-                                description="Information about your university, course, and batch."
-                                icon={GraduationCap}
-                                accent="emerald"
-                            >
-                                <FieldGrid>
-                                    <StyledField
-                                        control={form.control}
-                                        name="universityName"
-                                        label="University Name"
-                                        placeholder="MIT, IIT Delhi…"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="courseName"
-                                        label="Course Name"
-                                        placeholder="B.Tech CSE"
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="currentSemester"
-                                        render={({ field }) => (
-                                            <FormItem className="space-y-1.5">
-                                                <FormLabel className="text-[0.78rem] font-semibold text-gray-700">
-                                                    Current Semester
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Select
-                                                        onValueChange={field.onChange}
-                                                        value={field.value}
-                                                    >
-                                                        <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white text-[0.85rem] shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
-                                                            <SelectValue placeholder="Select semester" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                                                                <SelectItem key={s} value={`${s}`}>
-                                                                    Semester {s}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </FormControl>
-                                                <FormMessage className="text-[0.72rem] text-red-500" />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="batchName"
-                                        label="Batch Name"
-                                        placeholder="2022–2026"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="completionYear"
-                                        label="Course Completion Year"
-                                        placeholder="2026"
-                                        type="number"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="admissionDate"
-                                        label="Admission Date"
-                                        placeholder=""
-                                        type="date"
-                                    />
-                                </FieldGrid>
-                            </SectionCard>
-
-                            {/* ─── Section 3: Other ─── */}
-                            <SectionCard
-                                title="Location Details"
-                                description="Your current address and location information."
-                                icon={MapPin}
-                                accent="rose"
-                            >
-                                <FieldGrid>
-                                    <StyledField
-                                        control={form.control}
-                                        name="country"
-                                        label="Country"
-                                        placeholder="India"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="state"
-                                        label="State"
-                                        placeholder="Maharashtra"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="city"
-                                        label="City"
-                                        placeholder="Mumbai"
-                                    />
-                                    <StyledField
-                                        control={form.control}
-                                        name="pinCode"
-                                        label="Pin Code"
-                                        placeholder="400001"
-                                    />
-                                </FieldGrid>
-                            </SectionCard>
-
-                            {/* ─── Save Button ─── */}
-                            <div className="flex items-center justify-end gap-3 pb-8">
-                                <button
-                                    type="button"
-                                    onClick={() => form.reset()}
-                                    className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-500 transition hover:bg-gray-50"
-                                >
-                                    Reset
-                                </button>
-                                <Button
-                                    type="submit"
-                                    className="flex items-center gap-2 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(99,102,241,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(99,102,241,0.4)]"
-                                >
-                                    {saved ? (
-                                        <>
-                                            <Check size={15} /> Saved!
-                                        </>
-                                    ) : (
-                                        <>
-                                            Save Profile <ChevronRight size={15} />
-                                        </>
-                                    )}
-                                </Button>
+                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 text-xs font-black flex items-center justify-center border-4 border-white shadow-sm">
+                                +138
                             </div>
-                        </form>
-                    </Form>
+                        </div>
+                    </Card>
+
+                    {/* My Groups */}
+                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                        <h3 className="font-black text-[#1a1a3b] text-base mb-8">My Groups</h3>
+                        <div className="space-y-6">
+                            {groups.map((group, i) => (
+                                <div key={i} className="flex items-center justify-between group cursor-pointer">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${group.color}`}>
+                                            <group.icon size={22} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-[#1a1a3b] text-[14px] leading-tight truncate max-w-[140px] group-hover:text-blue-600 transition-colors">{group.name}</h4>
+                                            <p className="text-[10px] font-black text-gray-400 opacity-60 uppercase">{group.members}</p>
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-indigo-600 transition-all group-hover:translate-x-1" />
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+
+                    {/* Recent Activity */}
+                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                        <h3 className="font-black text-[#1a1a3b] text-base mb-8">Recent Activity</h3>
+                        <div className="space-y-8 relative">
+                            {/* Line */}
+                            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-100/50" />
+
+                            {activities.map((act, i) => (
+                                <div key={i} className="relative pl-8 space-y-1">
+                                    <div className={`absolute left-0 top-1.5 h-4 w-4 rounded-full border-[3px] border-white shadow-sm ${act.color}`} />
+                                    <p className="text-xs font-bold text-gray-400">{act.date}</p>
+                                    <p className="text-[13px] font-medium text-gray-600 leading-relaxed">
+                                        {act.text.split("'").map((t, j) => j % 2 === 1 ? <span key={j} className="text-blue-600 font-bold">{t}</span> : t)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>
