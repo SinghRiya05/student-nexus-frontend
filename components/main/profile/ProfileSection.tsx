@@ -290,9 +290,9 @@ export default function ProfileSection() {
 
             <div className="flex min-h-screen flex-col gap-6 bg-transparent max-w-7xl mx-auto lg:flex-row">
                 {/* ══════════ LEFT SIDEBAR ══════════ */}
-                <aside className="flex w-full mt-5 px-5 lg:px-0 shrink-0 flex-col gap-4 self-start lg:sticky lg:top-20 lg:w-[300px]">
+                <aside className="flex w-full px-5 lg:px-0 shrink-0 flex-col gap-4 self-start lg:sticky lg:top-20 lg:w-[300px]">
                     {/* Profile Card */}
-                    <Card className="overflow-hidden py-0 rounded-2xl border-gray-100 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-gray-200 hover:bg-white/95 hover:shadow-md">
+                    <Card className="overflow-hidden rounded-2xl border-gray-100 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-gray-200 hover:bg-white/95 hover:shadow-md">
                         {/* Top gradient banner */}
                         <div className="h-20 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600" />
 
