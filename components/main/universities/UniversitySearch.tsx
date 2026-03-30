@@ -20,7 +20,7 @@ const UniversitySearch = () => {
         <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mb-12 p-8 glass-card border-none rounded-3xl space-y-8"
+            className="mb-12 p-8 glass-card border-none rounded-sm space-y-8"
         >
             <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1 group">
