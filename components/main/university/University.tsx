@@ -5,18 +5,19 @@ import { Button } from "@/components/ui/button"
 import { Search, MapPin, Users, Award, ArrowRight } from "lucide-react"
 import UniversitySidebar from "./UniversitySidebar"
 import UniversityCard from "./UniversityCard"
-
+import { motion } from "motion/react"
+import UniversitySearch from "./UniversitySearch"
 export default function University() {
     const quickPicksRow = ["Engineering", "medical", "Top 50 Rank", "Top 50 Rank", "Top 50 Rank", "Top 50 Rank"]
 
 
     const universities = [
-        { name: "Lucknow University", location: "Location", students: "22000+", type: "Government", image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80" },
-        { name: "Delhi University", location: "New Delhi", students: "25000+", type: "Central", image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80" },
-        { name: "BITS Pilani", location: "Pilani", students: "12000+", type: "Private", image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80" },
-        { name: "Anna University", location: "Chennai", students: "18000+", type: "State", image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80" },
-        { name: "Jadavpur University", location: "Kolkata", students: "10000+", type: "State", image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80" },
-        { name: "Amity University", location: "Noida", students: "35000+", type: "Private", image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80" },
+        { name: "Lucknow University", location: "University Road, Lucknow", students: "22000+", type: "Government", color: "bg-blue-500/10" },
+        { name: "Amity University", location: "Gomti Nagar, Lucknow", students: "12000+", type: "Private", color: "bg-purple-500/10" },
+        { name: "Integral University", location: "Kursi Road, Lucknow", students: "10000+", type: "Private", color: "bg-orange-500/10" },
+        { name: "BHU Varanasi", location: "Varanasi, UP", students: "35000+", type: "Government", color: "bg-red-500/10" },
+        { name: "IIT Kanpur", location: "Kalyanpur, Kanpur", students: "8000+", type: "Government", color: "bg-emerald-500/10" },
+        { name: "SRM University", location: "Chennai, Tamil Nadu", students: "25000+", type: "Private", color: "bg-yellow-500/10" },
     ]
 
     return (
@@ -35,36 +36,7 @@ export default function University() {
                     </div>
 
                     {/* Search & Filters */}
-                    <div className='flex flex-col gap-8 bg-[#e8f1fb] p-10 rounded-2xl'>
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Search by name, city, or major..."
-                                    className="w-full pl-14 pr-6 h-16 bg-white rounded-2xl border-2 border-primary/50 shadow-sm focus:outline-none focus:border-primary/50 transition-all font-medium"
-                                />
-                            </div>
-                            <Button variant="outline" className="h-12 bg-primary/80 text-primary-foreground rounded-2xl">
-                                Filters
-                            </Button>
-                        </div>
-
-                        {/* Quick Picks */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <span className="text-[12px] font-black text-primary tracking-tighter uppercase whitespace-nowrap">QUICK PICKS:</span>
-                                <div className="grid grid-cols-4  gap-3">
-                                    {quickPicksRow.map((pick, i) => (
-                                        <button key={i} className="px-6 py-2 rounded-full border border-primary text-gray-800 font-bold text-xs hover:bg-gray-50 transition-all lowercase">
-                                            {pick}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
+                    <UniversitySearch />
                 </section>
 
                 {/* 2. Featured Institution Card (Full Overlay) */}
@@ -118,11 +90,28 @@ export default function University() {
                 <section className="space-y-8">
                     <h2 className="text-[34px] font-black text-[#1a1a3b]">Explore Universities</h2>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {universities.map((uni, idx) => (
-                            <UniversityCard key={idx} {...uni} />
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 * idx }}
+                            >
+                                <UniversityCard university={uni} />
+                            </motion.div>
                         ))}
                     </div>
+
+                    <div className="pt-8 flex justify-center">
+                        <button className="group px-8 py-4 rounded-2xl bg-white border-2 border-slate-100 text-slate-600 font-bold hover:bg-slate-50 hover:border-primary/20 hover:text-primary transition-all flex items-center gap-3">
+                            Load More Institutions
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                                <ArrowRight className="w-3 h-3" />
+                            </div>
+                        </button>
+                    </div>
+
                 </section>
             </div>
 
