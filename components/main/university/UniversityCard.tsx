@@ -13,7 +13,7 @@ interface UniversityCardProps {
 
 export default function UniversityCard({ name, location, students, type, image }: UniversityCardProps) {
     return (
-        <div className="relative h-[420px] rounded-2xl overflow-hidden group border-2 border-orange-500/10 shadow-lg cursor-pointer">
+        <div className="relative h-[400px] rounded-2xl overflow-hidden group border-2 border-orange-500/10 shadow-lg cursor-pointer">
             <img
                 src={image}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

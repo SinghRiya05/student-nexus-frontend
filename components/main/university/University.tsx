@@ -68,7 +68,7 @@ export default function University() {
                 </section>
 
                 {/* 2. Featured Institution Card (Full Overlay) */}
-                <section className="relative h-[450px] rounded-2xl overflow-hidden border-2 border-purple-500/10 shadow-2xl group cursor-pointer">
+                <section className="relative h-[400px] rounded-2xl overflow-hidden border-2 border-purple-500/10 shadow-2xl group cursor-pointer">
                     <img
                         src="https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80"
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
