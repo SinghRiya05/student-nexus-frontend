@@ -7,13 +7,13 @@ const DEPARTMENTS = [
   "All Departments",
   "Computer Science",
   "Engineering",
-  "Business",
+
   "Arts & Media",
 ];
 
 export default function ProfessorSearch() {
   return (
-    <section className=" space-y-6 px-4 bg-[#ebeffc] py-4 rounded-2xl">
+    <section className=" space-y-6 px-4 glass-card py-5 rounded-2xl">
       <div className="relative group max-w-4xl">
         <div className="absolute inset-y-0  left-5 flex items-center pointer-events-none text-outline">
           <Search className="h-5 w-5" />

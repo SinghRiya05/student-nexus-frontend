@@ -12,12 +12,12 @@ export default function University() {
 
 
     const universities = [
-        { name: "Lucknow University", location: "University Road, Lucknow", students: "22000+", type: "Government", color: "bg-blue-500/10" },
-        { name: "Amity University", location: "Gomti Nagar, Lucknow", students: "12000+", type: "Private", color: "bg-purple-500/10" },
-        { name: "Integral University", location: "Kursi Road, Lucknow", students: "10000+", type: "Private", color: "bg-orange-500/10" },
-        { name: "BHU Varanasi", location: "Varanasi, UP", students: "35000+", type: "Government", color: "bg-red-500/10" },
-        { name: "IIT Kanpur", location: "Kalyanpur, Kanpur", students: "8000+", type: "Government", color: "bg-emerald-500/10" },
-        { name: "SRM University", location: "Chennai, Tamil Nadu", students: "25000+", type: "Private", color: "bg-yellow-500/10" },
+        { id: 1, name: "Lucknow University", location: "University Road, Lucknow", students: "22000+", type: "Government", color: "bg-blue-500/10" },
+        { id: 2, name: "Amity University", location: "Gomti Nagar, Lucknow", students: "12000+", type: "Private", color: "bg-purple-500/10" },
+        { id: 3, name: "Integral University", location: "Kursi Road, Lucknow", students: "10000+", type: "Private", color: "bg-orange-500/10" },
+        { id: 4, name: "BHU Varanasi", location: "Varanasi, UP", students: "35000+", type: "Government", color: "bg-red-500/10" },
+        { id: 5, name: "IIT Kanpur", location: "Kalyanpur, Kanpur", students: "8000+", type: "Government", color: "bg-emerald-500/10" },
+        { id: 6, name: "SRM University", location: "Chennai, Tamil Nadu", students: "25000+", type: "Private", color: "bg-yellow-500/10" },
     ]
 
     return (
@@ -116,7 +116,7 @@ export default function University() {
             </div>
 
             {/* Sidebar (Right 30% on lg, Bottom on others) */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 sticky top-12 h-fit">
                 <UniversitySidebar />
             </div>
         </div>

@@ -23,7 +23,7 @@ const Home = () => {
         initial={{ x: 20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="hidden xl:block w-80 shrink-0"
+        className="hidden xl:block w-64 shrink-0"
       >
         <div className="sticky top-24">
           <RightSection />

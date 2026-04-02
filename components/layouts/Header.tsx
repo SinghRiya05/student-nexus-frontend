@@ -24,9 +24,7 @@ import {
 
 const NAV_LINKS = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/network", label: "Network", icon: Users },
-  { href: "/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/chat", label: "Messages", icon: MessageSquare },
   { href: "/events", label: "Events", icon: Calendar },
 ];
 
@@ -128,12 +126,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
             {/* Search (mobile) */}
             <button className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 lg:hidden">
               <Search size={17} />
-            </button>
-
-            {/* Messages */}
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100">
-              <MessageSquare size={17} />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-white" />
             </button>
 
             {/* Notifications */}

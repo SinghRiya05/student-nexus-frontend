@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react'
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +21,7 @@ interface UniversityCardProps {
         image?: string
         logo?: string
         color?: string
+        id: number
     }
 }
 
@@ -136,9 +138,12 @@ const UniversityCard = ({ variant = "grid", university }: UniversityCardProps) =
                             </div>
                         </div>
 
-                        <Button variant="outline" className="w-full h-11 rounded-xl border-2 border-slate-100 text-slate-600 font-bold hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 group/btn">
+                        <Link
+                            href={`/university/${university.id}`}
+                            className="flex items-center justify-center w-full h-11 rounded-xl border-2 border-slate-100 text-slate-600 font-bold hover:bg-primary hover:text-white hover:border-primary transition-all duration-300"
+                        >
                             View Details
-                        </Button>
+                        </Link>
                     </div>
                 </CardContent>
             </Card>

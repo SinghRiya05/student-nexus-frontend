@@ -23,7 +23,7 @@ export default function LeftSection() {
     const pathname = usePathname()
 
     const navLinks = [
-        { id: 1, label: "My Feed", icon: Rss, href: "/" },
+        { id: 1, label: "My Feed", icon: Rss, href: "/feeds" },
         { id: 2, label: "Universities", icon: School, href: "/university" },
         { id: 3, label: "Professors", icon: UserRound, href: "/professors" },
         { id: 4, label: "Saved Events", icon: Bookmark, href: "/saved" },
@@ -35,7 +35,7 @@ export default function LeftSection() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="overflow-hidden rounded-3xl glass-card border-none shadow-2xl shadow-primary/5 group"
+                className="overflow-hidden rounded-3xl glass-card border-none  group"
             >
                 {/* Decorative Header */}
                 <div className="h-16 bg-linear-to-br from-primary via-primary/80 to-[#7387ff] relative overflow-hidden">
@@ -55,7 +55,7 @@ export default function LeftSection() {
                         <div className="relative mb-2">
                             <motion.div
                                 whileHover={{ scale: 1.05 }}
-                                className="h-16 w-16 rounded-2xl p-1 bg-white shadow-xl overflow-hidden"
+                                className="h-16 w-16 rounded-2xl p-1 bg-white overflow-hidden"
                             >
                                 <img
                                     className="w-full h-full object-cover rounded-xl"
@@ -70,11 +70,11 @@ export default function LeftSection() {
                         <p className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider mb-3">BCA Student</p>
 
                         <div className="w-full space-y-1.5 mb-4">
-                            <div className="flex items-center gap-2 text-[11px] text-on-surface-variant font-medium">
+                            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
                                 <School className="w-3 h-3 text-primary" />
                                 BBD University
                             </div>
-                            <div className="flex items-center gap-2 text-[11px] text-on-surface-variant font-medium">
+                            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
                                 <MapPin className="w-3 h-3 text-primary" />
                                 Lucknow, India
                             </div>
@@ -110,7 +110,7 @@ export default function LeftSection() {
                             onMouseEnter={() => setHoveredIdx(idx)}
                             onMouseLeave={() => setHoveredIdx(null)}
                             className={cn(
-                                "group relative flex items-center gap-3 px-4 py-2 rounded-2xl transition-all duration-300",
+                                "group relative flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300",
                                 isActive
                                     ? "text-primary font-bold bg-white shadow-lg shadow-primary/10 border border-primary/5"
                                     : "text-on-surface-variant hover:text-primary font-medium"
@@ -134,7 +134,7 @@ export default function LeftSection() {
                                 <link.icon className="w-4 h-4" />
                             </div>
 
-                            <span className="text-[12px] tracking-tight">{link.label}</span>
+                            <span className="text-sm tracking-tight">{link.label}</span>
 
                             {isActive && (
                                 <motion.div
