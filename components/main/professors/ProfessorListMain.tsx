@@ -176,7 +176,7 @@ export default function ProfessorListMain() {
       </div>
 
       {/* Right Sidebar (Sticky Trending Section) */}
-      <aside className="hidden  xl:block w-70 shrink-0 sticky top-20">
+      <aside className="hidden  xl:block w-70 shrink-0 sticky top-20 h-fit">
         <TrendingSidebar />
       </aside>
     </div>

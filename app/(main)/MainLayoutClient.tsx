@@ -35,7 +35,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-[#fcf8ff]">
       <Header />
-      <div className="w-full max-w-360 mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+      <div className="w-full max-w-[85rem] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         {/* Persistent Left Sidebar */}
         <aside className="hidden lg:block w-64 shrink-0">
           <div className="sticky top-24">
