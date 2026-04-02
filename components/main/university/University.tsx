@@ -7,9 +7,10 @@ import UniversitySidebar from "./UniversitySidebar"
 import UniversityCard from "./UniversityCard"
 import { motion } from "motion/react"
 import UniversitySearch from "./UniversitySearch"
-export default function University() {
-    const quickPicksRow = ["Engineering", "medical", "Top 50 Rank", "Top 50 Rank", "Top 50 Rank", "Top 50 Rank"]
 
+export default function University() {
+
+    const quickPicksRow = ["Engineering", "medical", "Top 50 Rank", "Top 50 Rank", "Top 50 Rank", "Top 50 Rank"]
 
     const universities = [
         { name: "Lucknow University", location: "University Road, Lucknow", students: "22000+", type: "Government", color: "bg-blue-500/10" },
