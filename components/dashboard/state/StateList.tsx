@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,10 +19,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { 
-  MoreHorizontal, 
-  Plus, 
-  MapPin, 
+import {
+  MoreHorizontal,
+  Plus,
+  MapPin,
   Building,
   Users,
   Search,
@@ -33,62 +34,23 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { getAllStates } from "@/features/location/StateThunk";
 
-const states = [
-  {
-    id: "1",
-    name: "California",
-    country: "United States",
-    code: "CA",
-    universities: "12",
-    cities: "482",
-    population: "39.2M",
-  },
-  {
-    id: "2",
-    name: "Maharashtra",
-    country: "India",
-    code: "MH",
-    universities: "18",
-    cities: "154",
-    population: "112M",
-  },
-  {
-    id: "3",
-    name: "Ontario",
-    country: "Canada",
-    code: "ON",
-    universities: "10",
-    cities: "52",
-    population: "14.5M",
-  },
-  {
-    id: "4",
-    name: "Oxfordshire",
-    country: "United Kingdom",
-    code: "OXF",
-    universities: "3",
-    cities: "12",
-    population: "0.7M",
-  },
-  {
-    id: "5",
-    name: "New South Wales",
-    country: "Australia",
-    code: "NSW",
-    universities: "8",
-    cities: "42",
-    population: "8.1M",
-  },
-];
+
 
 export default function StateList() {
+  const dispatch = useAppDispatch();
+  const { states, stateLoading, stateError } = useAppSelector((state) => state.state);
+
+  useEffect(() => {
+    dispatch(getAllStates());
+  }, [dispatch]);
+
   const [searchTerm, setSearchTerm] = React.useState("");
 
   const filteredStates = states.filter((state) =>
     state.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    state.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    state.code.toLowerCase().includes(searchTerm.toLowerCase())
+    state.countryId.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -146,16 +108,10 @@ export default function StateList() {
                     State/Province
                   </TableHead>
                   <TableHead className="font-bold text-white">Country</TableHead>
-                  <TableHead className="font-bold text-white">Code</TableHead>
-                  <TableHead className="font-bold text-white text-center">
-                    Universities
-                  </TableHead>
-                  <TableHead className="font-bold text-white text-center">
-                    Cities
-                  </TableHead>
-                  <TableHead className="font-bold text-white text-right pr-12">
-                    Population
-                  </TableHead>
+                  <TableHead className="font-bold text-white">Status</TableHead>
+
+
+
                   <TableHead className="text-right font-bold text-white pr-8">
                     Actions
                   </TableHead>
@@ -164,7 +120,7 @@ export default function StateList() {
               <TableBody>
                 {filteredStates.map((state) => (
                   <TableRow
-                    key={state.id}
+                    key={state._id}
                     className="group hover:bg-slate-50/50 transition-colors border-slate-100"
                   >
                     <TableCell className="font-medium py-5">
@@ -180,29 +136,17 @@ export default function StateList() {
                     <TableCell>
                       <div className="flex items-center gap-2 text-slate-600 font-medium">
                         <Globe size={13} className="text-slate-400" />
-                        {state.country}
+                        {state.countryId.name}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-700 border border-slate-200">
-                        {state.code}
-                      </span>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1.5 text-indigo-600 font-bold">
-                        <Building size={12} />
-                        {state.universities}
+
+                        {state.isActive ? "Active" : "Inactive"}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center text-slate-600 font-medium">
-                      {state.cities}
-                    </TableCell>
-                    <TableCell className="text-right pr-12">
-                      <div className="flex items-center justify-end gap-1.5 text-slate-500">
-                        <Users size={12} />
-                        {state.population}
-                      </div>
-                    </TableCell>
+
+
                     <TableCell className="text-right pr-8">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -221,7 +165,7 @@ export default function StateList() {
                           <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
                             Actions
                           </DropdownMenuLabel>
-                          <Link href={`/dashboard/state/edit/${state.id}`}>
+                          <Link href={`/dashboard/state/edit/${state._id}`}>
                             <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
                               Edit State
                             </DropdownMenuItem>
