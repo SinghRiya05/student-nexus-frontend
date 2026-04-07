@@ -6,6 +6,9 @@ import roleReducer from "@/features/roles/roleSlice";
 import permissionReducer from "@/features/permissions/permissionSlice";
 import stateReducer from "@/features/location/stateSlice";
 import cityReducer from "@/features/location/citySlice";
+import universityReducer from "@/features/university/universitySlice";
+import courseReducer from "@/features/course/courseSlice";
+import semesterReducer from "@/features/semester/semesterSlice";
 
 const rootReducer = combineReducers({
     country: countryReducer,
@@ -13,6 +16,9 @@ const rootReducer = combineReducers({
     permission: permissionReducer,
     state: stateReducer,
     city: cityReducer,
+    university: universityReducer,
+    course: courseReducer,
+    semester: semesterReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

@@ -1,7 +1,13 @@
+export interface IState {
+    _id: string;
+    name: string;
+
+}
+
 export interface ICity {
     _id: string;
     name: string;
-    stateId: string;
+    stateId: IState;
     isActive: boolean;
     isDeleted: boolean;
     createdAt: string;

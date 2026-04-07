@@ -26,12 +26,12 @@ export interface IStateApiResponse {
 
 export interface IStateCreate {
     name: string;
-    country: string;
+    countryId: string;
 }
 
 export interface IStateUpdate {
     name?: string;
-    country?: string;
+    countryId?: string;
     isActive?: boolean;
     isDeleted?: boolean;
 }

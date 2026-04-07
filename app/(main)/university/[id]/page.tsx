@@ -1,5 +1,5 @@
 import React from 'react'
-import { UniversityProfile } from '@/components/university'
+import { UniversityProfile } from '@/components/main/university/UniversityProfile'
 
 const universityData = {
     name: "University of Lucknow",

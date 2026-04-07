@@ -34,7 +34,9 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { getAllStates } from "@/features/location/StateThunk";
+import { deleteState, getAllStates } from "@/features/location/StateThunk";
+import toast from "react-hot-toast";
+import LoadingSpinner from "@/components/ui/loading";
 
 
 
@@ -52,6 +54,11 @@ export default function StateList() {
     state.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     state.countryId.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleDelete = (id: string) => {
+    dispatch(deleteState(id));
+    toast.success("State deleted successfully");
+  };
 
   return (
     <div className="space-y-8">
@@ -100,93 +107,115 @@ export default function StateList() {
       {/* States Table Section */}
       <Card className="border-none shadow-sm bg-white overflow-hidden py-0">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-primary ">
-                <TableRow className="hover:bg-transparent border-slate-100 ">
-                  <TableHead className="w-[300px] font-bold text-white py-4">
-                    State/Province
-                  </TableHead>
-                  <TableHead className="font-bold text-white">Country</TableHead>
-                  <TableHead className="font-bold text-white">Status</TableHead>
+          {stateLoading ? (
+            <LoadingSpinner label="Loading States..." />
+          ) : filteredStates.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-20 space-y-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300">
+                <MapPin size={32} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-slate-900">No States Found</h3>
+                <p className="text-sm text-slate-500 max-w-xs mx-auto">
+                  {searchTerm 
+                    ? `No states matching "${searchTerm}" were found.` 
+                    : "No regional divisions have been added yet."}
+                </p>
+              </div>
+              <Link href="/dashboard/state/create">
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New State
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-primary ">
+                    <TableRow className="hover:bg-transparent border-slate-100 ">
+                      <TableHead className="w-[300px] font-bold text-white py-4">
+                        State/Province
+                      </TableHead>
+                      <TableHead className="font-bold text-white">Country</TableHead>
+                      <TableHead className="font-bold text-white">Status</TableHead>
 
+                      <TableHead className="text-right font-bold text-white pr-8">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStates.map((state) => (
+                      <TableRow
+                        key={state._id}
+                        className="group hover:bg-slate-50/50 transition-colors border-slate-100"
+                      >
+                        <TableCell className="font-medium py-5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                              <MapPin size={18} />
+                            </div>
+                            <span className="text-slate-900 font-semibold">
+                              {state.name}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-slate-600 font-medium">
+                            <Globe size={13} className="text-slate-400" />
+                            {state.countryId.name}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1.5 text-indigo-600 font-bold">
+                            {state.isActive ? "Active" : "Inactive"}
+                          </div>
+                        </TableCell>
 
-
-                  <TableHead className="text-right font-bold text-white pr-8">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStates.map((state) => (
-                  <TableRow
-                    key={state._id}
-                    className="group hover:bg-slate-50/50 transition-colors border-slate-100"
-                  >
-                    <TableCell className="font-medium py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
-                          <MapPin size={18} />
-                        </div>
-                        <span className="text-slate-900 font-semibold">
-                          {state.name}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-slate-600 font-medium">
-                        <Globe size={13} className="text-slate-400" />
-                        {state.countryId.name}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1.5 text-indigo-600 font-bold">
-
-                        {state.isActive ? "Active" : "Inactive"}
-                      </div>
-                    </TableCell>
-
-
-                    <TableCell className="text-right pr-8">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className="h-8 w-8 p-0 hover:bg-slate-200/50 rounded-full"
-                          >
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4 text-slate-600" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-[160px] rounded-xl shadow-xl border-slate-100 p-1"
-                        >
-                          <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
-                            Actions
-                          </DropdownMenuLabel>
-                          <Link href={`/dashboard/state/edit/${state._id}`}>
-                            <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
-                              Edit State
-                            </DropdownMenuItem>
-                          </Link>
-                          <DropdownMenuSeparator className="bg-slate-100" />
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
-                            Remove Entity
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="p-5">
-            <p className="text-sm text-slate-400 ">
-              Total: {filteredStates.length} states listed
-            </p>
-          </div>
+                        <TableCell className="text-right pr-8">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 hover:bg-slate-200/50 rounded-full"
+                              >
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4 text-slate-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-[160px] rounded-xl shadow-xl border-slate-100 p-1"
+                            >
+                              <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
+                                Actions
+                              </DropdownMenuLabel>
+                              <Link href={`/dashboard/state/edit/${state._id}`}>
+                                <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                                  Edit State
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuSeparator className="bg-slate-100" />
+                              <DropdownMenuItem onClick={() => handleDelete(state._id)} className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                                Delete State
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="p-5">
+                <p className="text-sm text-slate-400 ">
+                  Total: {filteredStates.length} states listed
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

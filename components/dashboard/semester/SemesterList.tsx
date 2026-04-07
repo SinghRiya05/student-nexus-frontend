@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,75 +26,50 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { 
-  MoreHorizontal, 
-  Plus, 
-  CalendarCheck, 
-  Clock, 
+import {
+  MoreHorizontal,
+  Plus,
+  CalendarCheck,
+  Clock,
   Layers,
   CheckCircle2,
   AlertCircle,
   Search,
   ChevronDown
 } from "lucide-react";
+import { deleteSemester, getAllSemesters } from "@/features/semester/semesterThunk";
+import { getAllCourses } from "@/features/course/courseThunk";
+import toast from "react-hot-toast";
+import LoadingSpinner from "@/components/ui/loading";
 
-const semesters = [
-  {
-    id: "1",
-    semesterNo: 1,
-    startYear: 2023,
-    endYear: 2024,
-    course: "B.Tech Computer Science",
-    domain: "Engineering",
-  },
-  {
-    id: "2",
-    semesterNo: 2,
-    startYear: 2023,
-    endYear: 2024,
-    course: "B.Tech Computer Science",
-    domain: "Engineering",
-  },
-  {
-    id: "3",
-    semesterNo: 1,
-    startYear: 2023,
-    endYear: 2024,
-    course: "MBA Marketing",
-    domain: "Management",
-  },
-  {
-    id: "4",
-    semesterNo: 1,
-    startYear: 2024,
-    endYear: 2025,
-    course: "M.Sc Physics",
-    domain: "Science",
-  },
-  {
-    id: "5",
-    semesterNo: 3,
-    startYear: 2024,
-    endYear: 2025,
-    course: "B.Tech Computer Science",
-    domain: "Engineering",
-  },
-];
 
-const coursesList = Array.from(new Set(semesters.map((s) => s.course)));
 
 export default function SemesterList() {
+  const dispatch = useAppDispatch();
+  const { semesters, isLoading, error } = useAppSelector((state) => state.semester);
+  const { courses } = useAppSelector((state) => state.course);
+  useEffect(() => {
+    dispatch(getAllSemesters());
+    dispatch(getAllCourses())
+  }, [dispatch]);
+
+
+  const handleDelete = (id: string) => {
+    if (confirm("Are you sure you want to delete this semester?")) {
+      dispatch(deleteSemester(id));
+      toast.success("Semester deleted successfully");
+    }
+  }
+
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedCourse, setSelectedCourse] = React.useState("all");
 
   const filteredSemesters = semesters.filter((sem) => {
     const matchesSearch =
-      sem.course.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sem.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sem.semesterNo.toString().includes(searchTerm);
-    
-    const matchesCourse = selectedCourse === "all" || sem.course === selectedCourse;
-    
+      sem.courseId?.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sem.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCourse = selectedCourse === "all" || sem.courseId.courseName === selectedCourse;
+
     return matchesSearch && matchesCourse;
   });
 
@@ -137,9 +113,9 @@ export default function SemesterList() {
                   <DropdownMenuRadioItem value="all" className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600">
                     All Courses
                   </DropdownMenuRadioItem>
-                  {coursesList.map((course) => (
-                    <DropdownMenuRadioItem key={course} value={course} className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600">
-                      {course}
+                  {courses.map((course) => (
+                    <DropdownMenuRadioItem key={course._id} value={course.courseName} className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600">
+                      {course.courseName}
                     </DropdownMenuRadioItem>
                   ))}
                 </DropdownMenuRadioGroup>
@@ -172,99 +148,127 @@ export default function SemesterList() {
       {/* Semester Table Section */}
       <Card className="border-none shadow-sm bg-white overflow-hidden py-0">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-primary ">
-                <TableRow className="hover:bg-transparent border-slate-100 ">
-                  <TableHead className="w-[100px] font-bold text-white py-4 text-center">
-                    Sem No.
-                  </TableHead>
-                  <TableHead className="font-bold text-white">Course</TableHead>
-                  <TableHead className="font-bold text-white">Domain</TableHead>
-                  <TableHead className="font-bold text-white text-center">
-                    Academic Year
-                  </TableHead>
-                  <TableHead className="text-right font-bold text-white pr-8">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSemesters.map((sem) => (
-                  <TableRow
-                    key={sem.id}
-                    className="group hover:bg-slate-50/50 transition-colors border-slate-100"
-                  >
-                    <TableCell className="text-center py-5">
-                      <div className="flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold group-hover:bg-indigo-100 transition-colors scale-90 sm:scale-100">
-                          {sem.semesterNo}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <div className="flex flex-col">
-                        <span className="text-slate-900 font-semibold">
-                          {sem.course}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
-                        {sem.domain}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-2 text-slate-600 font-medium">
-                        <Clock size={14} className="text-slate-400" />
-                        <span>
-                          {sem.startYear} — {sem.endYear}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right pr-8">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className="h-8 w-8 p-0 hover:bg-slate-200/50 rounded-full"
-                          >
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4 text-slate-600" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-[160px] rounded-xl shadow-xl border-slate-100 p-1"
-                        >
-                          <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
-                            Actions
-                          </DropdownMenuLabel>
-                          <Link href={`/dashboard/semester/edit/${sem.id}`}>
-                            <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
-                              Edit Period
-                            </DropdownMenuItem>
-                          </Link>
-                          <DropdownMenuSeparator className="bg-slate-100" />
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
-                            Delete Semester
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="p-5 flex items-center justify-between border-t border-slate-50">
-            <p className="text-sm text-slate-400 ">
-              Showing {filteredSemesters.length} semesters
-              {selectedCourse !== "all" && (
-                <span> for <span className="text-indigo-600 font-medium">{selectedCourse}</span></span>
-              )}
-            </p>
-          </div>
+          {isLoading ? (
+            <LoadingSpinner label="Loading Semesters..." />
+          ) : filteredSemesters.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-20 space-y-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300">
+                <Layers size={32} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-slate-900">No Semesters Found</h3>
+                <p className="text-sm text-slate-500 max-w-xs mx-auto">
+                  {selectedCourse !== "all" 
+                    ? `No semesters found for ${selectedCourse}.` 
+                    : "Wait for the admin to add academic terms."}
+                </p>
+              </div>
+              <Link href="/dashboard/semester/create">
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New Semester
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-primary ">
+                    <TableRow className="hover:bg-transparent border-slate-100 ">
+                      <TableHead className="text-center font-bold text-white py-4 ">
+                        Sem No.
+                      </TableHead>
+                      <TableHead className="text-center font-bold text-white py-4 ">
+                        Sem Name
+                      </TableHead>
+                      <TableHead className="font-bold text-center text-white">Course</TableHead>
+                      <TableHead className="font-bold text-center text-white">
+                        Created At
+                      </TableHead>
+                      <TableHead className="text-center font-bold text-white pr-8">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSemesters.map((sem) => (
+                      <TableRow
+                        key={sem._id}
+                        className="group hover:bg-slate-50/50 transition-colors border-slate-100"
+                      >
+                        <TableCell className="text-center py-5">
+                          <div className="flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold group-hover:bg-indigo-100 transition-colors scale-90 sm:scale-100">
+                              {sem.number}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center py-5">
+                          <div className="flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg  flex items-center justify-center text-indigo-600 font-bold  transition-colors scale-90 sm:scale-100">
+                              {sem.name}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium text-center">
+                          <div className="flex flex-col">
+                            <span className="text-slate-900 font-semibold">
+                              {sem.courseId.courseName}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
+                            {new Date(sem.createdAt).toLocaleDateString()}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="text-center pr-8">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 hover:bg-slate-200/50 rounded-full"
+                              >
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4 text-slate-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-[160px] rounded-xl shadow-xl border-slate-100 p-1"
+                            >
+                              <DropdownMenuLabel className="text-xs text-slate-400 px-3 py-2 uppercase font-bold tracking-tight">
+                                Actions
+                              </DropdownMenuLabel>
+                              <Link href={`/dashboard/semester/edit/${sem._id}`}>
+                                <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                                  Edit Period
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuSeparator className="bg-slate-100" />
+                              <DropdownMenuItem onClick={() => handleDelete(sem._id)} className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                                Delete Semester
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="p-5 flex items-center justify-between border-t border-slate-50">
+                <p className="text-sm text-slate-400 ">
+                  Showing {filteredSemesters.length} semesters
+                  {selectedCourse !== "all" && (
+                    <span> for <span className="text-indigo-600 font-medium">{selectedCourse}</span></span>
+                  )}
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

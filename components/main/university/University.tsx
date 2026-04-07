@@ -3,7 +3,7 @@
 import React from 'react'
 import { Button } from "@/components/ui/button"
 import { Search, MapPin, Users, Award, ArrowRight } from "lucide-react"
-import UniversitySidebar from "./UniversitySidebar"
+import UniversitySidebar from "./UniversityRightSidebar"
 import UniversityCard from "./UniversityCard"
 import { motion } from "motion/react"
 import UniversitySearch from "./UniversitySearch"

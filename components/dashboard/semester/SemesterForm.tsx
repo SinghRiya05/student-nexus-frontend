@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm, Controller } from "react-hook-form";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,150 +14,241 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  ArrowLeft, 
-  Save, 
-  Layers, 
-  BookOpen, 
-  Calendar,
-  Clock,
-  Info 
+import {
+  ArrowLeft,
+  Save,
+  Layers,
+  BookOpen,
+  BadgeCheck,
+  Hash,
+  Info,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { createSemester, updateSemester } from "@/features/semester/semesterThunk";
+import { getAllCourses } from "@/features/course/courseThunk";
+import toast from "react-hot-toast";
+
+interface FormValues {
+  number: number;
+  courseId: string;
+  name: string;
+  status: "ACTIVE" | "INACTIVE";
+}
 
 interface SemesterFormProps {
   initialData?: any;
   isEditing?: boolean;
 }
 
-const mockCourses = [
-  { id: "1", name: "B.Tech Computer Science" },
-  { id: "2", name: "MBA Marketing" },
-  { id: "3", name: "M.Sc Physics" },
-];
-
 export default function SemesterForm({ initialData, isEditing }: SemesterFormProps) {
   const router = useRouter();
-  const [formData, setFormData] = React.useState({
-    semesterNo: initialData?.semesterNo || "",
-    courseId: initialData?.courseId || "",
-    startYear: initialData?.startYear || new Date().getFullYear(),
-    endYear: initialData?.endYear || new Date().getFullYear() + 1,
+  const dispatch = useAppDispatch();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const { courses } = useAppSelector((s) => s.course);
+
+  // Fetch courses for the dropdown
+  useEffect(() => {
+    dispatch(getAllCourses());
+  }, [dispatch]);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
+    defaultValues: {
+      number: initialData?.number || 1,
+      courseId:
+        typeof initialData?.courseId === "object"
+          ? initialData.courseId._id
+          : initialData?.courseId || "",
+      name: initialData?.name || "",
+      status: (initialData?.status as "ACTIVE" | "INACTIVE") || "ACTIVE",
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // API CALL PLACE: Create/Update semester
-    console.log("Submitting semester:", formData);
-    router.push("/dashboard/semester");
+  // Re-sync when initialData changes (edit page)
+  useEffect(() => {
+    if (!initialData) return;
+    reset({
+      number: initialData.number || 1,
+      courseId:
+        typeof initialData.courseId === "object"
+          ? initialData.courseId._id
+          : initialData.courseId || "",
+      name: initialData.name || "",
+      status: (initialData.status as "ACTIVE" | "INACTIVE") || "ACTIVE",
+    });
+  }, [initialData, reset]);
+
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      const payload = { ...data, number: Number(data.number) };
+
+      if (isEditing && initialData?._id) {
+        await dispatch(updateSemester({ id: initialData._id, semesterData: payload })).unwrap();
+        toast.success("Semester updated successfully!");
+      } else {
+        await dispatch(createSemester(payload)).unwrap();
+        toast.success("Semester created successfully!");
+      }
+      router.push("/dashboard/semester");
+    } catch (err: any) {
+      toast.error(err || "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="group -ml-3 text-slate-500 hover:text-indigo-600 transition-colors"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-            Back to List
-          </Button>
-          <h2 className="text-2xl font-bold text-slate-900">
-            {isEditing ? "Edit Semester" : "Add New Semester"}
-          </h2>
-          <p className="text-sm text-slate-500">
-            {isEditing
-              ? "Update semester numbering and academic year associations."
-              : "Define a new academic term for a specific course."}
-          </p>
-        </div>
+      <div className="space-y-1">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          className="group -ml-3 text-slate-500 hover:text-indigo-600 transition-colors"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          Back to List
+        </Button>
+        <h2 className="text-2xl font-bold text-slate-900">
+          {isEditing ? "Edit Semester" : "Add New Semester"}
+        </h2>
+        <p className="text-sm text-slate-500">
+          {isEditing
+            ? "Update semester details and course association."
+            : "Define a new academic term for a specific course."}
+        </p>
       </div>
 
-      <Card className="border-none shadow-sm bg-white overflow-hidden">
-        <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Card className="border-none shadow-sm bg-white">
+          <CardContent className="p-8 space-y-6">
+            <div className="flex items-center gap-2 text-indigo-600 mb-2">
+              <Layers size={16} />
+              <span className="text-xs font-bold uppercase tracking-widest">Semester Details</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Semester Number */}
               <div className="space-y-2">
-                <Label htmlFor="semesterNo" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Layers size={14} className="text-indigo-500" />
-                  Semester Number
+                <Label htmlFor="number" className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                  <Hash size={13} className="text-indigo-400" />
+                  Semester No. <span className="text-rose-500">*</span>
                 </Label>
                 <Input
-                  id="semesterNo"
+                  id="number"
                   type="number"
                   min={1}
                   max={12}
-                  placeholder="e.g. 1, 2, 3"
-                  value={formData.semesterNo}
-                  onChange={(e) => setFormData({ ...formData, semesterNo: e.target.value })}
-                  className="rounded-xl border-slate-200 focus:ring-indigo-500 h-11"
-                  required
+                  placeholder="e.g. 1, 2, 3..."
+                  className="h-11 rounded-xl border-slate-200"
+                  {...register("number", {
+                    required: "Semester number is required",
+                    min: { value: 1, message: "Minimum semester number is 1" },
+                    max: { value: 12, message: "Maximum semester number is 12" },
+                  })}
                 />
+                {errors.number && (
+                  <p className="text-xs text-rose-500">{errors.number.message}</p>
+                )}
               </div>
 
-              {/* Course Selection */}
+              {/* Associated Course */}
               <div className="space-y-2">
-                <Label htmlFor="course" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <BookOpen size={14} className="text-indigo-500" />
-                  Associated Course
+                <Label className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                  <BookOpen size={13} className="text-indigo-400" />
+                  Associated Course <span className="text-rose-500">*</span>
                 </Label>
-                <Select
-                  value={formData.courseId}
-                  onValueChange={(val) => setFormData({ ...formData, courseId: val })}
-                  required
-                >
-                  <SelectTrigger className="rounded-xl border-slate-200 h-11 focus:ring-indigo-500 bg-white">
-                    <SelectValue placeholder="Select Course" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-100 shadow-xl">
-                    {mockCourses.map((c) => (
-                      <SelectItem key={c.id} value={c.id} className="rounded-lg focus:bg-indigo-50 focus:text-indigo-600">
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  control={control}
+                  name="courseId"
+                  rules={{ required: "Please select a course" }}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-white">
+                        <SelectValue placeholder="Select course" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-slate-100 shadow-xl max-h-60 overflow-y-auto">
+                        {courses.map((c) => (
+                          <SelectItem
+                            key={c._id}
+                            value={c._id}
+                            className="rounded-lg focus:bg-indigo-50 focus:text-indigo-600"
+                          >
+                            {c.courseName}
+                            {c.course_short_name && (
+                              <span className="ml-2 text-slate-400 text-xs">({c.course_short_name})</span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.courseId && (
+                  <p className="text-xs text-rose-500">{errors.courseId.message}</p>
+                )}
               </div>
 
-              {/* Start Year */}
+              {/* Semester Name */}
               <div className="space-y-2">
-                <Label htmlFor="startYear" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Calendar size={14} className="text-indigo-500" />
-                  Start Year
+                <Label htmlFor="name" className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                  <Layers size={13} className="text-indigo-400" />
+                  Semester Name <span className="text-rose-500">*</span>
                 </Label>
                 <Input
-                  id="startYear"
-                  type="number"
-                  placeholder="e.g. 2023"
-                  value={formData.startYear}
-                  onChange={(e) => setFormData({ ...formData, startYear: parseInt(e.target.value) })}
-                  className="rounded-xl border-slate-200 focus:ring-indigo-500 h-11"
-                  required
+                  id="name"
+                  placeholder="e.g. Semester 1, First Semester"
+                  className="h-11 rounded-xl border-slate-200"
+                  {...register("name", { required: "Semester name is required" })}
                 />
+                {errors.name && (
+                  <p className="text-xs text-rose-500">{errors.name.message}</p>
+                )}
               </div>
 
-              {/* End Year */}
+              {/* Status */}
               <div className="space-y-2">
-                <Label htmlFor="endYear" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Clock size={14} className="text-indigo-500" />
-                  End Year
+                <Label className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                  <BadgeCheck size={13} className="text-indigo-400" />
+                  Status
                 </Label>
-                <Input
-                  id="endYear"
-                  type="number"
-                  placeholder="e.g. 2024"
-                  value={formData.endYear}
-                  onChange={(e) => setFormData({ ...formData, endYear: parseInt(e.target.value) })}
-                  className="rounded-xl border-slate-200 focus:ring-indigo-500 h-11"
-                  required
+                <Controller
+                  control={control}
+                  name="status"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-white">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-slate-100 shadow-xl">
+                        <SelectItem value="ACTIVE" className="rounded-lg focus:bg-indigo-50 focus:text-indigo-600">
+                          <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                            Active
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="INACTIVE" className="rounded-lg focus:bg-rose-50 focus:text-rose-600">
+                          <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-slate-400 inline-block" />
+                            Inactive
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
               </div>
             </div>
 
+            {/* Actions */}
             <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100">
               <Button
                 type="button"
@@ -167,28 +260,38 @@ export default function SemesterForm({ initialData, isEditing }: SemesterFormPro
               </Button>
               <Button
                 type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-10 h-12 font-semibold shadow-lg shadow-indigo-100"
+                disabled={isSubmitting}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-10 h-12 font-semibold shadow-lg shadow-indigo-100 min-w-[160px]"
               >
-                <Save className="mr-2 h-4 w-4" />
-                {isEditing ? "Update Semester" : "Add Semester"}
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </div>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isEditing ? "Update Semester" : "Add Semester"}
+                  </>
+                )}
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
-      
-      {/* Help Note */}
-      <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100 flex gap-4">
-        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm shrink-0">
-          <Info size={20} />
+          </CardContent>
+        </Card>
+
+        {/* Help Note */}
+        <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100 flex gap-4">
+          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm shrink-0">
+            <Info size={18} />
+          </div>
+          <div className="space-y-0.5">
+            <h4 className="text-sm font-bold text-blue-900">Academic Cycles</h4>
+            <p className="text-xs text-blue-700 leading-relaxed">
+              Semesters are linked directly to courses. Make sure the course exists before creating a semester. Each course can have multiple semesters numbered sequentially.
+            </p>
+          </div>
         </div>
-        <div className="space-y-1">
-          <h4 className="text-sm font-bold text-blue-900">Academic Cycles</h4>
-          <p className="text-xs text-blue-700 leading-relaxed">
-            Semesters are the granular time units for academic tracking. Correct start and end years are crucial for generating valid student transcripts and session reports.
-          </p>
-        </div>
-      </div>
+      </form>
     </div>
   );
 }
