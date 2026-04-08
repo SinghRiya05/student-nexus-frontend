@@ -9,7 +9,7 @@ import Footer from "@/components/layouts/Footer";
 import LeftSection from "@/components/main/home/LeftSection";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") as
     "login" |
