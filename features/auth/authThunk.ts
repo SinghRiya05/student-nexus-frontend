@@ -11,7 +11,7 @@ export const registerUser = createAsyncThunk(
             const response = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, userData);
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to register.");
         }
     }
 );
@@ -24,7 +24,7 @@ export const loginUser = createAsyncThunk(
             const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, userData);
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to login.");
         }
     }
 );
@@ -37,7 +37,7 @@ export const logoutUser = createAsyncThunk(
             const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
             return { message: "Logged out successfully" };
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to logout.");
         }
     }
 );
@@ -49,7 +49,7 @@ export const verifyEmail = createAsyncThunk(
             const response = await apiClient.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, userData);
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to verify email.");
         }
     }
 );
@@ -61,7 +61,7 @@ export const resendOtp = createAsyncThunk(
             const response = await apiClient.post(API_ENDPOINTS.AUTH.RESEND_OTP, { email });
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to resend OTP.");
         }
     }
 );

@@ -67,13 +67,11 @@ export default function LoginPage() {
     setIsLoading(true);
     console.log(values)
     try {
-      const result = await dispatch(loginUser(values)).unwrap();
-      if (result.meta.requestStatus === "fulfilled") {
-        toast.success("Login successful");
-        router.push("/");
-      }
+      await dispatch(loginUser(values)).unwrap();
+      toast.success("Login successful");
+      router.push("/");
     } catch (error: any) {
-      toast.error(error);
+      toast.error(error?.toString() || "Failed to login");
     } finally {
       setIsLoading(false);
     }

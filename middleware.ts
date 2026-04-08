@@ -15,7 +15,7 @@ export function middleware(req: NextRequest) {
     const isAuthenticated = !!accessToken || !!refreshToken;
 
     // ❌ AUTH PROTECTION LOGIC
-    
+
     // 1. If trying to access a PROTECTED path (not root) and not authenticated
     if (!isAuthenticated && !isRoot) {
         const loginUrl = new URL("/", req.url);
@@ -27,7 +27,7 @@ export function middleware(req: NextRequest) {
     // 2. We always allow the Root path (/) 
     // The MainLayoutClient will decide whether to show Dashboard or Login/Signup based on Redux state
     // This avoids "redirect loops" if Redux and Cookies are temporarily out of sync.
-    
+
     return NextResponse.next();
 }
 
