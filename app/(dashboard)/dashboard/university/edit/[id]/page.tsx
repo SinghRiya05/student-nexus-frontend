@@ -2,29 +2,23 @@
 
 import UniversityForm from "@/components/dashboard/university/UniversityForm";
 import React from "react";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
+import { getUniversityById } from "@/features/university/universityThunk";
+import { useParams } from "next/navigation";
+import LoadingSpinner from "@/components/ui/loading";
 
-// Mock function to simulate fetching university by ID
-const getUniversityById = (id: string) => {
-  return {
-    id,
-    name: "LPU University",
-    countryId: "2", // India
-    stateId: "2", // Maharashtra
-    website: "https://www.lpu.in",
-    logo: "https://v1.lpu.in/images/logo.png",
-  };
-};
 
-export default function EditUniversityPage({ params }: { params: { id: string } }) {
-  const [university, setUniversity] = React.useState<any>(null);
 
+export default function EditUniversityPage() {
+  const dispatch = useAppDispatch();
+  const params = useParams();
+  const { id } = params;
+  const { singleUniversity, universityLoading } = useAppSelector((state) => state.university);
   React.useEffect(() => {
-    // In a real app, this would be an API call
-    const data = getUniversityById(params.id);
-    setUniversity(data);
+    dispatch(getUniversityById(id as string));
   }, [params.id]);
 
-  if (!university) return <div className="p-8 text-slate-500 font-medium italic">Loading university details...</div>;
+  if (universityLoading || !singleUniversity) return <LoadingSpinner fullPage label="Loading university details..." />;
 
-  return <UniversityForm initialData={university} isEditing={true} />;
+  return <UniversityForm initialData={singleUniversity} isEditing={true} />;
 }

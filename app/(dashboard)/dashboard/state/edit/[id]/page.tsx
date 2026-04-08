@@ -2,27 +2,22 @@
 
 import StateForm from "@/components/dashboard/state/StateForm";
 import React from "react";
+import { useParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
+import LoadingSpinner from "@/components/ui/loading";
+import { getStateById } from "@/features/location/StateThunk";
 
-// Mock function to simulate fetching state by ID
-const getStateById = (id: string) => {
-  return {
-    id,
-    name: "California",
-    countryId: "1", // United States
-    code: "CA",
-  };
-};
 
-export default function EditStatePage({ params }: { params: { id: string } }) {
-  const [stateData, setStateData] = React.useState<any>(null);
+export default function EditStatePage() {
+  const params = useParams();
+  const dispatch = useAppDispatch();
+  const { singleState, stateLoading } = useAppSelector((state) => state.state);
 
   React.useEffect(() => {
-    // In a real app, this would be an API call
-    const data = getStateById(params.id);
-    setStateData(data);
+    dispatch(getStateById(params.id as string));
   }, [params.id]);
 
-  if (!stateData) return <div className="p-8 text-slate-500 font-medium italic">Loading state details...</div>;
+  if (stateLoading || !singleState) return <LoadingSpinner fullPage label="Loading state details..." />;
 
-  return <StateForm initialData={stateData} isEditing={true} />;
+  return <StateForm initialData={singleState} isEditing={true} />;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import ProfessorProfileMain from '@/components/professor/ProfessorProfileMain';
+import ProfessorProfileMain from '@/components/main/professors/ProfessorProfileMain';
 
 export default function Page({ params }: { params: { id: string } }) {
     return (

@@ -56,6 +56,11 @@ const navItems = [
     icon: MapPin,
   },
   {
+    title: "City",
+    href: "/dashboard/cities",
+    icon: MapPin,
+  },
+  {
     title: "Users",
     href: "/dashboard/users",
     icon: Users,

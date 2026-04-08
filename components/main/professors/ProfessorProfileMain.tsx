@@ -43,8 +43,8 @@ export default function ProfessorProfileMain() {
                 key={index}
                 variant={page === 1 ? "default" : "outline"}
                 className={`h-10 w-10 rounded-xl font-black text-xs transition-all ${page === 1
-                    ? "bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105"
-                    : "border-primary/5 bg-white text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                  ? "bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105"
+                  : "border-primary/5 bg-white text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                   }`}
               >
                 {page}

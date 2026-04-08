@@ -1,30 +1,24 @@
 "use client";
 
 import CourseForm from "@/components/dashboard/courses/CourseForm";
+import { getCourseById } from "@/features/course/courseThunk";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
+import { useParams } from "next/navigation";
 import React from "react";
+import LoadingSpinner from "@/components/ui/loading";
 
-// Mock function to simulate fetching course by ID
-const getCourseById = (id: string) => {
-  return {
-    id,
-    name: "B.Tech Computer Science",
-    universityId: "1", // Stanford
-    duration: "4 Years",
-    level: "Undergraduate",
-    description: "A comprehensive study of computer systems, software engineering, and artificial intelligence.",
-  };
-};
 
-export default function EditCoursePage({ params }: { params: { id: string } }) {
-  const [course, setCourse] = React.useState<any>(null);
+
+export default function EditCoursePage() {
+  const dispatch = useAppDispatch();
+  const { singleCourse, courseLoading } = useAppSelector((state) => state.course);
+  const params = useParams();
 
   React.useEffect(() => {
-    // In a real app, this would be an API call
-    const data = getCourseById(params.id);
-    setCourse(data);
+    dispatch(getCourseById(params.id as string));
   }, [params.id]);
 
-  if (!course) return <div className="p-8 text-slate-500 font-medium italic">Loading course details...</div>;
+  if (courseLoading || !singleCourse) return <LoadingSpinner fullPage label="Loading course details..." />;
 
-  return <CourseForm initialData={course} isEditing={true} />;
+  return <CourseForm initialData={singleCourse} isEditing={true} />;
 }
