@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Conversation, Message } from './types';
 import { MessageBubble } from './MessageBubble';
+import { CallOverlay } from './CallOverlay';
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -29,6 +30,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onBack
 }) => {
   const [inputText, setInputText] = useState('');
+  const [isCallOverlayOpen, setIsCallOverlayOpen] = useState(false);
+  const [activeCallType, setActiveCallType] = useState<'audio' | 'video'>('audio');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -97,10 +100,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <button className="p-2.5 rounded-full hover:bg-primary/5 text-muted-foreground transition-colors hidden sm:block">
+          <button 
+            onClick={() => {
+              setActiveCallType('audio');
+              setIsCallOverlayOpen(true);
+            }}
+            className="p-2.5 rounded-full hover:bg-primary/5 text-muted-foreground transition-colors hidden sm:block"
+          >
             <Phone className="w-5 h-5" />
           </button>
-          <button className="p-2.5 rounded-full hover:bg-primary/5 text-muted-foreground transition-colors hidden sm:block">
+          <button 
+            onClick={() => {
+              setActiveCallType('video');
+              setIsCallOverlayOpen(true);
+            }}
+            className="p-2.5 rounded-full hover:bg-primary/5 text-muted-foreground transition-colors hidden sm:block"
+          >
             <Video className="w-5 h-5" />
           </button>
           <button className="p-2.5 rounded-full hover:bg-primary/5 text-muted-foreground transition-colors">
@@ -176,6 +191,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           </button>
         </form>
       </div>
+
+      <CallOverlay 
+        isOpen={isCallOverlayOpen}
+        onClose={() => setIsCallOverlayOpen(false)}
+        participants={participant ? [participant] : []}
+        initialType={activeCallType}
+      />
     </div>
   );
 };
