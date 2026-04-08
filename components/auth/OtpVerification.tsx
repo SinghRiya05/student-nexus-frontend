@@ -8,6 +8,10 @@ import * as z from "zod";
 import {
   GraduationCap, ShieldCheck, Mail, RefreshCw, ArrowRight, ArrowLeft,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useAppDispatch } from "@/utils/hook";
+import { verifyEmail, verifyResetOtp, resendOtp } from "@/features/auth/authThunk";
+import toast from "react-hot-toast";
 import {
   Card,
   CardHeader,
@@ -31,10 +35,21 @@ const RESEND_COOLDOWN = 30;
 type OtpVerificationProps = {
   type: "signup" | "reset-password";
   email?: string;
+  onSuccess?: () => void;
+  isStep?: boolean;
 };
 
-export default function OtpVerificationPage({ type, email = "u**r@university.edu" }: OtpVerificationProps) {
+export default function OtpVerificationPage({ 
+  type, 
+  email: propEmail, 
+  onSuccess, 
+  isStep = false 
+}: OtpVerificationProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
+  const email = propEmail || searchParams.get("email") || "your email";
+  
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [digits, setDigits]           = useState<string[]>(Array(6).fill(""));
@@ -115,23 +130,30 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
     if (otp.length < 6) return;
     setIsVerifying(true);
     setErrorMsg("");
-    // TODO: Make API call here for OTP Verification
-    await new Promise((r) => setTimeout(r, 1800));
 
-    if (otp === "123456") {
+    let result;
+    if (type === "signup") {
+      result = await dispatch(verifyEmail({ email, otp }));
+    } else {
+      result = await dispatch(verifyResetOtp({ email, otp }));
+    }
+
+    if (verifyEmail.fulfilled.match(result) || verifyResetOtp.fulfilled.match(result)) {
       setIsVerified(true);
+      toast.success("Verification successful!");
       setTimeout(() => {
-        if (type === "signup") router.push("/?mode=login");
-        if (type === "reset-password") router.push("/?mode=reset-password");
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          if (type === "signup") router.push("/?mode=login");
+          if (type === "reset-password") router.push(`/?mode=reset-password&email=${encodeURIComponent(email)}&otp=${otp}`);
+        }
       }, 1400);
     } else {
       setShakeError(true);
-      setErrorMsg("Incorrect OTP. Try again.");
-      setDigits(Array(6).fill(""));
-      setTimeout(() => {
-        setShakeError(false);
-        inputRefs.current[0]?.focus();
-      }, 600);
+      setErrorMsg(result.payload as string || "Invalid code.");
+      toast.error(result.payload as string || "Invalid code.");
+      setTimeout(() => setShakeError(false), 600);
     }
     setIsVerifying(false);
   };
@@ -139,14 +161,19 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
   const handleResend = async () => {
     if (cooldown > 0 || isResending) return;
     setIsResending(true);
-    setDigits(Array(6).fill(""));
     setErrorMsg("");
-    form.clearErrors();
-    // TODO: Make API call here for OTP Resend
-    await new Promise((r) => setTimeout(r, 1000));
+    
+    const result = await dispatch(resendOtp(email));
+    
     setIsResending(false);
-    setCooldown(RESEND_COOLDOWN);
-    inputRefs.current[0]?.focus();
+    if (resendOtp.fulfilled.match(result)) {
+      toast.success("New code sent!");
+      setCooldown(RESEND_COOLDOWN);
+      setDigits(Array(6).fill(""));
+      inputRefs.current[0]?.focus();
+    } else {
+      toast.error(result.payload as string || "Failed to resend.");
+    }
   };
 
   return (
@@ -164,59 +191,64 @@ export default function OtpVerificationPage({ type, email = "u**r@university.edu
         .hidden-spin-buttons::-webkit-inner-spin-button,
         .hidden-spin-buttons::-webkit-outer-spin-button { -webkit-appearance: none; }
       `}</style>
+      <div className={`relative flex min-h-full flex-1 items-center justify-center overflow-hidden w-full ${!isStep ? "bg-slate-50/30 px-4 py-8" : ""}`}>
+        {!isStep && (
+          <>
+            {/* Ambient Orbs */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-[400px] w-[400px] rounded-full bg-indigo-100/50 blur-[80px]" />
+            <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-violet-100/50 blur-[80px]" />
+          </>
+        )}
 
-      <div className="relative flex min-h-full flex-1 items-center justify-center overflow-hidden bg-slate-50/30 px-4 py-8 w-full">
-        {/* Ambient Orbs */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-[400px] w-[400px] rounded-full bg-indigo-100/50 blur-[80px]" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-violet-100/50 blur-[80px]" />
-
-        <div className="relative z-10 w-full max-w-[440px] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500">
-          <Card className="rounded-[24px] border-none ring-0 bg-transparent shadow-none">
-            <CardHeader className="p-8 pb-6">
-              {/* Logo */}
-              <div className="mb-7 flex items-center justify-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_18px_rgba(99,102,241,0.35)]">
-                  <GraduationCap size={20} />
+        <div className={`relative z-10 w-full max-w-[440px] ${!isStep ? "animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500" : ""}`}>
+          <Card className={`${!isStep ? "rounded-[24px] border-none ring-0 bg-transparent shadow-none" : "border-none shadow-none ring-0 p-0"}`}>
+            {!isStep && (
+              <CardHeader className="p-8 pb-6">
+                {/* Logo */}
+                <div className="mb-7 flex items-center justify-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_18px_rgba(99,102,241,0.35)]">
+                    <GraduationCap size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[1.08rem] font-bold leading-none text-gray-900">
+                      Student<span className="text-indigo-500">Nexus</span>
+                    </p>
+                    <p className="mt-0.5 text-[0.55rem] uppercase tracking-[0.14em] text-gray-400">
+                      Verified Academic Network
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[1.08rem] font-bold leading-none text-gray-900">
-                    Student<span className="text-indigo-500">Nexus</span>
-                  </p>
-                  <p className="mt-0.5 text-[0.55rem] uppercase tracking-[0.14em] text-gray-400">
-                    Verified Academic Network
-                  </p>
-                </div>
-              </div>
 
-              {/* ── Success State ── */}
-              {!isVerified && (
-                <div className="mb-6 text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="relative mx-auto mb-4 h-16 w-16">
-                    <div className="absolute inset-0 rounded-full border-2 border-indigo-200 animate-[pulse_1.8s_ease-out_infinite]" />
-                    <div className="absolute inset-0 rounded-full border-2 border-indigo-100 animate-[pulse_1.8s_ease-out_infinite]" style={{ animationDelay: "0.7s" }} />
-                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 border-2 border-indigo-100">
-                      <Mail size={26} className="text-indigo-500" strokeWidth={1.7} />
+                {/* ── Heading ── */}
+                {!isVerified && (
+                  <div className="mb-6 text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="relative mx-auto mb-4 h-16 w-16">
+                      <div className="absolute inset-0 rounded-full border-2 border-indigo-200 animate-[pulse_1.8s_ease-out_infinite]" />
+                      <div className="absolute inset-0 rounded-full border-2 border-indigo-100 animate-[pulse_1.8s_ease-out_infinite]" style={{ animationDelay: "0.7s" }} />
+                      <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 border-2 border-indigo-100">
+                        <Mail size={26} className="text-indigo-500" strokeWidth={1.7} />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
-                    <span className="text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-indigo-600">
-                      {type === "signup" ? "Email Verification" : "Password Reset"}
-                    </span>
+                    <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
+                      <span className="text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-indigo-600">
+                        {type === "signup" ? "Email Verification" : "Password Reset"}
+                      </span>
+                    </div>
+                    <CardTitle className="mt-2 text-[1.5rem] font-bold tracking-tight text-gray-900">
+                      Check your inbox
+                    </CardTitle>
+                    <CardDescription className="mt-1.5 text-[0.84rem] leading-relaxed text-gray-500">
+                      We sent a 6-digit code to{" "}
+                      <span className="font-semibold text-gray-800">{email}</span>
+                    </CardDescription>
                   </div>
-                  <CardTitle className="mt-2 text-[1.5rem] font-bold tracking-tight text-gray-900">
-                    Check your inbox
-                  </CardTitle>
-                  <CardDescription className="mt-1.5 text-[0.84rem] leading-relaxed text-gray-500">
-                    We sent a 6-digit code to{" "}
-                    <span className="font-semibold text-gray-800">{email}</span>
-                  </CardDescription>
-                </div>
-              )}
-            </CardHeader>
+                )}
+              </CardHeader>
+            )}
 
-            <CardContent className="px-8 pb-8">
+            <CardContent className={`${isStep ? "p-0" : "px-8 pb-8"}`}>
             {isVerified ? (
               <div className="flex flex-col items-center py-4 text-center">
                 <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 border-2 border-emerald-200 animate-in zoom-in-50 duration-500">

@@ -9,6 +9,7 @@ import cityReducer from "@/features/location/citySlice";
 import universityReducer from "@/features/university/universitySlice";
 import courseReducer from "@/features/course/courseSlice";
 import semesterReducer from "@/features/semester/semesterSlice";
+import authReducer from "@/features/auth/authSlice";
 
 const rootReducer = combineReducers({
     country: countryReducer,
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
     university: universityReducer,
     course: courseReducer,
     semester: semesterReducer,
+    auth: authReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -28,7 +30,7 @@ const persistConfig: PersistConfig<RootState> = {
     key: "root",
     storage,
     version: 1,
-    whitelist: ["country", "role"],
+    whitelist: ["country", "role", "auth"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

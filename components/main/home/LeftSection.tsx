@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAppDispatch, useAppSelector } from '@/utils/hook'
 import {
     Rss,
     School,
@@ -17,10 +18,17 @@ import {
     ChevronRight,
     MapPin
 } from "lucide-react"
+import { logoutUser } from '@/features/auth/authThunk'
 
 export default function LeftSection() {
     const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
     const pathname = usePathname()
+
+    const dispatch = useAppDispatch();
+
+    const handleLogout = () => {
+        dispatch(logoutUser());
+    };
 
     const navLinks = [
         { id: 1, label: "My Feed", icon: Rss, href: "/feeds" },
@@ -162,6 +170,7 @@ export default function LeftSection() {
                     </Link>
 
                     <button
+                        onClick={handleLogout}
                         className="group flex items-center gap-3 px-4 py-2 rounded-2xl text-rose-500 hover:bg-rose-50 font-medium transition-all text-left"
                     >
                         <div className="p-1.5 rounded-xl group-hover:bg-rose-100 transition-colors">

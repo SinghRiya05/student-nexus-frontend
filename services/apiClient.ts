@@ -7,39 +7,50 @@ const apiClient = axios.create({
 });
 
 
-// REQUEST INTERCEPTOR
-apiClient.interceptors.request.use((config: any) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?: any) => void }> = [];
 
-    const isAuthRoute = config.url === API_ENDPOINTS.AUTH.LOGIN || config.url === API_ENDPOINTS.AUTH.REGISTER;
-    const isLogoutRoute = config.url === API_ENDPOINTS.AUTH.LOGOUT;
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
 
-    if (!token && !isAuthRoute && !isLogoutRoute && typeof window !== "undefined") {
-        axios.post(`${process.env.NEXT_PUBLIC_BACKEND_BASEURL}${API_ENDPOINTS.AUTH.LOGOUT}`, {}, { withCredentials: true })
-            .finally(() => {
-                localStorage.removeItem("accessToken");
-                window.location.href = "/auth/login";
-            });
-        return Promise.reject(new Error("No access token found."));
-    }
-
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
-
-// RESPONSE INTERCEPTOR
-apiClient.interceptors.response.use((res: any) => res, async (error: any) => {
+apiClient.interceptors.response.use((res) => res, async (error) => {
     const originalRequest = error.config;
+
     if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+                failedQueue.push({ resolve, reject });
+            })
+                .then(() => {
+                    return apiClient(originalRequest);
+                })
+                .catch((err) => {
+                    return Promise.reject(err);
+                });
+        }
+
         originalRequest._retry = true;
+        isRefreshing = true;
+
         try {
+            await apiClient.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN);
+            isRefreshing = false;
+            processQueue(null, "success");
             return apiClient(originalRequest);
         } catch (refreshError) {
-            if (typeof window !== "undefined") {
-                window.location.href = "/auth/login";
+            isRefreshing = false;
+            processQueue(refreshError, null);
+
+            if (typeof window !== "undefined" && !window.location.pathname.includes("login")) {
+                window.location.href = "/?mode=login";
             }
             return Promise.reject(refreshError);
         }
@@ -47,5 +58,7 @@ apiClient.interceptors.response.use((res: any) => res, async (error: any) => {
     return Promise.reject(error);
 },
 );
+
+
 
 export default apiClient;

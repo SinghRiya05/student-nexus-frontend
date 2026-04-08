@@ -7,10 +7,12 @@ import AuthLayout from "@/components/layouts/AuthLayout";
 import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
 import LeftSection from "@/components/main/home/LeftSection";
+import { useAppSelector } from "@/utils/hook";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const searchParams = useSearchParams();
+  
   const mode = (searchParams.get("mode") as
     "login" |
     "signup" |
@@ -24,7 +26,8 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
     | "reset-password"
     | undefined;
 
-  if (!isLoggedIn) {
+  // ❌ If not authenticated, always show the Auth gateway
+  if (!isAuthenticated) {
     return (
       <AuthLayout>
         <Auth mode={mode} type={type} />
@@ -32,6 +35,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // ✅ Authenticated View: Header, Sidebar, and Page Content
   return (
     <div className="flex min-h-screen flex-col bg-[#fcf8ff]">
       <Header />
