@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createUniversity, getAllUniversities, getUniversityById, updateUniversity, deleteUniversity } from "./universityThunk";
+import { createUniversity, getAllUniversities, getUniversityById, updateUniversity, deleteUniversity, getCoursesByUniversityId, syncUniversityCourses } from "./universityThunk";
 import { UniversityInitialState } from "./universityModel";
 
 const initialState: UniversityInitialState = {
@@ -7,6 +7,8 @@ const initialState: UniversityInitialState = {
     universities: [],
     universityLoading: false,
     universityError: null,
+    universityCourses: [],
+    assignedCoursesIds: [],
 }
 
 const universitySlice = createSlice({
@@ -19,9 +21,20 @@ const universitySlice = createSlice({
         clearSingleUniversity: (state) => {
             state.singleUniversity = null;
         },
+        toggleCourse: (state, action) => {
+            const courseId = action.payload;
+            if (state.assignedCoursesIds.includes(courseId)) {
+                state.assignedCoursesIds = state.assignedCoursesIds.filter(
+                    (id) => id !== courseId
+                );
+            } else {
+                state.assignedCoursesIds.push(courseId);
+            }
+        }
     },
     extraReducers: (builder) => {
         builder
+            // createUniversity
             .addCase(createUniversity.pending, (state) => {
                 state.universityLoading = true;
             })
@@ -33,6 +46,7 @@ const universitySlice = createSlice({
                 state.universityLoading = false;
                 state.universityError = action.payload as string;
             })
+            // getAllUniversities
             .addCase(getAllUniversities.pending, (state) => {
                 state.universityLoading = true;
             })
@@ -44,6 +58,7 @@ const universitySlice = createSlice({
                 state.universityLoading = false;
                 state.universityError = action.payload as string;
             })
+            // getUniversityById
             .addCase(getUniversityById.pending, (state) => {
                 state.universityLoading = true;
             })
@@ -55,6 +70,7 @@ const universitySlice = createSlice({
                 state.universityLoading = false;
                 state.universityError = action.payload as string;
             })
+            // updateUniversity
             .addCase(updateUniversity.pending, (state) => {
                 state.universityLoading = true;
             })
@@ -68,6 +84,7 @@ const universitySlice = createSlice({
                 state.universityLoading = false;
                 state.universityError = action.payload as string;
             })
+            // deleteUniversity
             .addCase(deleteUniversity.pending, (state) => {
                 state.universityLoading = true;
             })
@@ -78,9 +95,33 @@ const universitySlice = createSlice({
             .addCase(deleteUniversity.rejected, (state, action) => {
                 state.universityLoading = false;
                 state.universityError = action.payload as string;
+            })
+            // getCoursesByUniversityId
+            .addCase(getCoursesByUniversityId.pending, (state) => {
+                state.universityLoading = true;
+            })
+            .addCase(getCoursesByUniversityId.fulfilled, (state, action: any) => {
+                state.universityLoading = false;
+                state.universityCourses = action.payload;
+                state.assignedCoursesIds = action.payload.map((course: any) => course.courseId._id);
+            })
+            .addCase(getCoursesByUniversityId.rejected, (state, action) => {
+                state.universityLoading = false;
+                state.universityError = action.payload as string;
+            })
+            // syncUniversityCourses
+            .addCase(syncUniversityCourses.pending, (state) => {
+                state.universityLoading = true;
+            })
+            .addCase(syncUniversityCourses.fulfilled, (state, action) => {
+                state.universityLoading = false;
+            })
+            .addCase(syncUniversityCourses.rejected, (state, action) => {
+                state.universityLoading = false;
+                state.universityError = action.payload as string;
             });
     }
 });
 
-export const { clearUniversityError, clearSingleUniversity } = universitySlice.actions;
+export const { clearUniversityError, clearSingleUniversity, toggleCourse } = universitySlice.actions;
 export default universitySlice.reducer;

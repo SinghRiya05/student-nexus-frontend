@@ -33,7 +33,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { getRoles } from "@/features/roles/roleThunk";
+import { deleteRole, getRoles } from "@/features/roles/roleThunk";
+import toast from "react-hot-toast";
 
 export default function RoleList() {
   const dispatch = useAppDispatch();
@@ -43,7 +44,10 @@ export default function RoleList() {
     dispatch(getRoles());
   }, [dispatch]);
 
-  console.log(roles)
+  const handleDelete = (id: string) => {
+    dispatch(deleteRole(id));
+    toast.success("Role deleted successfully");
+  }
   const [searchTerm, setSearchTerm] = React.useState("");
 
   const filteredRoles = roles.filter((role) =>
@@ -157,8 +161,14 @@ export default function RoleList() {
                               Edit Role
                             </DropdownMenuItem>
                           </Link>
+                          <Link href={`/dashboard/roles/edit/${role._id}/permissions`}>
+                            <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                              <Edit2 size={14} className="mr-2" />
+                              Manage Permissions
+                            </DropdownMenuItem>
+                          </Link>
                           <DropdownMenuSeparator className="bg-slate-100" />
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                          <DropdownMenuItem onClick={() => handleDelete(role._id)} className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
                             <Trash2 size={14} className="mr-2" />
                             Delete Role
                           </DropdownMenuItem>

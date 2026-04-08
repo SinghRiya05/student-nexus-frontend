@@ -199,6 +199,11 @@ export default function UniversityList() {
                                   Edit University
                                 </DropdownMenuItem>
                               </Link>
+                              <Link href={`/dashboard/university/edit/${uni._id}/assign-courses`}>
+                                <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-medium focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                                  Assign Courses
+                                </DropdownMenuItem>
+                              </Link>
                               <DropdownMenuSeparator className="bg-slate-100" />
                               <DropdownMenuItem onClick={() => handleDelete(uni._id)} className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
                                 Delete University

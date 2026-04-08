@@ -1,3 +1,4 @@
+import { ICourse } from "../course/courseModel";
 
 export interface ILocation {
     _id: string;
@@ -48,6 +49,17 @@ export interface IUniversityUpdate {
     image?: string;
 }
 
+
+
+export interface IUniversityCourse {
+    _id: string;
+    universityId: string;
+    courseId: ICourse;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface IUniversityResponse {
     success: boolean;
     message: string;
@@ -60,9 +72,13 @@ export interface IUniversityListResponse {
     data: IUniversity[];
 }
 
+
+
 export interface UniversityInitialState {
     singleUniversity: IUniversity | null;
     universities: IUniversity[];
     universityLoading: boolean;
     universityError: string | null;
+    universityCourses: IUniversityCourse[];
+    assignedCoursesIds: string[];
 }

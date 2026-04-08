@@ -71,3 +71,29 @@ export const deleteUniversity = createAsyncThunk(
         }
     }
 )
+
+export const syncUniversityCourses = createAsyncThunk(
+    "university/syncUniversityCourses",
+    async (data: { universityId: string, courseIds: string[] }, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.post(API_ENDPOINTS.UNIVERSITY_COURSE.SYNC, data);
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to sync university courses");
+        }
+    }
+)
+
+
+export const getCoursesByUniversityId = createAsyncThunk(
+    "university/getCoursesByUniversityId",
+    async (id: string, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(API_ENDPOINTS.UNIVERSITY_COURSE.GET_BY_UNIVERSITY_ID(id));
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch courses by university id");
+        }
+    }
+)
+
