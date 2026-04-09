@@ -118,11 +118,12 @@ export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const { user, loading, error, success } = useAppSelector((state) => state.auth);
-  const { universities } = useAppSelector((state) => state.university);
-  const { courses } = useAppSelector((state) => state.course);
-  const { roles } = useAppSelector((state) => state.role);
-  const { semesters } = useAppSelector((state) => state.semester);
+  const { user, loading, error, success } = useAppSelector((state) => state.auth || {});
+  console.log(user, loading, error, success);
+  const { universities = [] } = useAppSelector((state) => state.university || {});
+  const { courses = [] } = useAppSelector((state) => state.course || {});
+  const { roles = [] } = useAppSelector((state) => state.role || {});
+  const { semesters = [] } = useAppSelector((state) => state.semester || {});
 
   const [step, setStep] = useState<SignupStep>(SignupStep.REGISTER);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -147,7 +148,7 @@ export default function SignupPage() {
 
   const { watch, setValue, trigger } = form;
   const selectedRoleId = watch("roleId");
-  const selectedRoleName = roles.find(r => r._id === selectedRoleId)?.name;
+  const selectedRoleName = roles?.find(r => r._id === selectedRoleId)?.name;
   const selectedCourseIds = watch("courseIds") || [];
 
   // ─── Effects ───
@@ -194,11 +195,11 @@ export default function SignupPage() {
     const values = form.getValues();
     setIsSubmitting(true);
     const result = await dispatch(registerUser({
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      phone: values.phone,
-      password: values.password
+      firstName: values.firstName ?? "",
+      lastName: values.lastName ?? "",
+      email: values.email ?? "",
+      phone: values.phone ?? "",
+      password: values.password ?? ""
     }));
     setIsSubmitting(false);
 
@@ -579,7 +580,7 @@ export default function SignupPage() {
                               </div>
                             </FormControl>
                             <SelectContent>
-                              {roles.filter(r => r.name !== "ADMIN").map(r => (
+                              {(roles || []).filter(r => r.name !== "ADMIN").map(r => (
                                 <SelectItem key={r._id} value={r._id}>{r.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -602,7 +603,7 @@ export default function SignupPage() {
                               </div>
                             </FormControl>
                             <SelectContent>
-                              {universities.map(u => (
+                              {universities?.map(u => (
                                 <SelectItem key={u._id} value={u._id}>{u.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -619,7 +620,7 @@ export default function SignupPage() {
                       </label>
 
                       <div className="grid grid-cols-1 gap-2 border rounded-xl p-3 bg-gray-50/50 max-h-[160px] overflow-y-auto">
-                        {courses.map((course) => (
+                        {courses?.map((course) => (
                           <div key={course._id} className="flex items-center space-x-2">
                             <Checkbox
                               id={course._id}
@@ -649,7 +650,7 @@ export default function SignupPage() {
                                 </div>
                               </FormControl>
                               <SelectContent>
-                                {semesters.map(s => (
+                                {semesters?.map(s => (
                                   <SelectItem key={s._id} value={s._id}>Semester {s.number}</SelectItem>
                                 ))}
                               </SelectContent>
