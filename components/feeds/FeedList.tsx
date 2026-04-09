@@ -80,12 +80,6 @@ const MOCK_POSTS = [
 export function FeedList() {
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground/90">
-          Your Feed
-        </h2>
-        <div className="h-[2px] flex-1 mx-4 bg-linear-to-r from-primary/20 to-transparent rounded-full" />
-      </div>
 
       <AnimatePresence>
         {MOCK_POSTS.map((post, index) => (

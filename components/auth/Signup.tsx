@@ -9,6 +9,7 @@ import {
   ArrowRight, ArrowLeft, GraduationCap,
   ShieldCheck, Users, Layers,
   CheckCircle2, Award, Globe, Clock, Hash,
+  RefreshCw
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -39,13 +40,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
-import { registerUser, verifyEmail, completeRegistration } from "@/features/auth/authThunk";
+import { registerUser, verifyEmail, completeRegistration, resendOtp } from "@/features/auth/authThunk";
 import { getAllUniversities } from "@/features/university/universityThunk";
 import { getAllCourses } from "@/features/course/courseThunk";
 import { getRoles } from "@/features/roles/roleThunk";
 import { getAllSemesters } from "@/features/semester/semesterThunk";
 import toast from "react-hot-toast";
-import OtpVerificationPage from "./OtpVerification";
 
 // ─── Zod Schemas ─────────────────────────────
 const personalInfoSchema = z.object({
@@ -57,6 +57,14 @@ const personalInfoSchema = z.object({
     .min(8, "Password must be at least 8 characters.")
     .regex(/[0-9]/, "Must contain at least one number.")
     .regex(/[^a-zA-Z0-9]/, "Must contain at least one symbol."),
+});
+
+const personalInfoOptionalSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().email("Enter a valid email."),
+  phone: z.string().optional(),
+  password: z.string().optional(),
 });
 
 const otpSchema = z.object({
@@ -77,7 +85,7 @@ const academicSchema = z.object({
   skills: z.string().optional(),
 });
 
-const signupSchema = personalInfoSchema.extend({
+const signupSchema = personalInfoOptionalSchema.extend({
   otp: z.string().optional(),
   universityId: z.string().optional(),
   roleId: z.string().optional(),
@@ -118,6 +126,15 @@ export default function SignupPage() {
 
   const [step, setStep] = useState<SignupStep>(SignupStep.REGISTER);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
+  // OTP specific state
+  const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpError, setOtpError] = useState("");
+  const otpInputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -135,11 +152,39 @@ export default function SignupPage() {
 
   // ─── Effects ───
   useEffect(() => {
+    // Check for resume flow
+    const queryEmail = searchParams.get("email");
+    const queryStep = searchParams.get("step");
+
+    if (queryEmail) {
+      setValue("email", queryEmail);
+    }
+    if (queryStep) {
+      const s = parseInt(queryStep);
+      if (Object.values(SignupStep).includes(s)) {
+        setStep(s as SignupStep);
+      }
+    }
+
     dispatch(getAllUniversities());
     dispatch(getAllCourses());
     dispatch(getRoles());
     dispatch(getAllSemesters());
-  }, [dispatch]);
+  }, [dispatch, searchParams, setValue]);
+
+  // Handle OTP Cooldown
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const timer = setTimeout(() => setOtpCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [otpCooldown]);
+
+  // Focus first OTP input when step changes to VERIFY
+  useEffect(() => {
+    if (step === SignupStep.VERIFY) {
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+    }
+  }, [step]);
 
   // ─── Handlers ───
   const handleRegister = async () => {
@@ -159,9 +204,98 @@ export default function SignupPage() {
 
     if (registerUser.fulfilled.match(result)) {
       toast.success("Registration successful! Please check your email for OTP.");
+      setOtpError("");
+      setOtpDigits(Array(6).fill(""));
       setStep(SignupStep.VERIFY);
     } else {
       toast.error(result.payload as string || "Failed to register.");
+    }
+  };
+
+  const handleOtpChange = (val: string, idx: number) => {
+    const digit = val.replace(/\D/g, "").slice(-1);
+    if (!digit && val !== "") return;
+
+    const nextDigits = [...otpDigits];
+    nextDigits[idx] = digit;
+    setOtpDigits(nextDigits);
+    setOtpError("");
+
+    if (digit && idx < 5) {
+      otpInputRefs.current[idx + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
+    if (e.key === "Backspace") {
+      if (!otpDigits[idx] && idx > 0) {
+        otpInputRefs.current[idx - 1]?.focus();
+      } else {
+        const nextDigits = [...otpDigits];
+        nextDigits[idx] = "";
+        setOtpDigits(nextDigits);
+      }
+    } else if (e.key === "ArrowLeft" && idx > 0) {
+      otpInputRefs.current[idx - 1]?.focus();
+    } else if (e.key === "ArrowRight" && idx < 5) {
+      otpInputRefs.current[idx + 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    const pastedData = e.clipboardData.getData("Text").replace(/\D/g, "").slice(0, 6);
+    if (!pastedData) return;
+
+    const nextDigits = [...otpDigits];
+    pastedData.split("").forEach((char, i) => {
+      if (i < 6) nextDigits[i] = char;
+    });
+    setOtpDigits(nextDigits);
+    otpInputRefs.current[Math.min(pastedData.length, 5)]?.focus();
+  };
+
+  const verifyOtp = async () => {
+    const otpString = otpDigits.join("");
+    if (otpString.length < 6) return;
+
+    setIsVerifyingOtp(true);
+    setOtpError("");
+    const result = await dispatch(verifyEmail({ email: watch("email"), otp: otpString }));
+    setIsVerifyingOtp(false);
+
+    if (verifyEmail.fulfilled.match(result)) {
+      setIsOtpVerified(true);
+      toast.success("Email verified successfully!");
+      setTimeout(() => {
+        setStep(SignupStep.ACADEMIC);
+      }, 1500);
+    } else {
+      setOtpError(result.payload as string || "Invalid OTP code.");
+      toast.error(result.payload as string || "Invalid OTP code.");
+    }
+  };
+
+  const resendSignupOtp = async () => {
+    if (otpCooldown > 0 || isResending) return;
+    
+    const email = form.getValues("email");
+    if (!email) {
+      toast.error("Email address is missing. Please enter your email in Step 1.");
+      return;
+    }
+
+    setIsResending(true);
+    const result = await dispatch(resendOtp(email));
+    setIsResending(false);
+
+    if (resendOtp.fulfilled.match(result)) {
+      toast.success("New OTP sent to your email!");
+      setOtpCooldown(30);
+      setOtpDigits(Array(6).fill(""));
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+    } else {
+      const errorMessage = result.payload as string || "Failed to resend OTP.";
+      toast.error(errorMessage);
     }
   };
 
@@ -234,7 +368,7 @@ export default function SignupPage() {
             </CardTitle>
             <CardDescription className="text-[0.84rem] leading-relaxed text-gray-500 mt-1.5 mb-4">
               {step === SignupStep.REGISTER && "Fill in your personal information to get started."}
-              {step === SignupStep.VERIFY && `We've sent a 6-digit code to ${watch("email")}`}
+              {step === SignupStep.VERIFY && (searchParams.get("email") ? "Welcome back! Please verify your email to continue." : `We've sent a 6-digit code to ${watch("email")}`)}
               {step === SignupStep.ACADEMIC && "Tell us about your university, role and courses."}
             </CardDescription>
 
@@ -338,13 +472,90 @@ export default function SignupPage() {
 
                 {/* ── STEP 2: VERIFICATION ── */}
                 {step === SignupStep.VERIFY && (
-                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-400">
-                    <OtpVerificationPage 
-                      type="signup" 
-                      email={watch("email")} 
-                      isStep={true} 
-                      onSuccess={() => setStep(SignupStep.ACADEMIC)} 
-                    />
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    {isOtpVerified ? (
+                      <div className="flex flex-col items-center py-6 text-center scale-up-center">
+                        <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 border-2 border-emerald-100 animate-bounce">
+                          <CheckCircle2 size={40} className="text-emerald-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">Verified!</h3>
+                        <p className="mt-2 text-sm text-gray-500">Your email has been successfully verified.<br/>Moving to academic details...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex justify-center gap-2">
+                          {otpDigits.map((digit, idx) => (
+                            <input
+                              key={idx}
+                              ref={el => { otpInputRefs.current[idx] = el; }}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              value={digit}
+                              onChange={(e) => handleOtpChange(e.target.value, idx)}
+                              onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                              onPaste={handleOtpPaste}
+                              className={`h-14 w-12 rounded-xl border-2 bg-white text-center text-xl font-bold shadow-sm transition-all focus:ring-2 focus:ring-indigo-500/20 outline-none
+                                ${otpError ? "border-red-500 bg-red-50 text-red-600" : digit ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-900"}`}
+                            />
+                          ))}
+                        </div>
+
+                        {otpError && (
+                          <div className="text-center space-y-1">
+                            <p className="text-xs font-medium text-red-500">⚠ {otpError}</p>
+                             {otpError.toLowerCase().includes("expired") && (
+                              <button 
+                                type="button" 
+                                onClick={resendSignupOtp}
+                                disabled={isResending}
+                                className="text-[0.7rem] text-indigo-600 font-bold hover:underline disabled:opacity-50"
+                              >
+                                {isResending ? "Resending..." : "Click here to get a new code"}
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="space-y-4">
+                          <Button 
+                            type="button" 
+                            onClick={verifyOtp} 
+                            disabled={otpDigits.join("").length < 6 || isVerifyingOtp}
+                            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95"
+                          >
+                            {isVerifyingOtp ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Verify & Continue"}
+                          </Button>
+
+                          <div className="flex items-center justify-between px-1">
+                             <button
+                              type="button"
+                              onClick={resendSignupOtp}
+                              disabled={otpCooldown > 0 || isResending}
+                              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            >
+                              <RefreshCw size={12} className={otpCooldown > 0 || isResending ? "animate-spin" : ""} />
+                              {isResending ? "Resending..." : otpCooldown > 0 ? `Resend in ${otpCooldown}s` : "Resend Code"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setStep(SignupStep.REGISTER)}
+                              className="text-xs font-bold text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                            >
+                              <ArrowLeft size={12} /> Change Email
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Trust strip */}
+                        <div className="flex items-center justify-center gap-2 rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-3">
+                          <ShieldCheck size={14} className="text-emerald-500" />
+                          <span className="text-[0.65rem] font-medium text-gray-500">
+                            Never share your OTP · Secured · Trusted Community
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 

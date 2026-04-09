@@ -71,7 +71,20 @@ export default function LoginPage() {
       toast.success("Login successful");
       router.push("/");
     } catch (error: any) {
-      toast.error(error?.toString() || "Failed to login");
+      const errorMsg = error?.toString() || "";
+      if (errorMsg.includes("verify your email")) {
+        toast.error("Account not verified. Redirecting to verification...");
+        setTimeout(() => {
+          router.push(`?mode=signup&step=2&email=${encodeURIComponent(values.email)}`);
+        }, 1500);
+      } else if (errorMsg.includes("complete registration")) {
+        toast.error("Profile incomplete. Redirecting to finish setup...");
+        setTimeout(() => {
+          router.push(`?mode=signup&step=3&email=${encodeURIComponent(values.email)}`);
+        }, 1500);
+      } else {
+        toast.error(errorMsg || "Failed to login");
+      }
     } finally {
       setIsLoading(false);
     }

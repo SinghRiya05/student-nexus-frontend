@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/utils/hook";
-import { verifyEmail, verifyResetOtp, resendOtp } from "@/features/auth/authThunk";
+import { verifyEmail, verifyResetOtp, resendOtp, forgotPassword } from "@/features/auth/authThunk";
 import toast from "react-hot-toast";
 import {
   Card,
@@ -163,10 +163,15 @@ export default function OtpVerificationPage({
     setIsResending(true);
     setErrorMsg("");
     
-    const result = await dispatch(resendOtp(email));
+    let result;
+    if (type === "signup") {
+      result = await dispatch(resendOtp(email));
+    } else {
+      result = await dispatch(forgotPassword(email));
+    }
     
     setIsResending(false);
-    if (resendOtp.fulfilled.match(result)) {
+    if (resendOtp.fulfilled.match(result) || forgotPassword.fulfilled.match(result)) {
       toast.success("New code sent!");
       setCooldown(RESEND_COOLDOWN);
       setDigits(Array(6).fill(""));

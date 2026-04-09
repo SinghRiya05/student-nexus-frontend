@@ -10,6 +10,7 @@ import universityReducer from "@/features/university/universitySlice";
 import courseReducer from "@/features/course/courseSlice";
 import semesterReducer from "@/features/semester/semesterSlice";
 import authReducer from "@/features/auth/authSlice";
+import userReducer from "@/features/users/userSlice";
 
 const rootReducer = combineReducers({
     country: countryReducer,
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
     course: courseReducer,
     semester: semesterReducer,
     auth: authReducer,
+    user: userReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

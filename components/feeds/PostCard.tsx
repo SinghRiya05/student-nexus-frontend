@@ -42,8 +42,8 @@ export function PostCard({ user, content, tags, likes, comments, views, publishe
       transition={{ duration: 0.5 }}
       className="mb-6"
     >
-      <Card className="rounded-2xl shadow-sm hover:shadow-md transition-all duration-500 border border-border/40 overflow-hidden">
-        <CardContent className="p-6">
+      <Card className="rounded-2xl shadow-sm hover:shadow-md transition-all duration-500  overflow-hidden">
+        <CardContent className="">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
@@ -79,16 +79,16 @@ export function PostCard({ user, content, tags, likes, comments, views, publishe
               {content}
             </p>
           </div>
-          
+
           {/* Images Grid */}
           {images && images.length > 0 && (
             <div className={cn(
-              "mb-6 rounded-2xl overflow-hidden grid gap-2 border border-border/40 max-h-72",
+              "mb-6 rounded-2xl overflow-hidden grid gap-2 border border-border/40 max-h-42",
               images.length === 1 ? "grid-cols-1" : "grid-cols-2"
             )}>
               {images.slice(0, 3).map((img, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   onClick={() => setSelectedImg(img)}
                   className={cn(
                     "relative overflow-hidden group/img cursor-zoom-in bg-muted/20",
@@ -96,9 +96,9 @@ export function PostCard({ user, content, tags, likes, comments, views, publishe
                     images.length === 3 && idx === 0 && "row-span-2 h-full"
                   )}
                 >
-                  <img 
-                    src={img} 
-                    alt={`Post ${idx}`} 
+                  <img
+                    src={img}
+                    alt={`Post ${idx}`}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/img:opacity-100 transition-opacity" />
@@ -114,12 +114,12 @@ export function PostCard({ user, content, tags, likes, comments, views, publishe
                 <DialogTitle>Image Preview</DialogTitle>
               </DialogHeader>
               <div className="relative w-full h-full flex items-center justify-center p-4">
-                <img 
-                  src={selectedImg || ""} 
-                  alt="Preview" 
+                <img
+                  src={selectedImg || ""}
+                  alt="Preview"
                   className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
                 />
-                <button 
+                <button
                   onClick={() => setSelectedImg(null)}
                   className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors z-50"
                 >
