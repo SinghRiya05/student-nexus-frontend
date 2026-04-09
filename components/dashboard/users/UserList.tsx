@@ -42,6 +42,7 @@ import {
 import AssignRoleDialog from "./AssignRoleDialog";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getAllUsers, deleteUser } from "@/features/users/userThunk";
+import { logoutUser } from "@/features/auth/authThunk";
 import { IUser } from "@/features/users/userModel";
 import { toast } from "react-hot-toast";
 import { Loader2, ChevronDown, ChevronUp, Globe, Calendar, BadgeCheck } from "lucide-react";
@@ -52,6 +53,7 @@ import { motion, AnimatePresence } from "motion/react";
 export default function UserList() {
   const dispatch = useAppDispatch();
   const { users, loading, error } = useAppSelector((state) => state.user);
+  const { user: currentUser } = useAppSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [isRoleDialogOpen, setIsRoleDialogOpen] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState<IUser | null>(null);
@@ -71,10 +73,18 @@ export default function UserList() {
   };
 
   const handleDeleteUser = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    const isSelf = id === currentUser?._id;
+    const confirmMessage = isSelf 
+      ? "Warning: You are about to delete your own account. You will be logged out immediately. Proceed?" 
+      : "Are you sure you want to delete this user?";
+
+    if (window.confirm(confirmMessage)) {
       const result = await dispatch(deleteUser(id));
       if (deleteUser.fulfilled.match(result)) {
-        toast.success("User deleted successfully");
+        toast.success(isSelf ? "Your account has been deleted" : "User deleted successfully");
+        if (isSelf) {
+          dispatch(logoutUser());
+        }
       } else {
         toast.error("Failed to delete user");
       }

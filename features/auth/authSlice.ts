@@ -99,6 +99,18 @@ const authSlice = createSlice({
                 state.accessToken = null;
                 state.refreshToken = null;
                 state.isAuthenticated = false;
+                state.success = false;
+                state.error = null;
+            })
+            .addCase(logoutUser.rejected, (state) => {
+                // Even if the API call fails (e.g., user already deleted), 
+                // we must clear the local state to allow the user to escape the broken session.
+                state.user = null;
+                state.accessToken = null;
+                state.refreshToken = null;
+                state.isAuthenticated = false;
+                state.success = false;
+                state.error = null;
             });
     },
 });

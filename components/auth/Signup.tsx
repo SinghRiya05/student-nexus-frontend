@@ -164,6 +164,14 @@ export default function SignupPage() {
       const s = parseInt(queryStep);
       if (Object.values(SignupStep).includes(s)) {
         setStep(s as SignupStep);
+        
+        // Auto-send OTP if requested in URL (e.g., from login redirect)
+        if (s === SignupStep.VERIFY && searchParams.get("autoSend") === "true" && queryEmail) {
+          // Wrap in a small timeout to ensure form state is settled
+          setTimeout(() => {
+            resendSignupOtp(queryEmail);
+          }, 500);
+        }
       }
     }
 
@@ -276,10 +284,10 @@ export default function SignupPage() {
     }
   };
 
-  const resendSignupOtp = async () => {
+  const resendSignupOtp = async (overrideEmail?: string) => {
     if (otpCooldown > 0 || isResending) return;
     
-    const email = form.getValues("email");
+    const email = overrideEmail || form.getValues("email");
     if (!email) {
       toast.error("Email address is missing. Please enter your email in Step 1.");
       return;
@@ -295,7 +303,7 @@ export default function SignupPage() {
       setOtpDigits(Array(6).fill(""));
       setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
     } else {
-      const errorMessage = result.payload as string || "Failed to resend OTP.";
+      const errorMessage = (result.payload as any)?.message || result.payload as string || "Failed to resend OTP.";
       toast.error(errorMessage);
     }
   };
@@ -508,7 +516,7 @@ export default function SignupPage() {
                              {otpError.toLowerCase().includes("expired") && (
                               <button 
                                 type="button" 
-                                onClick={resendSignupOtp}
+                                onClick={() => resendSignupOtp()}
                                 disabled={isResending}
                                 className="text-[0.7rem] text-indigo-600 font-bold hover:underline disabled:opacity-50"
                               >
@@ -531,7 +539,7 @@ export default function SignupPage() {
                           <div className="flex items-center justify-between px-1">
                              <button
                               type="button"
-                              onClick={resendSignupOtp}
+                              onClick={() => resendSignupOtp()}
                               disabled={otpCooldown > 0 || isResending}
                               className="text-xs font-bold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                             >
@@ -554,6 +562,13 @@ export default function SignupPage() {
                           <span className="text-[0.65rem] font-medium text-gray-500">
                             Never share your OTP · Secured · Trusted Community
                           </span>
+                        </div>
+
+                        {/* Testing hint */}
+                        <div className="text-center mt-2 animate-in fade-in duration-700">
+                          <p className="text-[0.65rem] text-gray-400">
+                            Testing? Try <kbd className="bg-gray-100 px-1 py-0.5 rounded border border-gray-200 font-mono text-[0.6rem] text-gray-600">123456</kbd>
+                          </p>
                         </div>
                       </>
                     )}

@@ -75,7 +75,7 @@ export default function LoginPage() {
       if (errorMsg.includes("verify your email")) {
         toast.error("Account not verified. Redirecting to verification...");
         setTimeout(() => {
-          router.push(`?mode=signup&step=2&email=${encodeURIComponent(values.email)}`);
+          router.push(`?mode=signup&step=2&email=${encodeURIComponent(values.email)}&autoSend=true`);
         }, 1500);
       } else if (errorMsg.includes("complete registration")) {
         toast.error("Profile incomplete. Redirecting to finish setup...");
