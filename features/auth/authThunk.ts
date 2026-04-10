@@ -46,6 +46,7 @@ export const verifyEmail = createAsyncThunk(
     "auth/verifyEmail",
     async (userData: IVerifyRequest, { rejectWithValue }) => {
         try {
+            console.log(userData);
             const response = await apiClient.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, userData);
             return response.data;
         } catch (error: any) {
