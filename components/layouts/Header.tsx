@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/utils/hook";
 import { logoutUser } from '@/features/auth/authThunk';
+import { getFollowing, getPendingFollowRequests, getSentRequests, getFollowers, acceptFollowRequest, rejectFollowRequest } from "@/features/follow/followThunk";
 import {
   GraduationCap,
   Search,
@@ -56,6 +57,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [requestsOpen, setRequestsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,16 +66,27 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.user.me);
+  const { pendingRequests } = useAppSelector((state) => state.follow);
 
   const closeAll = () => {
     setNotifOpen(false);
     setProfileOpen(false);
+    setRequestsOpen(false);
   };
+  
+  useEffect(() => {
+    if (me?._id) {
+      dispatch(getFollowing());
+      dispatch(getPendingFollowRequests());
+      dispatch(getSentRequests());
+      dispatch(getFollowers());
+    }
+  }, [me?._id, dispatch]);
 
   return (
     <>
       {/* Backdrop for dropdowns */}
-      {(notifOpen || profileOpen) && (
+      {(notifOpen || profileOpen || requestsOpen) && (
         <div
           className="fixed inset-0 z-30"
           onClick={closeAll}
@@ -145,10 +158,53 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <Search size={17} />
             </button>
 
+            {/* Follow Requests */}
+            <div className="relative">
+              <button
+                onClick={() => { setRequestsOpen((v) => !v); setNotifOpen(false); setProfileOpen(false); }}
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100"
+              >
+                <Users size={17} />
+                {pendingRequests?.length > 0 && (
+                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500 text-[0.55rem] font-bold text-white ring-2 ring-white">
+                    {pendingRequests.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Requests Dropdown */}
+              {requestsOpen && (
+                <div className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
+                  <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                    <p className="text-[0.82rem] font-bold text-gray-900">Follow Requests</p>
+                  </div>
+                  <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
+                    {pendingRequests?.length === 0 ? (
+                       <div className="px-4 py-5 text-center text-sm text-gray-500 italic">No pending requests</div>
+                    ) : (
+                      pendingRequests.map((req: any) => (
+                        <div key={req._id} className="flex gap-3 px-4 py-3 transition hover:bg-gray-50 items-center">
+                          <img src={req.follower?.avatar || "/user.jpg"} alt="avatar" className="h-9 w-9 rounded-full object-cover shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-[0.78rem] font-bold text-gray-800">{req.follower?.firstName} {req.follower?.lastName}</p>
+                            <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <button onClick={() => dispatch(acceptFollowRequest(req.follower._id))} className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition">Accept</button>
+                            <button onClick={() => dispatch(rejectFollowRequest(req.follower._id))} className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Decline</button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Notifications */}
             <div className="relative">
               <button
-                onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); }}
+                onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); setRequestsOpen(false); }}
                 className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100"
               >
                 <Bell size={17} />
@@ -194,7 +250,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             {/* Profile Dropdown */}
             <div className="relative ml-1">
               <button
-                onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); }}
+                onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); setRequestsOpen(false); }}
                 className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-2.5 py-1.5 transition hover:border-indigo-200 hover:bg-indigo-50"
               >
                 {me?.avatar ? (

@@ -3,24 +3,37 @@
 import React from 'react'
 import { Button } from "@/components/ui/button"
 import { Plus, MoveRight, Building2, Terminal, Globe, Landmark, Home, Send } from "lucide-react"
-import { motion } from "motion/react"
 import { UserCard } from "./UserCard"
 import { cn } from "@/lib/utils"
+import { useRouter } from 'next/navigation'
+import { useAppDispatch } from "@/utils/hook"
+import { getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedSemesterWithCourseAndSameUniversity } from "@/features/student/studentThunk"
+import { useEffect, useState } from "react"
 
 export default function MainContent() {
-    const classmates = [
-        { name: "Shobhit", role: "Java Developer", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD-xWp_jUAdB4nlMD3ACLos0oKwPrv5CKW6GxKwg_SXcQVlp9vsAlHVT13cUFM5bwQR8V3ZIU2-qMm4p2vN-V0q9lfb-LpSBBHueVozh1kpLn0f11w_dTEcaYJjgTg_5iQiZVncbV6yRMdN9jTMbxgOlI6x2XksvKeYHcnmLDnTsrDbtnATnKwtHKxqFhQTAKF8e-H4KqFHS7b01J-a8Ygynu2_Qdwxb8i_-25Z8Wk624zVrs39sdmX7hkSCkhc3WHSt_y6uW5JMnk" },
-        { name: "Anjali", role: "UI Designer", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAu-1r081rfOmY4mlKk47AgS4s2WiI3pqt0FNs4NjG9S_bItlsepQFhjYBI8J29orHDyB2Mb2kU0nhuvDYbbzfzHoFG8iV4fqh8HhgiC3F8OFKHPzJBZ7cpAP92pqfpDhUcDh8S6OoEYQZ16Dbqhlm3WXw1-HB8wfcCfx4QwSieev01yXzCIyt1HXQZ7UVe2ozh9gYHPGTYVzKU7Kd2tLagJ8Ifj0VdyhldN_OORD56e7WAcn7f3TrsVHDBFJq9FUzxRk8nGFxLe2Y" },
-        { name: "Rahul", role: "Data Analyst", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAbpVrwhNkIKqg4IFSnFs-ce5bBE46dUq3ebV-UfEvxtRoHaJucSBKQO4efQcPuVYr61Be8LpD9C6HwntoV06qYlOghWIWWstp9OoWcjth61ngq4umBFNt80oU9z-yxJQWq0DM7uFAVSQi7BxIj8MVIKtxHrX7eS4YjvDHEuTjdLDN5e_R5LaSKvulptNdcwyB8kj8mY0_JzbAtlPb0woZvvJO3UJhf_nDwkPlDnC29QOmTJMkQ7V-IZCJSMcsTMK5YUaGuDzFtMEc" },
-        { name: "Rahul", role: "Data Analyst", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAbpVrwhNkIKqg4IFSnFs-ce5bBE46dUq3ebV-UfEvxtRoHaJucSBKQO4efQcPuVYr61Be8LpD9C6HwntoV06qYlOghWIWWstp9OoWcjth61ngq4umBFNt80oU9z-yxJQWq0DM7uFAVSQi7BxIj8MVIKtxHrX7eS4YjvDHEuTjdLDN5e_R5LaSKvulptNdcwyB8kj8mY0_JzbAtlPb0woZvvJO3UJhf_nDwkPlDnC29QOmTJMkQ7V-IZCJSMcsTMK5YUaGuDzFtMEc" },
-    ]
+    const router = useRouter()
+    const dispatch = useAppDispatch()
 
-    const batchmates = [
-        { name: "Komal", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBOmiF1g4f65T1qJLFrQlUaMAH2S3Mksa_uDX_i9fE_sA1Ca2Jl7l2Cb3dIeku8-jLDUXcqLyPfomCve_vuWyPuSn83CQutFQ9msjxUA5fJWO-5qxHZDLPqGj3G6CtXHDi-FLiSDrDIcxJe9c6KQEqM1NrQ16HRB0o_Cg8yEQ-5HJGFdJ-4i8IviP0cRuc60xxNnEox22mr_8iEZI0p63D_hWhdyLAAEj9aJYyk1iL3_Lc2H2U4i98UDL8ZOGnlwmjHY61418ilzfY" },
-        { name: "Rishika", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA2z1kfF2stL0lYXDiC-CV0PohSBvuKy2DSJHKHgJbcTBNGKp_OSxzDgzQrp9R4US9F0pFpq96tPwChkpyacl7mZ0-e_wsn6_LhHubV9A5qQTLoUTwTCd9qnfZSFNkGoijkV3MVnUbohOQOtFrnM48zpoGoztShCjHlW8Xb_GT2s9Ccesn2UccoVd9UU9b-rUqtwsDy0BwryUkRHnS8GUvo213Sd3A8o8tzapAA3ghtadxNMXu-NpgwBR3y7gvbydavrpaTCwubCG8" },
-        { name: "Kamal", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAi79QZ_sml_vzAk3Gy51XEyyvpy3mIlkfjrxEir-9z3mAycMDqHOYxFLrAJCJPtjct2vMRtTjUa3FzSFCSn14Mh-eoGlh08B-ZB-RqMo9eFQUlQPul52jfnmAB_uy9AbZaU-4d8pO4zGMjQ2CbKQhvpyGPPImtfOBc1_FDxztiBxnW9WUmd8ILo73lc4QpTl4NsmeHz0FokM-udnMAudBwnzlEmb32CpNwrVwhY9XCjc_Q9cTB6tTih38QLShN3LbloJzcbevgOGI" },
-        { name: "Rohit", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBD6BOaBnoE0lKm26FU05rhz9A_ahFI5KHwNKYRPDmRBDAKHFC7Dp2dNY5HCqwlIYx6GiMd7nIyDspS596hNt1A4egkuHREUh0OoeGG5jyIN7EvWiw-0pxWxpOJNc3Pp9O5fnR-hwAdt9jyJco6uLB9Twm4qqsWVARAOFXj8Y7FCCSE21T57urWbZtzsEtQzjDlPtVrgM6SEzfXWhk-thYaoh1NGYbreA3wxeen4O22FYp3NKth2oGoh0j2-oeP5_-QgPDY1IbFjF4" },
-    ]
+    const [classmates, setClassmates] = useState<any[]>([])
+    const [batchmates, setBatchmates] = useState<any[]>([])
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [classRes, batchRes] = await Promise.all([
+                    dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity()).unwrap(),
+                    dispatch(getStudentsByMatchedCourseAndSameUniversity()).unwrap()
+                ]);
+
+                setClassmates(classRes?.data || []);
+                setBatchmates(batchRes?.data || []);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchData();
+    }, [dispatch]);
 
     const professors = [
         { name: "Dr. Mohan Singh", role: "Senior Faculty, IT Dept", skills: ["Data Structure", "Web Dev"], image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDv08_-IeN1hdXit3rvg8uyJiS0y_sq9PggyLZx17F_ElgCfuMa68sfq6pDWr2EEqUGfRpf1QToJiPqiUxsJJwGdN7oEzyy_pVXdGJbzficSTlKz8xtA-AVni6WTCxM8Y0f21_Nj_UQ8bFEAM4vGBJZqjfyvrlIVw0LsAg7Xr61jtVitcqH_cfsOgS0IP_4TaBQPLdjxnFNismEi8NF0hFGWAmT_cTWM-mKfwSh1V3WGVJ83ErtKCm4StdA3vn_TdIXQLHf4FOhjTw" },
@@ -51,12 +64,22 @@ export default function MainContent() {
             <section>
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h2 className="text-xl font-bold">BBD University - Class Mates</h2>
-                    <button className="text-[#2949ef] text-sm font-semibold hover:underline">View All</button>
+                    <button onClick={() => router.push("/students")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                    {classmates.map((user, idx) => (
-                        <UserCard key={idx} name={user.name} role={user.role} image={user.image} variant="primary" />
+                    {classmates.slice(0, 5).map((user: any, idx: number) => (
+                        <UserCard
+                            key={idx}
+                            userId={user._id}
+                            name={`${user.firstName} ${user.lastName}`}
+                            role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                            image={user.avatar || user.profilePicture || undefined}
+                            variant="primary"
+                        />
                     ))}
+                    {classmates.length === 0 && (
+                        <p className="text-sm text-gray-400 italic py-5">No classmates discovered yet.</p>
+                    )}
                 </div>
             </section>
 
@@ -64,12 +87,22 @@ export default function MainContent() {
             <section>
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h2 className="text-xl font-bold">BBD University - Batch Mates</h2>
-                    <button className="text-[#2949ef] text-sm font-semibold hover:underline">View All</button>
+                    <button onClick={() => router.push("/students")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                    {batchmates.map((user, idx) => (
-                        <UserCard key={idx} name={user.name} role="" image={user.image} variant="secondary" />
+                    {batchmates.slice(0, 5).map((user: any, idx: number) => (
+                        <UserCard
+                            key={idx}
+                            userId={user._id}
+                            name={`${user.firstName} ${user.lastName}`}
+                            role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                            image={user.avatar || user.profilePicture || undefined}
+                            variant="secondary"
+                        />
                     ))}
+                    {batchmates.length === 0 && (
+                        <p className="text-sm text-gray-400 italic py-5">No batchmates discovered yet.</p>
+                    )}
                 </div>
             </section>
 
@@ -77,7 +110,7 @@ export default function MainContent() {
             <section>
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h2 className="text-xl font-bold">BBD University - Professors</h2>
-                    <button className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
+                    <button onClick={() => router.push("/professors")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {professors.map((prof, idx) => (

@@ -191,8 +191,12 @@ export default function UserList() {
                     >
                       <TableCell className="font-medium py-5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs ring-1 ring-indigo-100">
-                            {user.firstName[0]}
+                          <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs ring-1 ring-indigo-100 overflow-hidden">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.firstName} className="w-full h-full object-cover" />
+                            ) : (
+                              user.firstName?.[0]?.toUpperCase() || "U"
+                            )}
                           </div>
                           <div className="flex flex-col">
                             <span className="text-slate-900 font-bold">

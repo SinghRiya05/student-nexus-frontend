@@ -1,3 +1,6 @@
+import { Alumni_Sans } from "next/font/google";
+import { id } from "zod/v4/locales";
+
 export const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASEURL;
 
 export const API_ENDPOINTS = {
@@ -79,6 +82,26 @@ export const API_ENDPOINTS = {
         GET_BY_ID: (id: string) => `/permissions/${id}`,
         UPDATE: (id: string) => `/permissions/${id}`,
         DELETE: (id: string) => `/permissions/${id}`,
+    },
+    STUDENT: {
+        GET_ALL: "/students",
+        GET_BY_MY_UNIVERSITY: `/students/my-university`,
+        GET_BY_MATCHED_HOBBY_BADGE: `/students/matched-hobby`,
+        GET_BY_MATCHED_SEMESTER_WITH_COURSE_AND_SAME_UNIVERSITY: `/students/matched-semester-with-course-and-same-university`,
+        GET_BY_MATCH_COURSE_AND_SAME_UNIVERSITY: `/students/match-course-and-same-university`,
+    },
+    ALUMNI: {
+        GET_BY_MY_UNIVERSITY: `/alumni/my-university`,
+    },
+    FOLLOW: {
+        SEND_FOLLOW_REQUEST: (id: string) => `/follow/${id}`,
+        GET_FOLLOWERS: "/follow/followers",
+        GET_FOLLOWING: "/follow/following",
+        UNFOLLOW: (id: string) => `/follow/${id}`,
+        ACCEPT_FOLLOW_REQUEST: (id: string) => `/follow/accept-request/${id}`,
+        REJECT_FOLLOW_REQUEST: (id: string) => `/follow/reject-request/${id}`,
+        PENDING_FOLLOW_REQUESTS: "/follow/pending-requests",
+        SENT_REQUESTS: "/follow/sent-requests",
     },
 
 };
