@@ -57,10 +57,10 @@ import {
   completeRegistration,
   resendOtp,
 } from "@/features/auth/authThunk";
-import { getAllUniversities } from "@/features/university/universityThunk";
+import { getAllUniversities, getCoursesByUniversityId } from "@/features/university/universityThunk";
 import { getAllCourses } from "@/features/course/courseThunk";
 import { getRoles } from "@/features/roles/roleThunk";
-import { getAllSemesters } from "@/features/semester/semesterThunk";
+import { getSemestersByCourseId } from "@/features/semester/semesterThunk";
 import toast from "react-hot-toast";
 
 // ─── Zod Schemas ─────────────────────────────
@@ -100,20 +100,6 @@ const signupSchema = personalInfoOptionalSchema.extend({
   hobby_badge: z.string().optional(),
 });
 
-const signupSchema = personalInfoOptionalSchema.extend({
-  otp: z.string().optional(),
-  universityId: z.string().optional(),
-  roleId: z.string().optional(),
-  courseIds: z.array(z.string()).optional(),
-  semesterId: z.string().optional(),
-  currentCompany: z.string().optional(),
-  jobTitle: z.string().optional(),
-  designation: z.string().optional(),
-  department: z.string().optional(),
-  experienceYears: z.string().optional(),
-  skills: z.string().optional(),
-  hobby_badge: z.string().optional(),
-});
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -146,12 +132,12 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.auth || {});
-  const { universities = [] } = useAppSelector(
+  const { universities = [], universityCourses = [] } = useAppSelector(
     (state) => state.university || {},
   );
-  const { courses = [] } = useAppSelector((state) => state.course || {});
+  const courses = universityCourses.map((uc: any) => uc.courseId).filter(Boolean);
   const { roles = [] } = useAppSelector((state) => state.role || {});
-  const { semesters = [] } = useAppSelector((state) => state.semester || {});
+  const { semestersByCourseId: semesters = [] } = useAppSelector((state) => state.semester || {});
 
   const [step, setStep] = useState<SignupStep>(SignupStep.REGISTER);
 
@@ -215,11 +201,28 @@ export default function SignupPage() {
   useEffect(() => {
     // One-time fetch of reference data
     dispatch(getAllUniversities());
-    dispatch(getAllCourses());
     dispatch(getRoles());
-    dispatch(getAllSemesters());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
+
+  const selectedUniversityId = watch("universityId");
+
+  useEffect(() => {
+    if (selectedUniversityId) {
+      dispatch(getCoursesByUniversityId(selectedUniversityId));
+      setValue("courseIds", []);
+      setValue("semesterId", "");
+    }
+  }, [selectedUniversityId, dispatch, setValue]);
+
+  const studentCourseId = selectedRoleName === "STUDENT" ? selectedCourseIds?.[0] : undefined;
+
+  useEffect(() => {
+    if (studentCourseId) {
+      dispatch(getSemestersByCourseId(studentCourseId));
+      setValue("semesterId", "");
+    }
+  }, [studentCourseId, dispatch, setValue]);
 
   useEffect(() => {
     // Handle resume flow from URL params (runs only when values actually change)

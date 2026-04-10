@@ -44,6 +44,7 @@ export interface ISemesterGetAllResponse {
 export interface SemesterState {
     semesters: ISemester[],
     singleSemester: ISemester | null,
+    semestersByCourseId: ISemester[],
     isLoading: boolean,
     error: string | null,
 }

@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { SemesterState } from "./semesterModel";
-import { createSemester, getAllSemesters, getSemesterById, updateSemester, deleteSemester } from "./semesterThunk";
+import { createSemester, getAllSemesters, getSemesterById, updateSemester, deleteSemester, getSemestersByCourseId } from "./semesterThunk";
 
 const initialState: SemesterState = {
     semesters: [],
     singleSemester: null,
+    semestersByCourseId: [],
     isLoading: false,
     error: null,
 }
@@ -45,6 +46,17 @@ const semesterSlice = createSlice({
                 state.singleSemester = action.payload;
             })
             .addCase(getSemesterById.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(getSemestersByCourseId.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(getSemestersByCourseId.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.semestersByCourseId = action.payload;
+            })
+            .addCase(getSemestersByCourseId.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             })

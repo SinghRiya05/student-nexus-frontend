@@ -39,6 +39,18 @@ export const getSemesterById = createAsyncThunk(
     }
 )
 
+export const getSemestersByCourseId = createAsyncThunk(
+    "semester/getSemestersByCourseId",
+    async (id: string, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get<ISemesterGetAllResponse>(API_ENDPOINTS.SEMESTER.GET_BY_COURSE_ID(id));
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch semesters");
+        }
+    }
+)
+
 export const updateSemester = createAsyncThunk(
     "semester/updateSemester",
     async ({ id, semesterData }: { id: string; semesterData: ISemesterUpdate }, { rejectWithValue }) => {

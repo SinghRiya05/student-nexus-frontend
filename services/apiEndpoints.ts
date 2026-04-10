@@ -61,6 +61,7 @@ export const API_ENDPOINTS = {
         CREATE: "/semester",
         GET_ALL: "/semester",
         GET_BY_ID: (id: string) => `/semester/${id}`,
+        GET_BY_COURSE_ID: (id: string) => `/semester/course/${id}`,
         UPDATE: (id: string) => `/semester/${id}`,
         DELETE: (id: string) => `/semester/${id}`,
     },
