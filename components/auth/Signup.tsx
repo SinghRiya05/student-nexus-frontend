@@ -8,8 +8,8 @@ import {
   User, Mail, Phone, Lock, BookOpen,
   ArrowRight, ArrowLeft, GraduationCap,
   ShieldCheck, Users, Layers,
-  CheckCircle2, Award, Globe, Clock, Hash,
-  RefreshCw
+  CheckCircle2, Award,
+  RefreshCw, Building2, Briefcase
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -47,18 +47,6 @@ import { getRoles } from "@/features/roles/roleThunk";
 import { getAllSemesters } from "@/features/semester/semesterThunk";
 import toast from "react-hot-toast";
 
-// ─── Zod Schemas ─────────────────────────────
-const personalInfoSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters."),
-  lastName: z.string().min(2, "Last name must be at least 2 characters."),
-  email: z.string().email("Enter a valid email."),
-  phone: z.string().min(10, "Enter a valid 10-digit phone number.").max(13),
-  password: z.string()
-    .min(8, "Password must be at least 8 characters.")
-    .regex(/[0-9]/, "Must contain at least one number.")
-    .regex(/[^a-zA-Z0-9]/, "Must contain at least one symbol."),
-});
-
 const personalInfoOptionalSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
@@ -67,29 +55,11 @@ const personalInfoOptionalSchema = z.object({
   password: z.string().optional(),
 });
 
-const otpSchema = z.object({
-  otp: z.string().length(6, "OTP must be 6 digits."),
-});
-
-const academicSchema = z.object({
+const signupSchema = personalInfoOptionalSchema.extend({
+  otp: z.string().optional(),
   universityId: z.string().min(1, "Please select your university."),
   roleId: z.string().min(1, "Please select your role."),
   courseIds: z.array(z.string()).min(1, "Please select at least one course."),
-  semesterId: z.string().optional(),
-  // Profile specific fields
-  currentCompany: z.string().optional(),
-  jobTitle: z.string().optional(),
-  designation: z.string().optional(),
-  department: z.string().optional(),
-  experienceYears: z.string().optional(),
-  skills: z.string().optional(),
-});
-
-const signupSchema = personalInfoOptionalSchema.extend({
-  otp: z.string().optional(),
-  universityId: z.string().optional(),
-  roleId: z.string().optional(),
-  courseIds: z.array(z.string()).optional(),
   semesterId: z.string().optional(),
   currentCompany: z.string().optional(),
   jobTitle: z.string().optional(),
@@ -126,7 +96,6 @@ export default function SignupPage() {
   const { semesters = [] } = useAppSelector((state) => state.semester || {});
 
   const [step, setStep] = useState<SignupStep>(SignupStep.REGISTER);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
   // OTP specific state
@@ -164,7 +133,7 @@ export default function SignupPage() {
       const s = parseInt(queryStep);
       if (Object.values(SignupStep).includes(s)) {
         setStep(s as SignupStep);
-        
+
         // Auto-send OTP if requested in URL (e.g., from login redirect)
         if (s === SignupStep.VERIFY && searchParams.get("autoSend") === "true" && queryEmail) {
           // Wrap in a small timeout to ensure form state is settled
@@ -179,6 +148,7 @@ export default function SignupPage() {
     dispatch(getAllCourses());
     dispatch(getRoles());
     dispatch(getAllSemesters());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, searchParams, setValue]);
 
   // Handle OTP Cooldown
@@ -201,7 +171,6 @@ export default function SignupPage() {
     if (!isValid) return;
 
     const values = form.getValues();
-    setIsSubmitting(true);
     const result = await dispatch(registerUser({
       firstName: values.firstName ?? "",
       lastName: values.lastName ?? "",
@@ -209,7 +178,6 @@ export default function SignupPage() {
       phone: values.phone ?? "",
       password: values.password ?? ""
     }));
-    setIsSubmitting(false);
 
     if (registerUser.fulfilled.match(result)) {
       toast.success("Registration successful! Please check your email for OTP.");
@@ -269,7 +237,7 @@ export default function SignupPage() {
 
     setIsVerifyingOtp(true);
     setOtpError("");
-    const result = await dispatch(verifyEmail({ email: watch("email"), otp: otpString }));
+    const result = await dispatch(verifyEmail({ email: form.getValues("email"), otp: otpString }));
     setIsVerifyingOtp(false);
 
     if (verifyEmail.fulfilled.match(result)) {
@@ -286,7 +254,7 @@ export default function SignupPage() {
 
   const resendSignupOtp = async (overrideEmail?: string) => {
     if (otpCooldown > 0 || isResending) return;
-    
+
     const email = overrideEmail || form.getValues("email");
     if (!email) {
       toast.error("Email address is missing. Please enter your email in Step 1.");
@@ -303,7 +271,8 @@ export default function SignupPage() {
       setOtpDigits(Array(6).fill(""));
       setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
     } else {
-      const errorMessage = (result.payload as any)?.message || result.payload as string || "Failed to resend OTP.";
+      const payload = result.payload as { message?: string } | string | undefined;
+      const errorMessage = (typeof payload === 'object' && payload?.message) ? payload.message : (typeof payload === 'string' ? payload : "Failed to resend OTP.");
       toast.error(errorMessage);
     }
   };
@@ -312,6 +281,32 @@ export default function SignupPage() {
     if (!user?._id) {
       toast.error("User ID missing. Please restart registration.");
       return;
+    }
+
+    // Manual role-based requirement checks
+    if (selectedRoleName === "STUDENT" && !values.semesterId) {
+      form.setError("semesterId", { type: "manual", message: "Current Semester is required." });
+      return;
+    }
+    if (selectedRoleName === "TEACHER") {
+      if (!values.designation) {
+        form.setError("designation", { type: "manual", message: "Designation is required." });
+        return;
+      }
+      if (!values.department) {
+        form.setError("department", { type: "manual", message: "Department is required." });
+        return;
+      }
+    }
+    if (selectedRoleName === "ALUMINI") {
+      if (!values.currentCompany) {
+        form.setError("currentCompany", { type: "manual", message: "Company is required." });
+        return;
+      }
+      if (!values.jobTitle) {
+        form.setError("jobTitle", { type: "manual", message: "Job Title is required." });
+        return;
+      }
     }
 
     const result = await dispatch(completeRegistration({
@@ -364,18 +359,18 @@ export default function SignupPage() {
         <Card className="relative z-10 mx-auto w-full max-w-[440px] rounded-[24px] border-none ring-0 bg-transparent shadow-none animate-in fade-in slide-in-from-bottom-4 duration-500">
           <CardHeader className="pb-6">
             <div className="mb-4 flex items-center gap-2 lg:hidden">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
                 <GraduationCap size={17} />
               </div>
-              <span className="text-lg font-bold text-gray-900">Student<span className="text-indigo-600">Nexus</span></span>
+              <span className="text-[16px] font-bold text-gray-900">Student<span className="text-indigo-600">Nexus</span></span>
             </div>
 
-            <CardTitle className="text-[1.7rem] font-bold leading-[1.15] -tracking-[0.03em] text-gray-900">
+            <CardTitle className="text-2xl font-bold -tracking-[0.03em] text-gray-900">
               {step === SignupStep.REGISTER && "Create Account"}
               {step === SignupStep.VERIFY && "Verify Email"}
               {step === SignupStep.ACADEMIC && "Academic Details"}
             </CardTitle>
-            <CardDescription className="text-[0.84rem] leading-relaxed text-gray-500 mt-1.5 mb-4">
+            <CardDescription className="text-[0.84rem] leading-relaxed text-gray-500 mb-2">
               {step === SignupStep.REGISTER && "Fill in your personal information to get started."}
               {step === SignupStep.VERIFY && (searchParams.get("email") ? "Welcome back! Please verify your email to continue." : `We've sent a 6-digit code to ${watch("email")}`)}
               {step === SignupStep.ACADEMIC && "Tell us about your university, role and courses."}
@@ -488,7 +483,7 @@ export default function SignupPage() {
                           <CheckCircle2 size={40} className="text-emerald-500" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900">Verified!</h3>
-                        <p className="mt-2 text-sm text-gray-500">Your email has been successfully verified.<br/>Moving to academic details...</p>
+                        <p className="mt-2 text-sm text-gray-500">Your email has been successfully verified.<br />Moving to academic details...</p>
                       </div>
                     ) : (
                       <>
@@ -513,9 +508,9 @@ export default function SignupPage() {
                         {otpError && (
                           <div className="text-center space-y-1">
                             <p className="text-xs font-medium text-red-500">⚠ {otpError}</p>
-                             {otpError.toLowerCase().includes("expired") && (
-                              <button 
-                                type="button" 
+                            {otpError.toLowerCase().includes("expired") && (
+                              <button
+                                type="button"
                                 onClick={() => resendSignupOtp()}
                                 disabled={isResending}
                                 className="text-[0.7rem] text-indigo-600 font-bold hover:underline disabled:opacity-50"
@@ -527,9 +522,9 @@ export default function SignupPage() {
                         )}
 
                         <div className="space-y-4">
-                          <Button 
-                            type="button" 
-                            onClick={verifyOtp} 
+                          <Button
+                            type="button"
+                            onClick={verifyOtp}
                             disabled={otpDigits.join("").length < 6 || isVerifyingOtp}
                             className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95"
                           >
@@ -537,7 +532,7 @@ export default function SignupPage() {
                           </Button>
 
                           <div className="flex items-center justify-between px-1">
-                             <button
+                            <button
                               type="button"
                               onClick={() => resendSignupOtp()}
                               disabled={otpCooldown > 0 || isResending}
@@ -577,7 +572,7 @@ export default function SignupPage() {
 
                 {/* ── STEP 3: ACADEMIC ── */}
                 {step === SignupStep.ACADEMIC && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500  overflow-y-auto pr-2 custom-scrollbar">
 
                     {/* Role Selection */}
                     <FormField control={form.control} name="roleId"
@@ -677,16 +672,60 @@ export default function SignupPage() {
                     )}
 
                     {selectedRoleName === "TEACHER" && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField control={form.control} name="designation" render={({ field }) => (<FormItem> <FormLabel>Designation</FormLabel> <Input placeholder="Professor" className={inputCls + " pl-4"} {...field} /> </FormItem>)} />
-                        <FormField control={form.control} name="department" render={({ field }) => (<FormItem> <FormLabel>Department</FormLabel> <Input placeholder="CSE" className={inputCls + " pl-4"} {...field} /> </FormItem>)} />
+                      <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-1 duration-500">
+                        <FormField control={form.control} name="designation" render={({ field }) => (
+                          <FormItem className="gap-1">
+                            <FormLabel className="text-[0.74rem] font-semibold text-gray-700">Designation</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Award size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Input placeholder="Professor" className={inputCls} {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage className="text-[0.68rem] text-red-500" />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="department" render={({ field }) => (
+                          <FormItem className="gap-1">
+                            <FormLabel className="text-[0.74rem] font-semibold text-gray-700">Department</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <BookOpen size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Input placeholder="CSE" className={inputCls} {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage className="text-[0.68rem] text-red-500" />
+                          </FormItem>
+                        )} />
                       </div>
                     )}
 
                     {selectedRoleName === "ALUMINI" && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField control={form.control} name="currentCompany" render={({ field }) => (<FormItem> <FormLabel>Company</FormLabel> <Input placeholder="Google" className={inputCls + " pl-4"} {...field} /> </FormItem>)} />
-                        <FormField control={form.control} name="jobTitle" render={({ field }) => (<FormItem> <FormLabel>Job Title</FormLabel> <Input placeholder="Software Engineer" className={inputCls + " pl-4"} {...field} /> </FormItem>)} />
+                      <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-1 duration-500">
+                        <FormField control={form.control} name="currentCompany" render={({ field }) => (
+                          <FormItem className="gap-1">
+                            <FormLabel className="text-[0.74rem] font-semibold text-gray-700">Company</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Input placeholder="Google" className={inputCls} {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage className="text-[0.68rem] text-red-500" />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="jobTitle" render={({ field }) => (
+                          <FormItem className="gap-1">
+                            <FormLabel className="text-[0.74rem] font-semibold text-gray-700">Job Title</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Input placeholder="Software Engineer" className={inputCls} {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage className="text-[0.68rem] text-red-500" />
+                          </FormItem>
+                        )} />
                       </div>
                     )}
 
