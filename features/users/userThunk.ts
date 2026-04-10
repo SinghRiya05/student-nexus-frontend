@@ -16,6 +16,18 @@ export const getAllUsers = createAsyncThunk(
     }
 );
 
+export const getMe = createAsyncThunk(
+    "user/getMe",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_ME);
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || "Failed to fetch user");
+        }
+    }
+);
+
 export const deleteUser = createAsyncThunk(
     "user/deleteUser",
     async (id: string, { rejectWithValue }) => {

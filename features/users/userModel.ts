@@ -1,12 +1,7 @@
 
 import { ICourse } from "../semester/semesterModel";
 import { IRole } from "../roles/roleModel";
-export interface IUniversity {
-    _id: string;
-    name: string;
-    short_name?: string;
-    domain?: string;
-}
+import { IUniversity } from "../university/universityModel";
 
 
 export interface IUser {
@@ -15,6 +10,8 @@ export interface IUser {
     lastName: string;
     email: string;
     phone: string;
+    avatar?: string;
+    coverImage?: string;
     courseIds: ICourse[];
     universityId?: IUniversity;
     roleId: IRole;
@@ -40,6 +37,7 @@ export interface UserResponse {
 
 export interface UserState {
     users: IUser[];
+    me: IUser | null;
     loading: boolean;
     success: boolean;
     message: string | null;

@@ -1,9 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { UserState } from "./userModel";
-import { getAllUsers, deleteUser } from "./userThunk";
+import { getAllUsers, deleteUser, getMe } from "./userThunk";
 
 const initialState: UserState = {
     users: [],
+    me: null,
     loading: false,
     success: false,
     message: null,
@@ -34,6 +35,21 @@ const userSlice = createSlice({
                 state.users = action.payload;
             })
             .addCase(getAllUsers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+
+            // Get Me
+            .addCase(getMe.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getMe.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                state.me = action.payload;
+            })
+            .addCase(getMe.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })

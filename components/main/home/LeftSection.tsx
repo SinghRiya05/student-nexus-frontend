@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
 import Link from 'next/link'
@@ -19,6 +19,7 @@ import {
     MapPin
 } from "lucide-react"
 import { logoutUser } from '@/features/auth/authThunk'
+import { getMe } from '@/features/users/userThunk'
 
 export default function LeftSection() {
     const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
@@ -29,6 +30,16 @@ export default function LeftSection() {
     const handleLogout = () => {
         dispatch(logoutUser());
     };
+
+    const user = useAppSelector((state) => state.auth.user)
+
+    useEffect(() => {
+        dispatch(getMe())
+    }, [user])
+
+    const me = useAppSelector((state) => state.user.me)
+    console.log(me);
+
 
     const navLinks = [
         { id: 1, label: "My Feed", icon: Rss, href: "/feeds" },
@@ -63,28 +74,34 @@ export default function LeftSection() {
                         <div className="relative mb-2">
                             <motion.div
                                 whileHover={{ scale: 1.05 }}
-                                className="h-16 w-16 rounded-2xl p-1 bg-white overflow-hidden"
+                                className="h-16 w-16 rounded-2xl p-1 bg-white overflow-hidden flex-shrink-0"
                             >
-                                <img
-                                    className="w-full h-full object-cover rounded-xl"
-                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2ouios_lhgXqc2jp7Mq-OcL_Utm9--mcX154rRS0412JQKRZkcX78lXb4rJyYrGQ89EUiBnSKbmjTbTizXd_rLbMDgx_iDfMYqxsAVJCpaaZzIiL2pGubDVFUoOU2IzFNEjdPJ8efhIjopDqX67xS-pGZjdgdBM2kTpG-VYO65j3PRjfdmusUe5V7nY4F83Uxir3MKiO0uXimenU1ScyWKf34s19hoLZ3y6hB5JwAz1_l_YIJxaxr5rKBQR7ExC31lw6gsgcSg2w"
-                                    alt="Riya Singh"
-                                />
+                                {me?.avatar ? (
+                                    <img
+                                        className="w-full h-full object-cover rounded-xl"
+                                        src={me.avatar}
+                                        alt={me.firstName || "User"}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl uppercase">
+                                        {me?.firstName?.[0] || "U"}
+                                    </div>
+                                )}
                             </motion.div>
                             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
                         </div>
 
-                        <h3 className="font-bold text-[#302e56] text-base leading-tight">Riya Singh</h3>
-                        <p className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider mb-3">BCA Student</p>
+                        <h3 className="font-bold text-[#302e56] text-base leading-tight">{me?.firstName} {me?.lastName}</h3>
+                        <p className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider mb-3">{me?.roleId?.name || "Student"}</p>
 
                         <div className="w-full space-y-1.5 mb-4">
                             <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
                                 <School className="w-3 h-3 text-primary" />
-                                BBD University
+                                {me?.universityId?.name.toUpperCase() || "University"}
                             </div>
                             <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
                                 <MapPin className="w-3 h-3 text-primary" />
-                                Lucknow, India
+                                {me?.universityId?.state.name.toUpperCase() + ", " + me?.universityId?.city.name.toUpperCase()}
                             </div>
                         </div>
 
