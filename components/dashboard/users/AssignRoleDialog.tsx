@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { ShieldCheck, User } from "lucide-react";
 
@@ -42,13 +42,14 @@ export default function AssignRoleDialog({
 
   React.useEffect(() => {
     if (user) {
-      setSelectedRole(user.role.toLowerCase());
+      setSelectedRole(user.role?.toLowerCase());
     }
   }, [user]);
 
   const handleSave = () => {
-    // API CALL PLACE: Update user role
-    console.log(`Assigning role ${selectedRole} to user ${user?.id}`);
+    // DUMMY ACTION: Currently only logging for simulation. 
+    // We will decide later if this needs a separate page or a real API integration.
+    console.log(`[DUMMY] Assigning role ${selectedRole} to user ${user?.firstName} ${user?.lastName}`);
     setIsOpen(false);
   };
 

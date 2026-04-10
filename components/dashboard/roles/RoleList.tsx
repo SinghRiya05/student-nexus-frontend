@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,9 +19,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { 
-  MoreHorizontal, 
-  Plus, 
+import {
+  MoreHorizontal,
+  Plus,
   ShieldCheck,
   Search,
   CheckCircle2,
@@ -32,43 +33,21 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import Link from "next/link";
-
-const roles = [
-  {
-    id: "1",
-    name: "Admin",
-    description: "Full access to all modules and settings.",
-    userCount: 5,
-    status: "Active",
-    permissions: ["all"],
-  },
-  {
-    id: "2",
-    name: "Teacher",
-    description: "Access to courses, students, and semester management.",
-    userCount: 12,
-    status: "Active",
-    permissions: ["courses_view", "courses_edit", "students_view", "semester_view"],
-  },
-  {
-    id: "3",
-    name: "Student",
-    description: "Limited access to own courses and profile.",
-    userCount: 120,
-    status: "Active",
-    permissions: ["courses_view", "profile_view"],
-  },
-  {
-    id: "4",
-    name: "Support",
-    description: "Access to user management and troubleshooting tools.",
-    userCount: 3,
-    status: "Active",
-    permissions: ["users_view", "users_edit", "support_tools"],
-  },
-];
+import { deleteRole, getRoles } from "@/features/roles/roleThunk";
+import toast from "react-hot-toast";
 
 export default function RoleList() {
+  const dispatch = useAppDispatch();
+  const { roles, roleLoading, roleError } = useAppSelector((state) => state.role);
+
+  useEffect(() => {
+    dispatch(getRoles());
+  }, [dispatch]);
+
+  const handleDelete = (id: string) => {
+    dispatch(deleteRole(id));
+    toast.success("Role deleted successfully");
+  }
   const [searchTerm, setSearchTerm] = React.useState("");
 
   const filteredRoles = roles.filter((role) =>
@@ -129,13 +108,15 @@ export default function RoleList() {
                 <TableRow className="hover:bg-transparent border-slate-100 ">
                   <TableHead className="font-bold text-white py-4 min-w-[200px]">Role Name</TableHead>
                   <TableHead className="font-bold text-white">Description</TableHead>
+                  <TableHead className="font-bold text-white">Created At</TableHead>
+                  <TableHead className="font-bold text-white">Status</TableHead>
                   <TableHead className="text-right font-bold text-white pr-8">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredRoles.map((role) => (
                   <TableRow
-                    key={role.id}
+                    key={role._id}
                     className="group hover:bg-slate-50/50 transition-colors border-slate-100"
                   >
                     <TableCell className="font-medium py-5">
@@ -150,6 +131,12 @@ export default function RoleList() {
                     </TableCell>
                     <TableCell className="text-slate-600 text-sm max-w-md">
                       {role.description}
+                    </TableCell>
+                    <TableCell className="text-slate-600 text-sm max-w-md">
+                      {new Date(role.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-slate-600 text-sm max-w-md">
+                      {role.status}
                     </TableCell>
                     <TableCell className="text-right pr-8">
                       <DropdownMenu>
@@ -168,14 +155,20 @@ export default function RoleList() {
                           <DropdownMenuLabel className="text-[0.65rem] text-slate-400 px-3 py-2 uppercase font-black tracking-widest">
                             Role Actions
                           </DropdownMenuLabel>
-                          <Link href={`/dashboard/roles/edit/${role.id}`}>
+                          <Link href={`/dashboard/roles/edit/${role._id}`}>
                             <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
                               <Edit2 size={14} className="mr-2" />
                               Edit Role
                             </DropdownMenuItem>
                           </Link>
+                          <Link href={`/dashboard/roles/edit/${role._id}/permissions`}>
+                            <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                              <Edit2 size={14} className="mr-2" />
+                              Manage Permissions
+                            </DropdownMenuItem>
+                          </Link>
                           <DropdownMenuSeparator className="bg-slate-100" />
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                          <DropdownMenuItem onClick={() => handleDelete(role._id)} className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
                             <Trash2 size={14} className="mr-2" />
                             Delete Role
                           </DropdownMenuItem>

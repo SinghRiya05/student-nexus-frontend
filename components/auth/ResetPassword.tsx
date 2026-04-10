@@ -23,6 +23,10 @@ import {
 } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useSearchParams } from "next/navigation";
+import { useAppDispatch } from "@/utils/hook";
+import { resetPassword } from "@/features/auth/authThunk";
+import toast from "react-hot-toast";
 
 const schema = z
   .object({
@@ -82,6 +86,12 @@ function PasswordRule({ met, text }: { met: boolean; text: string }) {
 
 export default function ResetPassword() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
+  
+  const email = searchParams.get("email");
+  const otp = searchParams.get("otp");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm]   = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,13 +105,27 @@ export default function ResetPassword() {
   const password = form.watch("password");
 
   const onSubmit = async (values: FormValues) => {
+    if (!email || !otp) {
+      toast.error("Session expired. Please restart the forgot password flow.");
+      return;
+    }
+
     setIsSubmitting(true);
-    // TODO: Make API call here for Reset Password
-    await new Promise((r) => setTimeout(r, 1500));
-    console.log("Reset password:", values);
+    const result = await dispatch(resetPassword({
+      email,
+      otp,
+      newPassword: values.password
+    }));
+    
     setIsSubmitting(false);
-    setSuccess(true);
-    setTimeout(() => router.push("/?mode=login"), 1800);
+    
+    if (resetPassword.fulfilled.match(result)) {
+      toast.success("Password reset successful!");
+      setSuccess(true);
+      setTimeout(() => router.push("/?mode=login"), 1800);
+    } else {
+      toast.error(result.payload as string || "Failed to reset password.");
+    }
   };
 
   return (

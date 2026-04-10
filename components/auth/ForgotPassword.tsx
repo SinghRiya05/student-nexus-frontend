@@ -24,6 +24,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useAppDispatch } from "@/utils/hook";
+import { forgotPassword } from "@/features/auth/authThunk";
+import toast from "react-hot-toast";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email address"),
@@ -33,6 +36,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function ForgotPassword() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -45,14 +49,18 @@ export default function ForgotPassword() {
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-    // TODO: Make API call here for Forgot Password
-    await new Promise((r) => setTimeout(r, 1500));
-    console.log("Send OTP to:", values.email);
+    const result = await dispatch(forgotPassword(values.email));
     setIsSubmitting(false);
-    setSent(true);
-    setTimeout(() => {
-      router.push("/?mode=verify-otp&type=reset-password");
-    }, 1200);
+
+    if (forgotPassword.fulfilled.match(result)) {
+      toast.success("Reset code sent successfully!");
+      setSent(true);
+      setTimeout(() => {
+        router.push(`/?mode=verify-otp&type=reset-password&email=${encodeURIComponent(values.email)}`);
+      }, 1200);
+    } else {
+      toast.error(result.payload as string || "Failed to send reset code.");
+    }
   };
 
   return (

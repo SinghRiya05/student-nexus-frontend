@@ -1,84 +1,202 @@
 "use client"
 
-import React from 'react'
-import { Card, CardContent } from "@/components/ui/card"
-import { User, GraduationCap, Building2, Calendar, Settings, LayoutGrid, School, UserRound, Bookmark, ChevronRight } from "lucide-react"
-import { motion } from "motion/react"
+import React, { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
-
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useAppDispatch, useAppSelector } from '@/utils/hook'
+import {
+    Rss,
+    School,
+    UserRound,
+    Bookmark,
+    Settings,
+    Calendar,
+    LogOut,
+    Zap,
+    ChevronRight,
+    MapPin
+} from "lucide-react"
+import { logoutUser } from '@/features/auth/authThunk'
+import { getMe } from '@/features/users/userThunk'
 
 export default function LeftSection() {
-    const menuItems = [
-        { label: "My Feed", icon: LayoutGrid, href: "/", color: "text-purple-500" },
-        { label: "Universities", icon: School, href: "/universities", color: "text-yellow-500" },
-        { label: "Professors", icon: UserRound, href: "/professors", color: "text-primary" },
-        { label: "Saved Event", icon: Bookmark, href: "/events/saved", color: "text-green-500" },
-        { label: "Settings", icon: Settings, href: "/settings", color: "text-red-500" },
+    const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+    const pathname = usePathname()
+
+    const dispatch = useAppDispatch();
+
+    const handleLogout = () => {
+        dispatch(logoutUser());
+    };
+
+    const user = useAppSelector((state) => state.auth.user)
+
+    useEffect(() => {
+        dispatch(getMe())
+    }, [user])
+
+    const me = useAppSelector((state) => state.user.me)
+    console.log(me);
+
+
+    const navLinks = [
+        { id: 1, label: "My Feed", icon: Rss, href: "/feeds" },
+        { id: 2, label: "Universities", icon: School, href: "/university" },
+        { id: 3, label: "Professors", icon: UserRound, href: "/professors" },
+        { id: 4, label: "Saved Events", icon: Bookmark, href: "/saved" },
     ]
 
     return (
-        <aside className="w-full space-y-4">
-            {/* User Profile Card */}
-            <Card className="glass-card border-none rounded-none overflow-hidden hover:shadow-2xl transition-all duration-300">
-                <CardContent className="p-0">
-                    <div className="h-15 bg-gradient-to-r from-primary/20 to-blue-400/20" />
-                    <div className="px-6 -mt-10 flex flex-col items-center text-center">
-                        <div className="relative group">
-                            <div className="w-24 h-24 rounded-full bg-white p-1 shadow-lg ring-2 ring-primary/20">
-                                <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center overflow-hidden">
-                                    <User className="w-15 h-15 text-primary/40" />
-                                </div>
-                            </div>
-                            <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
+        <aside className="flex flex-col gap-4 w-full max-w-[280px]">
+            {/* Premium Profile Card */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="overflow-hidden rounded-3xl glass-card border-none  group"
+            >
+                {/* Decorative Header */}
+                <div className="h-16 bg-linear-to-br from-primary via-primary/80 to-[#7387ff] relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-20 grid-overlay" />
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.2, 1],
+                            rotate: [0, 5, 0]
+                        }}
+                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                        className="absolute -right-4 -top-4 w-24 h-24 bg-white/20 rounded-full blur-2xl"
+                    />
+                </div>
+
+                <div className="px-5 pb-5 -mt-8 relative z-10">
+                    <div className="flex flex-col items-center text-center">
+                        <div className="relative mb-2">
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                className="h-16 w-16 rounded-2xl p-1 bg-white overflow-hidden flex-shrink-0"
+                            >
+                                {me?.avatar ? (
+                                    <img
+                                        className="w-full h-full object-cover rounded-xl"
+                                        src={me.avatar}
+                                        alt={me.firstName || "User"}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl uppercase">
+                                        {me?.firstName?.[0] || "U"}
+                                    </div>
+                                )}
+                            </motion.div>
+                            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
                         </div>
 
-                        <div className="mt-2">
-                            <h2 className="text-lg font-bold text-gray-800">Riya Singh</h2>
-                            <p className="text-primary text-xs font-semibold">BCA Student</p>
+                        <h3 className="font-bold text-[#302e56] text-base leading-tight">{me?.firstName} {me?.lastName}</h3>
+                        <p className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider mb-3">{me?.roleId?.name || "Student"}</p>
+
+                        <div className="w-full space-y-1.5 mb-4">
+                            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+                                <School className="w-3 h-3 text-primary" />
+                                {me?.universityId?.name.toUpperCase() || "University"}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+                                <MapPin className="w-3 h-3 text-primary" />
+                                {me?.universityId?.state.name.toUpperCase() + ", " + me?.universityId?.city.name.toUpperCase()}
+                            </div>
                         </div>
 
-                        <div className="w-full mt-2 pt-2 border-t border-gray-100 flex flex-col gap-3">
-                            <div className="flex items-center gap-3 text-gray-600">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                    <Building2 className="w-4 h-4 text-primary" />
-                                </div>
-                                <span className="text-xs font-semibold">BBD University</span>
+                        {/* Interactive Profile Score */}
+                        <div className="w-full p-2.5 rounded-2xl bg-primary/5 border border-primary/10">
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[9px] font-bold text-primary uppercase tracking-tighter">Profile Strength</span>
+                                <span className="text-[9px] font-black text-primary">85%</span>
                             </div>
-                            <div className="flex items-center gap-3 text-gray-600">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                    <Calendar className="w-4 h-4 text-primary" />
-                                </div>
-                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">2025 - 2026</span>
+                            <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: "85%" }}
+                                    transition={{ duration: 1.5, ease: "easeOut" }}
+                                    className="h-full bg-linear-to-r from-primary to-[#7387ff]"
+                                />
                             </div>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </motion.div>
 
-            {/* Navigation Menu */}
-            <Card className="glass-card border-none rounded-none overflow-hidden hover:shadow-2xl transition-all duration-300">
-                <CardContent className=" space-y-0.5">
-                    {menuItems.map((item, idx) => (
+            {/* Interactive Navigation */}
+            <nav className="flex flex-col gap-0.5">
+                {navLinks.map((link, idx) => {
+                    const isActive = pathname === link.href;
+                    return (
                         <Link
-                            key={idx}
-                            href={item.href}
-                            className="group flex items-center justify-between p-1 rounded-xl hover:bg-white/50 transition-all duration-300"
+                            key={link.id}
+                            href={link.href}
+                            onMouseEnter={() => setHoveredIdx(idx)}
+                            onMouseLeave={() => setHoveredIdx(null)}
+                            className={cn(
+                                "group relative flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300",
+                                isActive
+                                    ? "text-primary font-bold bg-white shadow-lg shadow-primary/10 border border-primary/5"
+                                    : "text-on-surface-variant hover:text-primary font-medium"
+                            )}
                         >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-8 h-8 rounded-xl bg-secondary shadow-sm ring-1 ring-blue-500 text-gray-500 flex items-center justify-center transition-all duration-300 group-hover:ring-primary/50 group-hover:text-primary group-hover:shadow-[0_0_15px_rgba(var(--primary),0.3)] ${item.color}`}>
-                                    <item.icon className="w-4 h-4" />
-                                </div>
-                                <span className="font-bold text-[12px] text-gray-500 group-hover:text-primary">
-                                    {item.label}
-                                </span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-300 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-primary" />
-                        </Link>
-                    ))}
-                </CardContent>
-            </Card>
+                            {/* Hover Background Link Effect */}
+                            {!isActive && hoveredIdx === idx && (
+                                <motion.div
+                                    layoutId="navHover"
+                                    className="absolute inset-0 bg-primary/5 rounded-2xl -z-10"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                />
+                            )}
 
+                            <div className={cn(
+                                "flex items-center justify-center p-1.5 rounded-xl transition-all duration-300",
+                                isActive ? "bg-primary text-white scale-105 shadow-md shadow-primary/20" : "bg-transparent group-hover:bg-primary/10"
+                            )}>
+                                <link.icon className="w-4 h-4" />
+                            </div>
+
+                            <span className="text-sm tracking-tight">{link.label}</span>
+
+                            {isActive && (
+                                <motion.div
+                                    layoutId="activeIndicator"
+                                    className="ml-auto"
+                                    initial={{ x: -5, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                >
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                </motion.div>
+                            )}
+                        </Link>
+                    )
+                })}
+
+                <div className="mt-2 pt-2 border-t border-outline-variant/30 flex flex-col gap-0.5">
+                    <Link
+                        href="#"
+                        className="group flex items-center gap-3 px-4 py-2 rounded-2xl text-on-surface-variant hover:text-primary font-medium transition-all"
+                    >
+                        <div className="p-1.5 rounded-xl group-hover:bg-primary/10 transition-colors">
+                            <Settings className="w-4 h-4 group-hover:rotate-45 transition-transform duration-500" />
+                        </div>
+                        <span className="text-[12px]">Settings</span>
+                    </Link>
+
+                    <button
+                        onClick={handleLogout}
+                        className="group flex items-center gap-3 px-4 py-2 rounded-2xl text-rose-500 hover:bg-rose-50 font-medium transition-all text-left"
+                    >
+                        <div className="p-1.5 rounded-xl group-hover:bg-rose-100 transition-colors">
+                            <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                        </div>
+                        <span className="text-[12px]">Logout</span>
+                    </button>
+                </div>
+            </nav>
         </aside>
     )
 }

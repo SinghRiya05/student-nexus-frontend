@@ -19,6 +19,14 @@ export const profileSchema = z.object({
     state: z.string().optional(), // Optional
     city: z.string().optional(), // Optional
     pinCode: z.string().optional(), // Optional
+    bio: z.string().optional(),
+    skills: z.array(z.object({ name: z.string().min(1, "Required") })),
+    projects: z.array(z.object({
+        title: z.string().min(1, "Required"),
+        role: z.string().min(1, "Required"),
+        date: z.string().min(1, "Required"),
+        description: z.string().optional(),
+    })),
 });
 
 export type ProfileValues = z.infer<typeof profileSchema>;

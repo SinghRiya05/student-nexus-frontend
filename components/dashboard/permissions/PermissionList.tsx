@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -18,9 +18,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { 
-  MoreHorizontal, 
-  Plus, 
+import {
+  MoreHorizontal,
+  Plus,
   Lock,
   Search,
   Edit2,
@@ -32,42 +32,25 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
+import { deletePermission, getAllPermissions } from "@/features/permissions/permissionThunk";
+import toast from "react-hot-toast";
 
-const permissions = [
-  {
-    id: "1",
-    name: "user.create",
-    description: "Allows creating new users in the system.",
-    module: "User",
-  },
-  {
-    id: "2",
-    name: "user.edit",
-    description: "Allows editing existing user details.",
-    module: "User",
-  },
-  {
-    id: "3",
-    name: "course.create",
-    description: "Allows creating new courses.",
-    module: "Course",
-  },
-  {
-    id: "4",
-    name: "course.delete",
-    description: "Allows deleting courses from the system.",
-    module: "Course",
-  },
-  {
-    id: "5",
-    name: "role.manage",
-    description: "Allows managing system roles and permissions.",
-    module: "Role",
-  },
-];
+
 
 export default function PermissionList() {
+  const dispatch = useAppDispatch()
+  const { permissions } = useAppSelector((state) => state.permission)
+
+  useEffect(() => {
+    dispatch(getAllPermissions())
+  }, [dispatch])
   const [searchTerm, setSearchTerm] = React.useState("");
+
+  const handleDelete = (id: string) => {
+    dispatch(deletePermission(id))
+    toast.success("Permission deleted successfully")
+  }
 
   const filteredPermissions = permissions.filter((permission) =>
     permission.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -126,32 +109,32 @@ export default function PermissionList() {
             <Table>
               <TableHeader className="bg-primary ">
                 <TableRow className="hover:bg-transparent border-slate-100 ">
-                  <TableHead className="font-bold text-white py-4 min-w-[200px]">Permission Name</TableHead>
-                  <TableHead className="font-bold text-white">Description</TableHead>
-                  <TableHead className="font-bold text-white">Module</TableHead>
+                  <TableHead className="font-bold text-center text-white py-4">Permission Name</TableHead>
+                  <TableHead className="font-bold text-center text-white">Description</TableHead>
+                  <TableHead className="font-bold text-center text-white">Module</TableHead>
                   <TableHead className="text-right font-bold text-white pr-8">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredPermissions.map((permission) => (
                   <TableRow
-                    key={permission.id}
+                    key={permission._id}
                     className="group hover:bg-slate-50/50 transition-colors border-slate-100"
                   >
-                    <TableCell className="font-medium py-5">
-                      <div className="flex items-center gap-3">
+                    <TableCell className="font text-center py-5">
+                      <div className="flex text-center items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs ring-1 ring-indigo-100">
                           <Shield size={14} />
                         </div>
-                        <span className="text-slate-900 font-bold block">
+                        <span className="text-slate-900 text-center font-bold block">
                           {permission.name}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-slate-600 text-sm max-w-md">
+                    <TableCell className="text-slate-600 text-center text-sm max-w-md">
                       {permission.description}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <span className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded text-xs font-black uppercase tracking-widest border border-indigo-100">
                         {permission.module}
                       </span>
@@ -173,14 +156,14 @@ export default function PermissionList() {
                           <DropdownMenuLabel className="text-[0.65rem] text-slate-400 px-3 py-2 uppercase font-black tracking-widest">
                             Permission Actions
                           </DropdownMenuLabel>
-                          <Link href={`/dashboard/permissions/edit/${permission.id}`}>
+                          <Link href={`/dashboard/permissions/edit/${permission._id}`}>
                             <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
                               <Edit2 size={14} className="mr-2" />
                               Edit Permission
                             </DropdownMenuItem>
                           </Link>
                           <DropdownMenuSeparator className="bg-slate-100" />
-                          <DropdownMenuItem className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                          <DropdownMenuItem onClick={() => handleDelete(permission._id)} className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
                             <Trash2 size={14} className="mr-2" />
                             Delete Permission
                           </DropdownMenuItem>

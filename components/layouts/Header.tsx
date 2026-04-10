@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAppSelector, useAppDispatch } from "@/utils/hook";
+import { logoutUser } from '@/features/auth/authThunk';
+import { getFollowing, getPendingFollowRequests, getSentRequests, getFollowers, acceptFollowRequest, rejectFollowRequest } from "@/features/follow/followThunk";
 import {
   GraduationCap,
   Search,
@@ -20,14 +23,24 @@ import {
   X,
   Home,
   Calendar,
+  Rss,
+  School,
+  UserRound,
+  Bookmark,
 } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/network", label: "Network", icon: Users },
-  { href: "/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/chat", label: "Messages", icon: MessageSquare },
   { href: "/events", label: "Events", icon: Calendar },
+];
+
+const MOBILE_NAV_LINKS = [
+  ...NAV_LINKS,
+  { href: "/feeds", label: "My Feed", icon: Rss },
+  { href: "/university", label: "Universities", icon: School },
+  { href: "/professors", label: "Professors", icon: UserRound },
+  { href: "/saved", label: "Saved Events", icon: Bookmark },
 ];
 
 const NOTIFICATIONS = [
@@ -44,21 +57,36 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [requestsOpen, setRequestsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const unreadCount = NOTIFICATIONS.filter((n) => n.unread).length;
 
+  const dispatch = useAppDispatch();
+  const me = useAppSelector((state) => state.user.me);
+  const { pendingRequests } = useAppSelector((state) => state.follow);
+
   const closeAll = () => {
     setNotifOpen(false);
     setProfileOpen(false);
+    setRequestsOpen(false);
   };
+  
+  useEffect(() => {
+    if (me?._id) {
+      dispatch(getFollowing());
+      dispatch(getPendingFollowRequests());
+      dispatch(getSentRequests());
+      dispatch(getFollowers());
+    }
+  }, [me?._id, dispatch]);
 
   return (
     <>
       {/* Backdrop for dropdowns */}
-      {(notifOpen || profileOpen) && (
+      {(notifOpen || profileOpen || requestsOpen) && (
         <div
           className="fixed inset-0 z-30"
           onClick={closeAll}
@@ -130,16 +158,53 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <Search size={17} />
             </button>
 
-            {/* Messages */}
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100">
-              <MessageSquare size={17} />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-white" />
-            </button>
+            {/* Follow Requests */}
+            <div className="relative">
+              <button
+                onClick={() => { setRequestsOpen((v) => !v); setNotifOpen(false); setProfileOpen(false); }}
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100"
+              >
+                <Users size={17} />
+                {pendingRequests?.length > 0 && (
+                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500 text-[0.55rem] font-bold text-white ring-2 ring-white">
+                    {pendingRequests.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Requests Dropdown */}
+              {requestsOpen && (
+                <div className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
+                  <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                    <p className="text-[0.82rem] font-bold text-gray-900">Follow Requests</p>
+                  </div>
+                  <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
+                    {pendingRequests?.length === 0 ? (
+                       <div className="px-4 py-5 text-center text-sm text-gray-500 italic">No pending requests</div>
+                    ) : (
+                      pendingRequests.map((req: any) => (
+                        <div key={req._id} className="flex gap-3 px-4 py-3 transition hover:bg-gray-50 items-center">
+                          <img src={req.follower?.avatar || "/user.jpg"} alt="avatar" className="h-9 w-9 rounded-full object-cover shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-[0.78rem] font-bold text-gray-800">{req.follower?.firstName} {req.follower?.lastName}</p>
+                            <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <button onClick={() => dispatch(acceptFollowRequest(req.follower._id))} className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition">Accept</button>
+                            <button onClick={() => dispatch(rejectFollowRequest(req.follower._id))} className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Decline</button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Notifications */}
             <div className="relative">
               <button
-                onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); }}
+                onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); setRequestsOpen(false); }}
                 className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100"
               >
                 <Bell size={17} />
@@ -185,14 +250,18 @@ export default function Header({ onMenuClick }: HeaderProps) {
             {/* Profile Dropdown */}
             <div className="relative ml-1">
               <button
-                onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); }}
+                onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); setRequestsOpen(false); }}
                 className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-2.5 py-1.5 transition hover:border-indigo-200 hover:bg-indigo-50"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-violet-600 text-[0.7rem] font-bold text-white">
-                  R
-                </div>
+                {me?.avatar ? (
+                  <img src={me.avatar} className="h-7 w-7 rounded-lg object-cover" alt="Profile" />
+                ) : (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-violet-600 text-[0.7rem] font-bold text-white uppercase">
+                    {me?.firstName?.[0] || "?"}
+                  </div>
+                )}
                 <span className="hidden text-[0.78rem] font-semibold text-gray-800 sm:block">
-                  Riya
+                  {me?.firstName || "User"}
                 </span>
                 <ChevronDown
                   size={13}
@@ -202,16 +271,20 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
               {/* Profile Dropdown */}
               {profileOpen && (
-                <div className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
+                <div className="absolute right-0 top-11 z-50 w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
                   {/* User info */}
                   <div className="border-b border-gray-100 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-violet-600 text-base font-bold text-white">
-                        R
-                      </div>
-                      <div>
-                        <p className="text-[0.82rem] font-bold text-gray-900">Riya Singh</p>
-                        <p className="text-[0.68rem] text-gray-400">riya@university.edu</p>
+                      {me?.avatar ? (
+                        <img src={me.avatar} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl object-cover" alt="Profile" />
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-violet-600 text-lg font-bold text-white uppercase">
+                          {me?.firstName?.[0] || "?"}
+                        </div>
+                      )}
+                      <div className="overflow-hidden">
+                        <p className="text-[0.82rem] font-bold text-gray-900 truncate">{me?.firstName} {me?.lastName}</p>
+                        <p className="text-[0.68rem] text-gray-400 truncate capitalize">{me?.roleId?.name?.toLowerCase() || "Student"} • {me?.universityId?.name || "University"}</p>
                       </div>
                     </div>
                   </div>
@@ -235,7 +308,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   </div>
 
                   <div className="border-t border-gray-100 py-1.5">
-                    <button className="flex w-full items-center gap-3 px-4 py-2.5 text-[0.8rem] font-medium text-rose-500 transition hover:bg-rose-50">
+                    <button 
+                      onClick={() => dispatch(logoutUser())}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[0.8rem] font-medium text-rose-500 transition hover:bg-rose-50"
+                    >
                       <LogOut size={15} />
                       Sign Out
                     </button>
@@ -264,7 +340,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {mobileOpen && (
           <div className="border-t border-gray-100 bg-white/95 px-4 pb-4 pt-2 lg:hidden">
             <nav className="flex flex-col gap-1">
-              {NAV_LINKS.map(({ href, label, icon: Icon }) => {
+              {MOBILE_NAV_LINKS.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href;
                 return (
                   <Link

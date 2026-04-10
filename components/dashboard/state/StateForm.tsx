@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,41 +13,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  ArrowLeft, 
-  Save, 
-  MapPin, 
-  Globe, 
+import {
+  ArrowLeft,
+  Save,
+  MapPin,
+  Globe,
   Info,
-  Layers 
+  Layers
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { fetchCountries } from "@/features/location/countryThunk";
+import { createState, updateState } from "@/features/location/StateThunk";
+import toast from "react-hot-toast";
 
 interface StateFormProps {
   initialData?: any;
   isEditing?: boolean;
 }
 
-const mockCountries = [
-  { id: "1", name: "United States" },
-  { id: "2", name: "United Kingdom" },
-  { id: "3", name: "India" },
-  { id: "4", name: "Australia" },
-];
-
 export default function StateForm({ initialData, isEditing }: StateFormProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const { countries } = useAppSelector((state) => state.country);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  useEffect(() => {
+    dispatch(fetchCountries());
+  }, [dispatch]);
+
   const [formData, setFormData] = React.useState({
     name: initialData?.name || "",
-    countryId: initialData?.countryId || "",
-    code: initialData?.code || "",
+    countryId: typeof initialData?.countryId === 'object' 
+      ? initialData.countryId._id 
+      : initialData?.countryId || "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // API CALL PLACE: Create/Update state
-    console.log("Submitting state:", formData);
-    router.push("/dashboard/state");
+    setIsSubmitting(true);
+    
+    try {
+      if (isEditing) {
+        await dispatch(updateState({ 
+          id: initialData._id, 
+          stateData: formData 
+        })).unwrap();
+        toast.success("State updated successfully");
+      } else {
+        await dispatch(createState(formData)).unwrap();
+        toast.success("State created successfully");
+      }
+      router.push("/dashboard/state");
+    } catch (error: any) {
+      toast.error(error || "Failed to save state");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -93,23 +116,8 @@ export default function StateForm({ initialData, isEditing }: StateFormProps) {
                 />
               </div>
 
-              {/* State Code */}
-              <div className="space-y-2">
-                <Label htmlFor="code" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Layers size={14} className="text-indigo-500" />
-                  State Code (Optional)
-                </Label>
-                <Input
-                  id="code"
-                  placeholder="e.g. CA, NY"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="rounded-xl border-slate-200 focus:ring-indigo-500 h-11 font-mono uppercase"
-                />
-              </div>
-
               {/* Country Selection */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label htmlFor="country" className="text-sm font-bold text-slate-700 flex items-center gap-2">
                   <Globe size={14} className="text-indigo-500" />
                   Associated Country
@@ -123,8 +131,8 @@ export default function StateForm({ initialData, isEditing }: StateFormProps) {
                     <SelectValue placeholder="Select a country" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-100 shadow-xl">
-                    {mockCountries.map((country) => (
-                      <SelectItem key={country.id} value={country.id} className="rounded-lg focus:bg-indigo-50 focus:text-indigo-600">
+                    {countries.map((country) => (
+                      <SelectItem key={country._id} value={country._id} className="rounded-lg focus:bg-indigo-50 focus:text-indigo-600">
                         {country.name}
                       </SelectItem>
                     ))}
@@ -144,16 +152,26 @@ export default function StateForm({ initialData, isEditing }: StateFormProps) {
               </Button>
               <Button
                 type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-10 h-12 font-semibold shadow-lg shadow-indigo-100"
+                disabled={isSubmitting}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-10 h-12 font-semibold shadow-lg shadow-indigo-100 min-w-[140px]"
               >
-                <Save className="mr-2 h-4 w-4" />
-                {isEditing ? "Update State" : "Add State"}
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </div>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isEditing ? "Update State" : "Add State"}
+                  </>
+                )}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
-      
+
       {/* Help Note */}
       <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 flex gap-4">
         <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-amber-500 shadow-sm shrink-0">
@@ -169,3 +187,4 @@ export default function StateForm({ initialData, isEditing }: StateFormProps) {
     </div>
   );
 }
+

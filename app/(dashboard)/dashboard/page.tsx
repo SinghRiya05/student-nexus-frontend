@@ -21,7 +21,7 @@ export default function DashboardPage() {
       value: "156",
       icon: GraduationCap,
       description: "+4 from last month",
-      color: "text-blue-600",
+      color: "text-primary",
       bgColor: "bg-blue-50"
     },
     {

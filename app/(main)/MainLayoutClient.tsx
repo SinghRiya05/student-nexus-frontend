@@ -6,10 +6,13 @@ import Auth from "@/components/auth/Auth";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
+import LeftSection from "@/components/main/home/LeftSection";
+import { useAppSelector } from "@/utils/hook";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const searchParams = useSearchParams();
+  
   const mode = (searchParams.get("mode") as
     "login" |
     "signup" |
@@ -23,7 +26,8 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
     | "reset-password"
     | undefined;
 
-  if (!isLoggedIn) {
+  // ❌ If not authenticated, always show the Auth gateway
+  if (!isAuthenticated) {
     return (
       <AuthLayout>
         <Auth mode={mode} type={type} />
@@ -31,10 +35,23 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // ✅ Authenticated View: Header, Sidebar, and Page Content
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100">
+    <div className="flex min-h-screen flex-col bg-[#fcf8ff]">
       <Header />
-      <main className="flex flex-1 flex-col">{children}</main>
+      <div className="w-full max-w-[85rem] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+        {/* Persistent Left Sidebar */}
+        <aside className="hidden lg:block w-64 shrink-0">
+          <div className="sticky top-24">
+            <LeftSection />
+          </div>
+        </aside>
+
+        {/* Dynamic Page Content */}
+        <main className="flex-1 min-w-0">
+          {children}
+        </main>
+      </div>
       <Footer />
     </div>
   );

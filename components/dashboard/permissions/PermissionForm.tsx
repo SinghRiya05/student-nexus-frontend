@@ -12,14 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  ArrowLeft, 
-  Save, 
-  Shield, 
-  Info, 
-  Layers 
+import {
+  ArrowLeft,
+  Save,
+  Shield,
+  Info,
+  Layers
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+
+import { useAppDispatch } from "@/utils/hook";
+import { createPermission, updatePermission } from "@/features/permissions/permissionThunk";
+import toast from "react-hot-toast";
 
 interface PermissionFormProps {
   initialData?: any;
@@ -35,20 +39,45 @@ const modules = [
   "Semester",
   "Country",
   "State",
+  "Post",
+  "Comment",
+  "Professor",
+  "Scholarship",
+  "Application"
 ];
 
 export default function PermissionForm({ initialData, isEditing }: PermissionFormProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
   const [formData, setFormData] = React.useState({
-    name: initialData?.name || "",
-    description: initialData?.description || "",
-    module: initialData?.module || "",
+    name: "",
+    module: "",
+    description: "",
   });
+
+  // Sync props to state when initialData is available or changes
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || "",
+        module: initialData.module || "",
+        description: initialData.description || "",
+      });
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // API CALL PLACE: Create/Update permission
-    console.log("Submitting permission:", formData);
+
+    if (isEditing) {
+      dispatch(updatePermission({ id: initialData._id, permissionData: formData }));
+      toast.success("Permission updated successfully");
+    } else {
+      dispatch(createPermission(formData));
+      toast.success("Permission created successfully");
+    }
+
     router.push("/dashboard/permissions");
   };
 
@@ -135,7 +164,7 @@ export default function PermissionForm({ initialData, isEditing }: PermissionFor
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full min-h-[120px] p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white"
-                  required
+
                 />
               </div>
             </div>
@@ -160,7 +189,7 @@ export default function PermissionForm({ initialData, isEditing }: PermissionFor
           </form>
         </CardContent>
       </Card>
-      
+
       {/* Help Section */}
       <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 flex gap-4">
         <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-amber-500 shadow-sm shrink-0">
@@ -169,7 +198,7 @@ export default function PermissionForm({ initialData, isEditing }: PermissionFor
         <div className="space-y-1">
           <h4 className="text-sm font-bold text-amber-900">Permission Context</h4>
           <p className="text-xs text-amber-700 leading-relaxed">
-            Permissions are the most granular access level. Once defined, they can be assigned to multiple roles. 
+            Permissions are the most granular access level. Once defined, they can be assigned to multiple roles.
             Changing a permission name might affect existing role assignments if not handled via ID.
           </p>
         </div>

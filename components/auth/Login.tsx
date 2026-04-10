@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import {
   Eye,
   EyeOff,
@@ -34,6 +35,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { loginUser } from "@/features/auth/authThunk";
+import toast from "react-hot-toast";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Enter a valid university email." }),
@@ -48,6 +51,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function LoginPage() {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const [showPw, setShowPw] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,10 +65,29 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginFormValues) {
     setIsLoading(true);
-    // TODO: Make API call here for Login
-    await new Promise((r) => setTimeout(r, 1800));
-    console.log(values);
-    setIsLoading(false);
+    console.log(values)
+    try {
+      await dispatch(loginUser(values)).unwrap();
+      toast.success("Login successful");
+      router.push("/");
+    } catch (error: any) {
+      const errorMsg = error?.toString() || "";
+      if (errorMsg.includes("verify your email")) {
+        toast.error("Account not verified. Redirecting to verification...");
+        setTimeout(() => {
+          router.push(`?mode=signup&step=2&email=${encodeURIComponent(values.email)}&autoSend=true`);
+        }, 1500);
+      } else if (errorMsg.includes("complete registration")) {
+        toast.error("Profile incomplete. Redirecting to finish setup...");
+        setTimeout(() => {
+          router.push(`?mode=signup&step=3&email=${encodeURIComponent(values.email)}`);
+        }, 1500);
+      } else {
+        toast.error(errorMsg || "Failed to login");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

@@ -2,29 +2,23 @@
 
 import CountryForm from "@/components/dashboard/countries/CountryForm";
 import React from "react";
+import { useParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
+import LoadingSpinner from "@/components/ui/loading";
+import { fetchCountryById } from "@/features/location/countryThunk";
 
-// Mock function to simulate fetching country by ID
-const getCountryById = (id: string) => {
-  return {
-    id,
-    name: "India",
-    code: "IND",
-    capital: "New Delhi",
-    region: "Asia",
-    currency: "INR",
-  };
-};
 
-export default function EditCountryPage({ params }: { params: { id: string } }) {
-  const [country, setCountry] = React.useState<any>(null);
+export default function EditCountryPage() {
+  const dispatch = useAppDispatch();
+  const params = useParams();
+
 
   React.useEffect(() => {
-    // In a real app, this would be an API call
-    const data = getCountryById(params.id);
-    setCountry(data);
-  }, [params.id]);
+    dispatch(fetchCountryById(params.id as string));
+  }, [params.id, dispatch]);
 
-  if (!country) return <div className="p-8 text-slate-500 font-medium italic">Loading country details...</div>;
+  const { singleCountry, loading } = useAppSelector((state) => state.country);
+  if (loading || !singleCountry) return <LoadingSpinner fullPage label="Loading country details..." />;
 
-  return <CountryForm initialData={country} isEditing={true} />;
+  return <CountryForm initialData={singleCountry} isEditing={true} />;
 }
