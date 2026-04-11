@@ -49,8 +49,20 @@ apiClient.interceptors.response.use((res) => res, async (error) => {
             isRefreshing = false;
             processQueue(refreshError, null);
 
-            if (typeof window !== "undefined" && !window.location.pathname.includes("login")) {
-                window.location.href = "/?mode=login";
+            // ⚠️ Clear session on failure
+            if (typeof window !== "undefined") {
+              // We try to call logout to clear cookies, but don't wait for it
+              apiClient.post(API_ENDPOINTS.AUTH.LOGOUT).catch(() => {});
+              
+              // Clear persisted Redux state manually if needed, 
+              // but redirecting to root with mode=login is the priority.
+              // To break the middleware loop, we must clear the relevant indicator.
+              // Since we can't easily dispatch without circularity here, 
+              // we rely on the redirect and the MainLayoutClient to handle the rest.
+              
+              if (!window.location.pathname.includes("login")) {
+                  window.location.href = "/?mode=login";
+              }
             }
             return Promise.reject(refreshError);
         }
