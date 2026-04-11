@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch } from "@/utils/hook"
 import { getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedSemesterWithCourseAndSameUniversity } from "@/features/student/studentThunk"
 import { useEffect, useState } from "react"
+import { getTeachersFromSameUniversity } from '@/features/teacher/teacherThunk'
 
 export default function MainContent() {
     const router = useRouter()
@@ -16,17 +17,21 @@ export default function MainContent() {
 
     const [classmates, setClassmates] = useState<any[]>([])
     const [batchmates, setBatchmates] = useState<any[]>([])
+    const [SameUniversityTeachers, setSameUniversityTeachers] = useState<any[]>([])
+
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [classRes, batchRes] = await Promise.all([
+                const [classRes, batchRes, SameUniversityTeachersRes] = await Promise.all([
                     dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity()).unwrap(),
-                    dispatch(getStudentsByMatchedCourseAndSameUniversity()).unwrap()
+                    dispatch(getStudentsByMatchedCourseAndSameUniversity()).unwrap(),
+                    dispatch(getTeachersFromSameUniversity()).unwrap()
                 ]);
 
                 setClassmates(classRes?.data || []);
                 setBatchmates(batchRes?.data || []);
+                setSameUniversityTeachers(SameUniversityTeachersRes?.data || []);
             } catch (err) {
                 console.error(err);
             }
@@ -35,10 +40,7 @@ export default function MainContent() {
         fetchData();
     }, [dispatch]);
 
-    const professors = [
-        { name: "Dr. Mohan Singh", role: "Senior Faculty, IT Dept", skills: ["Data Structure", "Web Dev"], image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDv08_-IeN1hdXit3rvg8uyJiS0y_sq9PggyLZx17F_ElgCfuMa68sfq6pDWr2EEqUGfRpf1QToJiPqiUxsJJwGdN7oEzyy_pVXdGJbzficSTlKz8xtA-AVni6WTCxM8Y0f21_Nj_UQ8bFEAM4vGBJZqjfyvrlIVw0LsAg7Xr61jtVitcqH_cfsOgS0IP_4TaBQPLdjxnFNismEi8NF0hFGWAmT_cTWM-mKfwSh1V3WGVJ83ErtKCm4StdA3vn_TdIXQLHf4FOhjTw" },
-        { name: "Prof. Sarah Khan", role: "Dept. of Mathematics", skills: ["Algorithms", "Graph Theory"], image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBJOjupv2fGCs6bKklcrHhVt7SOVq2F0feK0LQyaaTp8PigNQfzQeWJHysd9OSCV2eavCKUxu9IJsSAnWBJcoGBCtG79JZ6M-qVo5MNpJGet2_GHYjnQtw2VlyX93p0XmjlO2ZrFqVV6U6Juv5DjKE87vR7MvfoRlP0--mw1ybiQkAsnm23uAO_gr6QMEmogN3WA9eAuTXlgLR-G_l0ELcIRonr2KLeP-SjjVorhecII3eQrvTpP4IrIzZgr9I7Rhl57m_F3bQJ7fg" },
-    ]
+
 
     const departments = [
         { name: "IT Department", category: "Academic", students: "1.2k Students", icon: Terminal, bg: "bg-[#6bfde0]/20", text: "text-[#006c5c]" },
@@ -112,30 +114,44 @@ export default function MainContent() {
                     <h2 className="text-xl font-bold">BBD University - Professors</h2>
                     <button onClick={() => router.push("/professors")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {professors.map((prof, idx) => (
-                        <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex gap-4">
-                            <img className="w-20 h-20 rounded-xl object-cover" src={prof.image} alt={prof.name} />
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-2">
+                    {SameUniversityTeachers.slice(0, 5).map((prof, idx) => (
+                        <div key={idx} className="min-w-[362px] bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex gap-4 snap-start mb-1 hover:shadow-md transition-shadow">
+                            {prof.avatar || prof.profilePicture ? (
+                                <img className="w-20 h-20 rounded-xl object-cover" src={prof.avatar || prof.profilePicture} alt={`${prof.firstName} ${prof.lastName}`} />
+                            ) : (
+                                <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">
+                                    {prof.firstName?.[0]}
+                                </div>
+                            )}
                             <div className="flex-1">
                                 <div className="flex justify-between items-start">
-                                    <div>
-                                        <h4 className="font-bold text-base text-[#302e56]">{prof.name}</h4>
-                                        <p className="text-xs text-[#5d5a86]">{prof.role}</p>
+                                    <div className="overflow-hidden">
+                                        <h4 className="font-bold text-base text-[#302e56] truncate">{prof.firstName} {prof.lastName}</h4>
+                                        <div className="flex flex-col">
+                                            <p className="text-xs text-[#5d5a86] truncate">{prof.teacherProfile.designation}</p>
+                                            <p className="text-[10px] text-[#5d5a86]/70">Exp: {prof.teacherProfile.experienceYears} years</p>
+                                        </div>
                                     </div>
-                                    <button className="h-8 w-8 rounded-full bg-[#6bfde0] text-[#005f51] flex items-center justify-center hover:scale-105 transition-transform">
+                                    <button className="h-7 w-7 rounded-full bg-[#6bfde0] text-[#005f51] flex items-center justify-center hover:scale-105 transition-transform flex-shrink-0">
                                         <Plus className="w-4 h-4" />
                                     </button>
                                 </div>
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                    {prof.skills.map((skill, sIdx) => (
-                                        <span key={sIdx} className="px-2 py-1 bg-[#f0ebff] rounded-md text-[10px] text-[#302e56] font-medium">
-                                            {skill}
+                                <div className="mt-3 text-xs text-gray-500 font-medium">
+                                    {prof.courseIds?.length > 0 ? (
+                                        <span className="truncate block">
+                                            {prof.courseIds.map((c: any) => c.course_short_name).join(", ")}
                                         </span>
-                                    ))}
+                                    ) : (
+                                        "Faculty"
+                                    )}
                                 </div>
                             </div>
                         </div>
                     ))}
+                    {SameUniversityTeachers.length === 0 && (
+                        <p className="text-sm text-gray-400 italic py-5">No professors found.</p>
+                    )}
                 </div>
             </section>
 

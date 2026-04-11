@@ -103,5 +103,11 @@ export const API_ENDPOINTS = {
         PENDING_FOLLOW_REQUESTS: "/follow/pending-requests",
         SENT_REQUESTS: "/follow/sent-requests",
     },
+    TEACHER: {
+        GET_SAME_UNIVERSITY_TEACHERS: "/teachers/same-university",
+        GET_CLASS_TEACHERS: "/teachers/class-teachers",
+        GET_OTHER_UNIVERSITY_TEACHERS: "/teachers/other-universities",
+        GET_TEACHERS_BY_COURSE: (id: string) => `/teachers/by-course/${id}`,
+    }
 
 };
