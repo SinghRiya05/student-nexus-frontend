@@ -10,6 +10,7 @@ interface ProfessorCardProps {
     name: string
     title: string
     department: string
+    universityName?: string
     tags: string[]
     rating: string | number
     reviews: string | number
@@ -22,6 +23,7 @@ export default function ProfessorCard({
     name,
     title,
     department,
+    universityName,
     tags,
     rating,
     isOnline = false,
@@ -44,7 +46,12 @@ export default function ProfessorCard({
 
             <h3 className="text-lg font-bold text-on-surface">{name}</h3>
             <p className="text-primary text-sm font-medium mb-1">{title}</p>
-            <p className="text-on-surface-variant text-xs mb-4">{department}</p>
+            <div className="flex flex-col gap-0.5 mb-4">
+                <p className="text-on-surface-variant text-xs font-semibold">{department}</p>
+                {universityName && (
+                    <p className="text-[10px] text-on-surface-variant/70 italic">{universityName}</p>
+                )}
+            </div>
 
             {/* Tags/Skills Section */}
             <div className="flex gap-2 flex-wrap justify-center mb-2">
@@ -55,12 +62,7 @@ export default function ProfessorCard({
                 ))}
             </div>
 
-            {/* Rating Display */}
-            <div className="w-full flex items-center justify-center gap-1 mb-4 text-tertiary">
-                <Star className="h-4 w-4 fill-tertiary" />
-                <span className="text-sm font-bold text-on-surface">{rating}</span>
-                <span className="text-xs text-on-surface-variant ml-1">/ 5.0</span>
-            </div>
+
 
             {/* Action Buttons */}
             <div className="w-full grid grid-cols-2 gap-3 mt-auto">

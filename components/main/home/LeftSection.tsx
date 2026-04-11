@@ -38,7 +38,7 @@ export default function LeftSection() {
     }, [user])
 
     const me = useAppSelector((state) => state.user.me)
-    console.log(me);
+
 
 
     const navLinks = [

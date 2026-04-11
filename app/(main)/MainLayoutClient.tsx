@@ -7,11 +7,26 @@ import AuthLayout from "@/components/layouts/AuthLayout";
 import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
 import LeftSection from "@/components/main/home/LeftSection";
-import { useAppSelector } from "@/utils/hook";
+import { useAppSelector, useAppDispatch } from "@/utils/hook";
+import { getMe } from "@/features/users/userThunk";
+import { forceLogout } from "@/features/auth/authSlice";
+import { useEffect } from "react";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
+  const dispatch = useAppDispatch();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { me } = useAppSelector((state) => state.user);
   const searchParams = useSearchParams();
+
+  // 🛡️ Verify user existence on boot if authenticated
+  useEffect(() => {
+    if (isAuthenticated && !me) {
+      dispatch(getMe()).unwrap().catch(() => {
+        // If getMe fails, the user likely doesn't exist anymore
+        dispatch(forceLogout());
+      });
+    }
+  }, [isAuthenticated, me, dispatch]);
   
   const mode = (searchParams.get("mode") as
     "login" |
