@@ -39,7 +39,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 function SectionCard({
@@ -129,6 +129,7 @@ export default function EditProfileSection() {
     const router = useRouter();
     const [saved, setSaved] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
     const form = useForm<ProfileValues>({
         resolver: zodResolver(profileSchema),
@@ -166,30 +167,65 @@ export default function EditProfileSection() {
     });
 
     useEffect(() => {
-        const profileData = localStorage.getItem("profileData");
-        if (profileData) {
-            try {
-                const data = JSON.parse(profileData);
-                form.reset(data);
-            } catch (err) {
-                console.error("Failed to parse profile data:", err);
-            }
+        if (singleStudent) {
+            form.reset({
+                firstName: singleStudent.firstName || "",
+                lastName: singleStudent.lastName || "",
+                email: singleStudent.email || "",
+                phone: singleStudent.phone || "",
+                universityName: singleStudent.universityId?.name || "",
+                courseName: singleStudent.courseIds?.[0]?.courseName || "",
+                currentSemester: singleStudent.semesterId?.name || "1",
+                completionYear: singleStudent.endYear?.toString() || "",
+                bio: singleStudent.bio || "",
+                skills: (singleStudent.studentProfile?.skills?.length > 0)
+                    ? singleStudent.studentProfile.skills.map((s: string) => ({ name: s }))
+                    : [{ name: "" }],
+                projects: (singleStudent.studentProfile?.projects?.length > 0)
+                    ? singleStudent.studentProfile.projects.map((p: string) => ({ title: p, role: "Project", date: "", description: "" }))
+                    : [],
+            });
+            if (singleStudent.avatar) setAvatarUrl(singleStudent.avatar);
         }
-    }, [form]);
+    }, [singleStudent, form]);
 
     const onSubmit: SubmitHandler<ProfileValues> = async (values) => {
-        console.log("Saving profile changes:", values);
-        localStorage.setItem("profileData", JSON.stringify(values));
-        setSaved(true);
-        setTimeout(() => {
-            setSaved(false);
-            router.push("/profile");
-        }, 1500);
+        const formData = new FormData();
+        formData.append("firstName", values.firstName);
+        formData.append("lastName", values.lastName);
+        formData.append("phone", values.phone);
+        if (values.bio) formData.append("bio", values.bio);
+        if (values.completionYear) formData.append("endYear", values.completionYear);
+
+        values.skills.forEach((s: any) => {
+            if (s.name) formData.append("skills[]", s.name);
+        });
+
+        values.projects.forEach((p: any) => {
+            if (p.title) formData.append("projects[]", p.title);
+        });
+
+        if (avatarFile) {
+            formData.append("avatar", avatarFile);
+        }
+
+        const res = await dispatch(updateMyProfile(formData));
+
+        if (updateMyProfile.fulfilled.match(res)) {
+            setSaved(true);
+            setTimeout(() => {
+                setSaved(false);
+                router.push("/profile");
+            }, 1500);
+        } else {
+            console.error("Update failed", res.payload);
+        }
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setAvatarFile(file);
             const url = URL.createObjectURL(file);
             setAvatarUrl(url);
         }

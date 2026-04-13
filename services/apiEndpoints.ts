@@ -86,6 +86,7 @@ export const API_ENDPOINTS = {
     STUDENT: {
         GET_ALL: "/students",
         GET_BY_MY_UNIVERSITY: `/students/my-university`,
+        GET_ME: `/students/me`,
         GET_BY_MATCHED_HOBBY_BADGE: `/students/matched-hobby`,
         GET_BY_MATCHED_SEMESTER_WITH_COURSE_AND_SAME_UNIVERSITY: `/students/matched-semester-with-course-and-same-university`,
         GET_BY_MATCH_COURSE_AND_SAME_UNIVERSITY: `/students/match-course-and-same-university`,
