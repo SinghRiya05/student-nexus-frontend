@@ -92,6 +92,10 @@ export const API_ENDPOINTS = {
     },
     ALUMNI: {
         GET_BY_MY_UNIVERSITY: `/alumni/my-university`,
+        GET_BY_UNIVERSITY_ID: (id: string) => `/alumni/university/${id}`,
+        GET_BY_MY_COURSE: `/alumni/my-course`,
+        GET_BY_JOB_TITLE: `/alumni/job-titles`,
+        GET_ALUMNI_GROUP_BY_COMPANY: `/alumni/company`,
     },
     FOLLOW: {
         SEND_FOLLOW_REQUEST: (id: string) => `/follow/${id}`,
