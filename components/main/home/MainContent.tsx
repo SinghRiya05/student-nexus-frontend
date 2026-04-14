@@ -44,7 +44,6 @@ export default function MainContent() {
         fetchData();
     }, [dispatch]);
 
-    console.log(alumni)
 
 
 

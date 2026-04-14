@@ -1,30 +1,26 @@
 import { z } from "zod";
 export const profileSchema = z.object({
     // General
-    firstName: z.string().min(1, "Required"),
-    lastName: z.string().min(1, "Required"),
-    email: z.string().email("Invalid email"),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    email: z.string().email("Invalid email").optional(),
     phone: z.string().min(7, "Invalid phone"),
-    interestBadge: z.string().optional(), // Optional
-    profession: z.string().min(1, "Required"),
-    // Educational
-    universityName: z.string().min(1, "Required"),
-    courseName: z.string().min(1, "Required"),
-    currentSemester: z.string().min(1, "Required"),
-    batchName: z.string().optional(), // Optional
-    completionYear: z.string().optional(), // Optional
-    admissionDate: z.string().optional(), // Optional
-    // Other
-    country: z.string().optional(), // Optional
-    state: z.string().optional(), // Optional
-    city: z.string().optional(), // Optional
-    pinCode: z.string().optional(), // Optional
+    hobby_badge: z.string().optional(),
     bio: z.string().optional(),
-    skills: z.array(z.object({ name: z.string().min(1, "Required") })),
+
+    // Academic
+    universityId: z.string().optional(),
+    courseId: z.string().optional(),
+    semesterId: z.string().optional(),
+    startYear: z.string().optional(),
+    endYear: z.string().optional(),
+
+    // Arrays
+    skills: z.array(z.object({ name: z.string().optional() })),
     projects: z.array(z.object({
-        title: z.string().min(1, "Required"),
-        role: z.string().min(1, "Required"),
-        date: z.string().min(1, "Required"),
+        title: z.string().optional(),
+        role: z.string().optional(),
+        date: z.string().optional(),
         description: z.string().optional(),
     })),
 });
