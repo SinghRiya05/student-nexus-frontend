@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import {
     Camera,
@@ -20,6 +20,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/utils/hook";
+import { getMyProfile } from "@/features/student/studentThunk";
 
 // ─── Sections ─────────────────────────────────────────────────────────────
 
@@ -67,6 +69,14 @@ function ExperienceItem({ icon: Icon, title, role, date, description }: any) {
 // ─── Main Component ───────────────────────────────────────────────────────
 
 export default function ProfileSection() {
+
+    const dispatch = useAppDispatch()
+
+    const user = useAppSelector((state) => state.student.singleStudent)
+    console.log(user)
+    useEffect(() => {
+        dispatch(getMyProfile());
+    }, [dispatch])
     const router = useRouter();
     const [stats] = useState([
         { label: "Cumulative GPA", value: "8.9", subtext: "/ 10", color: "bg-blue-50/50 text-blue-600 border-blue-100 hover:border-blue-300 shadow-sm shadow-blue-50" },
@@ -74,43 +84,7 @@ export default function ProfileSection() {
         { label: "Current Term", value: "6th", subtext: "Sem", color: "bg-rose-50/50 text-rose-600 border-rose-100 hover:border-rose-300 shadow-sm shadow-rose-50" }
     ]);
 
-    // Profile state
-    const [profile, setProfile] = useState<any>({
-        firstName: "Riya",
-        lastName: "Singh",
-        courseName: "BCA Student",
-        universityName: "BBD University",
-        completionYear: "2025 - 2026",
-        bio: "",
-        skills: [],
-        experience: []
-    });
 
-    React.useEffect(() => {
-        const profileData = localStorage.getItem("profileData");
-        if (profileData) {
-            try {
-                const data = JSON.parse(profileData);
-                const skillsData = data.skills;
-                const skillsArray = Array.isArray(skillsData)
-                    ? skillsData.map((s: any) => typeof s === 'object' ? s.name : s)
-                    : (typeof skillsData === 'string' ? skillsData.split(",").map((s: string) => s.trim()).filter(Boolean) : []);
-
-                setProfile({
-                    firstName: data.firstName || "Riya",
-                    lastName: data.lastName || "Singh",
-                    courseName: data.courseName || "BCA Student",
-                    universityName: data.universityName || "BBD University",
-                    completionYear: data.completionYear || "2025 - 2026",
-                    bio: data.bio || "",
-                    skills: skillsArray,
-                    experience: data.projects || [] // projects maps to experience in view
-                });
-            } catch (err) {
-                console.error("Failed to parse profile data:", err);
-            }
-        }
-    }, []);
 
     const classmates = [
         { name: "John", img: "https://i.pravatar.cc/150?u=1" },
@@ -132,68 +106,79 @@ export default function ProfileSection() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* 1. Hero Header */}
-            <div className="relative bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
+            <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
                 {/* Cover Photo */}
-                <div className="h-64 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-linear-to-r from-indigo-600/20 to-purple-600/20 mix-blend-multiply" />
-                    <img
-                        src="https://images.unsplash.com/photo-1707343843437-caacff5cfa74?w=1600&q=80"
-                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                        alt="Cover"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="h-32 relative overflow-hidden group bg-indigo-50/50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 mix-blend-multiply z-10" />
+                    {user?.coverImage ? (
+                        <img
+                            src={user.coverImage}
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                            alt="Cover"
+                        />
+                    ) : (
+                        <Camera className="w-8 h-8 text-indigo-200 absolute z-0 opacity-50" />
+                    )}
                 </div>
 
-                {/* Profile Info Overlay Row */}
-                <div className="px-10 pb-10 flex flex-col md:flex-row items-end justify-between -mt-16 relative z-10 gap-8">
-                    <div className="flex flex-col md:flex-row items-end gap-8 flex-1">
-                        {/* Avatar */}
-                        <div className="relative group">
-                            <div className="h-44 w-44 rounded-[2.5rem] border-10 border-white overflow-hidden shadow-2xl bg-white">
-                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2ouios_lhgXqc2jp7Mq-OcL_Utm9--mcX154rRS0412JQKRZkcX78lXb4rJyYrGQ89EUiBnSKbmjTbTizXd_rLbMDgx_iDfMYqxsAVJCpaaZzIiL2pGubDVFUoOU2IzFNEjdPJ8efhIjopDqX67xS-pGZjdgdBM2kTpG-VYO65j3PRjfdmusUe5V7nY4F83Uxir3MKiO0uXimenU1ScyWKf34s19hoLZ3y6hB5JwAz1_l_YIJxaxr5rKBQR7ExC31lw6gsgcSg2w" className="w-full h-full object-cover" alt="Profile" />
-                            </div>
-                            <button className="absolute bottom-4 right-4 h-10 w-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center border-4 border-white shadow-xl hover:bg-blue-700 transition-all hover:scale-110">
-                                <Camera size={18} />
-                            </button>
+                {/* Profile Info — Below Cover, No Overlay */}
+                <div className="px-10 py-8 flex  md:flex-row items-center md:items-start gap-5">
+                    {/* Avatar */}
+                    <div className="relative group shrink-0">
+                        <div className="h-32 w-32 rounded-[2rem] border-4 border-white overflow-hidden shadow-2xl bg-indigo-50 ring-2 ring-indigo-100 flex items-center justify-center font-black text-4xl text-indigo-500">
+                            {user?.avatar ? (
+                                <img
+                                    src={user.avatar}
+                                    className="w-full h-full object-cover"
+                                    alt="Profile"
+                                />
+                            ) : (
+                                user?.firstName?.charAt(0).toUpperCase() || "?"
+                            )}
                         </div>
-
-                        {/* Text Info */}
-                        <div className="pb-3 space-y-3">
-                            <h2 className="text-[40px] font-black text-[#1a1a3b] leading-tight flex items-center gap-3">
-                                {profile.firstName} {profile.lastName}
-                                <div className="h-3 w-3 bg-green-500 rounded-full border-2 border-white shadow-sm" />
-                            </h2>
-                            <div className="flex flex-wrap items-center gap-6 text-gray-500 font-bold text-sm">
-                                <div className="flex items-center gap-2">
-                                    <GraduationCap className="w-5 h-5 text-indigo-500" />
-                                    {profile.courseName}
-                                </div>
-                                <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
-                                    <MapPin className="w-5 h-5 text-rose-500" />
-                                    {profile.universityName}
-                                </div>
-                                <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
-                                    <Users className="w-5 h-5 text-emerald-500" />
-                                    {profile.completionYear}
-                                </div>
-                            </div>
-                        </div>
+                        <button className="absolute bottom-2 right-2 h-9 w-9 bg-blue-600 text-white rounded-xl flex items-center justify-center border-[3px] border-white shadow-xl hover:bg-blue-700 transition-all hover:scale-110">
+                            <Camera size={16} />
+                        </button>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-4 pb-4">
-                        <Button
-                            onClick={() => router.push("/profile/edit")}
-                            variant="outline"
-                            className="h-14 px-8 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-3 shadow-sm"
-                        >
-                            <Edit3 className="w-5 h-5 text-blue-600" />
-                            Edit Profile
-                        </Button>
-                        <Button className="h-14 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm flex gap-3 shadow-xl shadow-blue-500/30">
-                            <UserPlus className="w-5 h-5" />
-                            Connect
-                        </Button>
+                    {/* Text Info + Action Buttons */}
+                    <div className=" flex flex-col lg:flex-row items-start md:items-center justify-between gap-5 w-full">
+                        {/* Name & Meta */}
+                        <div className="space-y-2">
+                            <h2 className="text-xl md:text-2xl font-black text-[#1a1a3b] leading-tight flex items-center gap-2">
+                                {user?.firstName} {user?.lastName}
+                            </h2>
+                            <div className="flex flex-wrap items-center gap-5 text-gray-500 font-bold text-sm">
+                                <div className="flex items-center gap-2">
+                                    <GraduationCap className="w-4 h-4 text-indigo-500" />
+                                    {user?.courseIds?.[0]?.courseName || "Course not added"}
+                                </div>
+                                <div className="flex items-center gap-2 border-gray-200">
+                                    <MapPin className="w-4 h-4 text-rose-500" />
+                                    {user?.universityId ? `${user.universityId.name} (${user.universityId.short_name})` : "University not added"}
+                                </div>
+                                <div className="flex items-center gap-2 border-gray-200">
+                                    <Users className="w-4 h-4 text-emerald-500" />
+                                    {user?.startYear && user?.endYear ? `${user.startYear} - ${user.endYear}` : "Term not set"}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-3 shrink-0">
+                            <Button
+                                onClick={() => router.push("/profile/edit")}
+                                variant="outline"
+                                className="h-10 px-5 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-2 shadow-sm"
+                            >
+                                <Edit3 className="w-4 h-4 text-blue-600" />
+                                Edit Profile
+                            </Button>
+                            <Button className="h-10 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm flex gap-2 shadow-xl shadow-blue-500/30">
+                                <UserPlus className="w-4 h-4" />
+                                Connect
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -202,15 +187,7 @@ export default function ProfileSection() {
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
                 {/* Left Column (Main Content) */}
                 <div className="lg:col-span-7 space-y-8">
-                    <AboutMe bio={profile.bio} />
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {stats.map((stat, i) => (
-                            <StatCard key={i} {...stat} />
-                        ))}
-                    </div>
-
+                    <AboutMe bio={user?.bio} />
                     {/* Experience & Projects */}
                     <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
                         <div className="flex items-center justify-between mb-8">
@@ -225,17 +202,17 @@ export default function ProfileSection() {
                             </Button>
                         </div>
                         <div className="space-y-6">
-                            {profile.experience.length > 0 ? (
-                                profile.experience.map((exp: any, i: number) => (
+                            {user?.studentProfile?.projects?.length > 0 ? (
+                                user.studentProfile.projects.map((exp: string, i: number) => (
                                     <React.Fragment key={i}>
                                         <ExperienceItem
-                                            title={exp.title}
-                                            role={exp.role}
-                                            date={exp.date}
-                                            description={exp.description}
+                                            title={exp}
+                                            role="Personal Project"
+                                            date=""
+                                            description=""
                                             icon={Briefcase}
                                         />
-                                        {i < profile.experience.length - 1 && <div className="h-px bg-gray-100 w-full" />}
+                                        {i < user.studentProfile.projects.length - 1 && <div className="h-px bg-gray-100 w-full" />}
                                     </React.Fragment>
                                 ))
                             ) : (
@@ -256,8 +233,8 @@ export default function ProfileSection() {
                             <h3 className="text-xl font-black text-[#1a1a3b]">Skills</h3>
                         </div>
                         <div className="flex flex-wrap gap-3">
-                            {profile.skills.length > 0 ? (
-                                profile.skills.map((skill: string, i: number) => (
+                            {user?.studentProfile?.skills?.length > 0 ? (
+                                user.studentProfile.skills.map((skill: string, i: number) => (
                                     <span key={i} className={`px-6 py-3 rounded-2xl font-black text-sm transition-all cursor-default shadow-sm
                                         ${i % 3 === 0 ? 'bg-indigo-50 text-indigo-600' : i % 3 === 1 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}
                                         hover:scale-105

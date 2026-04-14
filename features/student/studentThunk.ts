@@ -15,6 +15,18 @@ export const getAllStudents = createAsyncThunk<IStudentResponse, void>(
     }
 );
 
+export const getMyProfile = createAsyncThunk(
+    "student/getMyProfile",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(API_ENDPOINTS.STUDENT.GET_ME);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
 export const getStudentsByMyUniversity = createAsyncThunk<IStudentResponse, void>(
     "student/getStudentsByMyUniversity",
     async (_, { rejectWithValue }) => {
@@ -62,3 +74,4 @@ export const getStudentsByMatchedSemesterWithCourseAndSameUniversity = createAsy
         }
     }
 );
+

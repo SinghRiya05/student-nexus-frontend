@@ -10,6 +10,7 @@ import { useAppDispatch } from "@/utils/hook"
 import { getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedSemesterWithCourseAndSameUniversity } from "@/features/student/studentThunk"
 import { useEffect, useState } from "react"
 import { getTeachersFromSameUniversity } from '@/features/teacher/teacherThunk'
+import { fetchAlumniByMyUniversity } from '@/features/alumni/alumniThunk'
 
 export default function MainContent() {
     const router = useRouter()
@@ -18,20 +19,23 @@ export default function MainContent() {
     const [classmates, setClassmates] = useState<any[]>([])
     const [batchmates, setBatchmates] = useState<any[]>([])
     const [SameUniversityTeachers, setSameUniversityTeachers] = useState<any[]>([])
+    const [alumni, setAlumni] = useState<any[]>([])
 
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [classRes, batchRes, SameUniversityTeachersRes] = await Promise.all([
+                const [classRes, batchRes, SameUniversityTeachersRes, alumniRes] = await Promise.all([
                     dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity()).unwrap(),
                     dispatch(getStudentsByMatchedCourseAndSameUniversity()).unwrap(),
-                    dispatch(getTeachersFromSameUniversity()).unwrap()
+                    dispatch(getTeachersFromSameUniversity()).unwrap(),
+                    dispatch(fetchAlumniByMyUniversity()).unwrap()
                 ]);
 
                 setClassmates(classRes?.data || []);
                 setBatchmates(batchRes?.data || []);
                 setSameUniversityTeachers(SameUniversityTeachersRes?.data || []);
+                setAlumni(alumniRes || []);
             } catch (err) {
                 console.error(err);
             }
@@ -40,6 +44,8 @@ export default function MainContent() {
         fetchData();
     }, [dispatch]);
 
+    console.log(alumni)
+
 
 
     const departments = [
@@ -47,11 +53,6 @@ export default function MainContent() {
         { name: "Social Science", category: "Social", students: "800 Students", icon: Globe, bg: "bg-[#ffa184]/20", text: "text-[#ad3407]" },
         { name: "Political Dept", category: "Political", students: "450 Students", icon: Landmark, bg: "bg-[#b4bdff]/20", text: "text-[#2949ef]" },
         { name: "Home Science", category: "Applied", students: "320 Students", icon: Home, bg: "bg-[#dad6ff]/40", text: "text-[#5d5a86]" },
-    ]
-
-    const alumni = [
-        { name: "Rishika", info: "Class of 2021 • Microsoft", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDJHmUdFSYOmCKgZ0nqfW_OCCZ88r6Ttnnn3WbqJHkekCZ_Py9Yyxvl16FHuPDqp0wr2a50onOBqs30XpQYRN_9s4Xqr-UIY49ZLpMisR4AtaMRPh7RQyRG9e8ZdkQwI57OLTDRGvBIQNia-uoyGH9hgn-y8ptTT0FuB2osQgEJ6Ss-gwd_7WgClsmkmLsp87b3UtpCcOIZMVDLhdYX_0YGifWo97uHePJJqDTinVtzUuXe_lEu2YLlLk6zQ8IfR6j4d7Ql1IwDQYE" },
-        { name: "Kamal", info: "Class of 2020 • Google", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDdsihJqAJ7IgVTCxGW2-M_OMiQGSI3T64G7PmmFQY8fLRKlsuvzxb8hUf1gRHgyZTA0JhxJMdkuRdUQK2L61WrtRbIjm_40m5aFfO1kfrtgotn1juTDkovjnKbHFi48PMKRXDJs4lgHV5I3PugL1AQUTqGcj1rf_v-9SKc9jkQxxOtBbz8M0pn7t8_GykGm3GSF6OteXT5i2fDD0CH_yWBa-AIeEBjp38c205EIRWh3YmCIClOG54tEspNwpTEvygZ7mD4j_6DVhE" },
     ]
 
     return (
@@ -183,16 +184,25 @@ export default function MainContent() {
             <section>
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h2 className="text-xl font-bold">BBD University - Alumni</h2>
-                    <button className="text-[#2949ef] text-sm font-semibold hover:underline">Career Network</button>
+                    <button onClick={() => router.push("/alumni")} className="text-[#2949ef] text-sm font-semibold hover:underline">Career Network</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {alumni.map((member, idx) => (
-                        <div key={idx} className="min-w-[280px] bg-white border border-[#b1addd]/10 p-5 rounded-3xl flex flex-col gap-4">
+                    {alumni.slice(0, 5).map((member, idx) => (
+                        <div key={idx} className="min-w-[240px] bg-white border border-[#b1addd]/10 p-5 rounded-3xl flex flex-col gap-4">
                             <div className="flex items-center gap-4">
-                                <img className="w-12 h-12 rounded-full object-cover" src={member.image} alt={member.name} />
+                                {member.profilePicture || member.avatar ? (
+                                    <img className="w-12 h-12 rounded-full object-cover" src={member.profilePicture} alt={member.firstName} />
+
+                                ) : (
+                                    <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">
+                                        {member.firstName?.[0]}
+                                    </div>
+                                )
+
+                                }
                                 <div>
-                                    <h4 className="font-bold text-sm text-[#302e56]">{member.name}</h4>
-                                    <p className="text-[10px] text-[#5d5a86]">{member.info}</p>
+                                    <h4 className="font-bold text-sm text-[#302e56]">{member.firstName} {member.lastName}</h4>
+                                    <p className="text-[10px] text-[#5d5a86]">{member.aluminiProfile?.jobTitle} • {member.aluminiProfile?.currentCompany}</p>
                                 </div>
                             </div>
                             <button className="w-full py-2 bg-[#f0ebff] text-[#2949ef] rounded-xl text-xs font-bold hover:bg-[#e3dfff] transition-colors flex items-center justify-center gap-2">

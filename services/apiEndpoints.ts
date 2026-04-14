@@ -86,12 +86,17 @@ export const API_ENDPOINTS = {
     STUDENT: {
         GET_ALL: "/students",
         GET_BY_MY_UNIVERSITY: `/students/my-university`,
+        GET_ME: `/students/me`,
         GET_BY_MATCHED_HOBBY_BADGE: `/students/matched-hobby`,
         GET_BY_MATCHED_SEMESTER_WITH_COURSE_AND_SAME_UNIVERSITY: `/students/matched-semester-with-course-and-same-university`,
         GET_BY_MATCH_COURSE_AND_SAME_UNIVERSITY: `/students/match-course-and-same-university`,
     },
     ALUMNI: {
         GET_BY_MY_UNIVERSITY: `/alumni/my-university`,
+        GET_BY_UNIVERSITY_ID: (id: string) => `/alumni/university/${id}`,
+        GET_BY_MY_COURSE: `/alumni/my-course`,
+        GET_BY_JOB_TITLE: `/alumni/job-titles`,
+        GET_ALUMNI_GROUP_BY_COMPANY: `/alumni/company`,
     },
     FOLLOW: {
         SEND_FOLLOW_REQUEST: (id: string) => `/follow/${id}`,

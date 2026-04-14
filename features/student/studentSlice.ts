@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { studentState } from "./studentModel";
-import { getAllStudents, getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedHobbyBadge, getStudentsByMatchedSemesterWithCourseAndSameUniversity, getStudentsByMyUniversity } from "./studentThunk";
+import { getAllStudents, getMyProfile, getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedHobbyBadge, getStudentsByMatchedSemesterWithCourseAndSameUniversity, getStudentsByMyUniversity } from "./studentThunk";
 
 
 const initialState: studentState = {
@@ -25,6 +25,19 @@ const studentSlice = createSlice({
                 state.students = action.payload.data;
             })
             .addCase(getAllStudents.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+
+            // get my profile
+            .addCase(getMyProfile.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getMyProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.singleStudent = action.payload.data;
+            })
+            .addCase(getMyProfile.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
@@ -76,6 +89,7 @@ const studentSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
+
     }
 });
 
