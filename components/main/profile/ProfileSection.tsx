@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { BASE_URL } from "@/services/apiEndpoints";
 import Image from "next/image";
 import {
     Camera,
@@ -15,13 +16,17 @@ import {
     UserPlus,
     LayoutGrid,
     MessageSquare,
-    Code
+    Code,
+    CheckCircle,
+    ShieldCheck,
+    Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getMyProfile } from "@/features/student/studentThunk";
+import { getMe } from "@/features/users/userThunk";
 
 // ─── Sections ─────────────────────────────────────────────────────────────
 
@@ -72,19 +77,12 @@ export default function ProfileSection() {
 
     const dispatch = useAppDispatch()
 
-    const user = useAppSelector((state) => state.student.singleStudent)
+    const user = useAppSelector((state) => state.user.me)
     console.log(user)
     useEffect(() => {
-        dispatch(getMyProfile());
+        dispatch(getMe());
     }, [dispatch])
     const router = useRouter();
-    const [stats] = useState([
-        { label: "Cumulative GPA", value: "8.9", subtext: "/ 10", color: "bg-blue-50/50 text-blue-600 border-blue-100 hover:border-blue-300 shadow-sm shadow-blue-50" },
-        { label: "Credits Earned", value: "124", subtext: "Units", color: "bg-emerald-50/50 text-emerald-600 border-emerald-100 hover:border-emerald-300 shadow-sm shadow-emerald-50" },
-        { label: "Current Term", value: "6th", subtext: "Sem", color: "bg-rose-50/50 text-rose-600 border-rose-100 hover:border-rose-300 shadow-sm shadow-rose-50" }
-    ]);
-
-
 
     const classmates = [
         { name: "John", img: "https://i.pravatar.cc/150?u=1" },
@@ -112,7 +110,7 @@ export default function ProfileSection() {
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 mix-blend-multiply z-10" />
                     {user?.coverImage ? (
                         <img
-                            src={user.coverImage}
+                            src={`http://localhost:5000${user.coverImage}`}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             alt="Cover"
                         />
@@ -128,7 +126,7 @@ export default function ProfileSection() {
                         <div className="h-32 w-32 rounded-[2rem] border-4 border-white overflow-hidden shadow-2xl bg-indigo-50 ring-2 ring-indigo-100 flex items-center justify-center font-black text-4xl text-indigo-500">
                             {user?.avatar ? (
                                 <img
-                                    src={user.avatar}
+                                    src={`http://localhost:5000${user.avatar}`}
                                     className="w-full h-full object-cover"
                                     alt="Profile"
                                 />
@@ -147,6 +145,11 @@ export default function ProfileSection() {
                         <div className="space-y-2">
                             <h2 className="text-xl md:text-2xl font-black text-[#1a1a3b] leading-tight flex items-center gap-2">
                                 {user?.firstName} {user?.lastName}
+                                {user?.verificationStatus && (
+                                    <span className="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
+                                        Verified <CheckCircle size={10} />
+                                    </span>
+                                )}
                             </h2>
                             <div className="flex flex-wrap items-center gap-5 text-gray-500 font-bold text-sm">
                                 <div className="flex items-center gap-2">
@@ -161,6 +164,12 @@ export default function ProfileSection() {
                                     <Users className="w-4 h-4 text-emerald-500" />
                                     {user?.startYear && user?.endYear ? `${user.startYear} - ${user.endYear}` : "Term not set"}
                                 </div>
+                                {user?.Profile?.hobby_badge && (
+                                    <div className="flex items-center gap-2 border-gray-200">
+                                        <Activity className="w-4 h-4 text-purple-500" />
+                                        <span className="capitalize">{user.Profile.hobby_badge}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -202,8 +211,8 @@ export default function ProfileSection() {
                             </Button>
                         </div>
                         <div className="space-y-6">
-                            {user?.studentProfile?.projects?.length > 0 ? (
-                                user.studentProfile.projects.map((exp: string, i: number) => (
+                            {(user?.Profile?.projects?.length ?? 0) > 0 ? (
+                                user?.Profile?.projects?.map((exp: string, i: number) => (
                                     <React.Fragment key={i}>
                                         <ExperienceItem
                                             title={exp}
@@ -212,7 +221,7 @@ export default function ProfileSection() {
                                             description=""
                                             icon={Briefcase}
                                         />
-                                        {i < user.studentProfile.projects.length - 1 && <div className="h-px bg-gray-100 w-full" />}
+                                        {i < (user?.Profile?.projects?.length ?? 0) - 1 && <div className="h-px bg-gray-100 w-full" />}
                                     </React.Fragment>
                                 ))
                             ) : (
@@ -233,8 +242,8 @@ export default function ProfileSection() {
                             <h3 className="text-xl font-black text-[#1a1a3b]">Skills</h3>
                         </div>
                         <div className="flex flex-wrap gap-3">
-                            {user?.studentProfile?.skills?.length > 0 ? (
-                                user.studentProfile.skills.map((skill: string, i: number) => (
+                            {(user?.Profile?.skills?.length ?? 0) > 0 ? (
+                                user?.Profile?.skills?.map((skill: string, i: number) => (
                                     <span key={i} className={`px-6 py-3 rounded-2xl font-black text-sm transition-all cursor-default shadow-sm
                                         ${i % 3 === 0 ? 'bg-indigo-50 text-indigo-600' : i % 3 === 1 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}
                                         hover:scale-105
@@ -254,6 +263,27 @@ export default function ProfileSection() {
 
                 {/* Right Column (Sidebar) */}
                 <div className="lg:col-span-3 space-y-8">
+                    {/* Trust & Network Stats */}
+                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                        <h3 className="font-black text-[#1a1a3b] text-base mb-6">Network Stats</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-center">
+                                <p className="text-2xl font-black text-indigo-600 mb-1">{user?.followersCount || 0}</p>
+                                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Followers</p>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 text-center">
+                                <p className="text-2xl font-black text-emerald-600 mb-1">{user?.followingCount || 0}</p>
+                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Following</p>
+                            </div>
+                            <div className="col-span-2 p-4 rounded-2xl bg-amber-50/50 border border-amber-100 flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-amber-600 font-bold text-sm">
+                                    <ShieldCheck size={18} /> Trust Score
+                                </div>
+                                <span className="font-black text-lg text-amber-600">{user?.trustScore || 0}/100</span>
+                            </div>
+                        </div>
+                    </Card>
+
                     {/* Classmates & Friends */}
                     <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
                         <div className="flex items-center justify-between mb-8">

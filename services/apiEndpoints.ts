@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
         DELETE_USER: (id: string) => `/auth/delete-user/${id}`,
         GET_ALL_USERS: "/auth/get-all-users",
         GET_ME: "/auth/get-me",
+        UPDATE_PROFILE: "/auth/update-profile",
         TOGGLE_PRIVACY: "/auth/toggle-privacy",
         FORGOT_PASSWORD: "/auth/forgot-password",
         RESET_PASSWORD: "/auth/reset-password",

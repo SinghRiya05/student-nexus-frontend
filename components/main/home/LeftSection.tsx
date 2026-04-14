@@ -79,7 +79,7 @@ export default function LeftSection() {
                                 {me?.avatar ? (
                                     <img
                                         className="w-full h-full object-cover rounded-xl"
-                                        src={me.avatar}
+                                        src={`http://localhost:5000${me.avatar}`}
                                         alt={me.firstName || "User"}
                                     />
                                 ) : (
@@ -101,7 +101,9 @@ export default function LeftSection() {
                             </div>
                             <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
                                 <MapPin className="w-3 h-3 text-primary" />
-                                {me?.universityId?.state.name.toUpperCase() + ", " + me?.universityId?.city.name.toUpperCase()}
+                                {me?.universityId?.state?.name?.toUpperCase() && me?.universityId?.city?.name?.toUpperCase()
+                                    ? `${me.universityId.state.name.toUpperCase()}, ${me.universityId.city.name.toUpperCase()}`
+                                    : "Location not set"}
                             </div>
                         </div>
 

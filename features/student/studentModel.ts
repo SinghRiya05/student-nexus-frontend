@@ -13,8 +13,17 @@ export interface IUniversity {
 export interface ISemester {
     _id: string;
     name: string;
-    number: number;
 }
+
+export interface IStudentProfile {
+    _id: string;
+    userId: string;
+    skills: string[];
+    projects: string[];
+    hobby_badge: string;
+    semesterId: ISemester | null;
+}
+
 
 
 export interface IStudent {
@@ -28,13 +37,27 @@ export interface IStudent {
     followingCount: number;
     status: string;
     universityId: IUniversity;
-    semesterId: ISemester;
+    studentProfile?: IStudentProfile | null;
+    bio?: string;
+    coverImage?: string;
+    avatar?: string;
+    endYear?: number;
+    startYear?: number;
 }
 
 export interface IStudentResponse {
     success: boolean;
     message: string;
     data: IStudent[];
+}
+
+export interface ICurrentUser extends IStudent {
+    bio?: string;
+    startYear?: number;
+    coverImage?: string;
+    profileImage?: string;
+    endYear?: number;
+    studentProfile?: IStudentProfile | null;
 }
 
 export interface studentState {

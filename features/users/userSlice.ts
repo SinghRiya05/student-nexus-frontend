@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { UserState } from "./userModel";
-import { getAllUsers, deleteUser, getMe } from "./userThunk";
+import { getAllUsers, deleteUser, getMe, updateProfile } from "./userThunk";
 
 const initialState: UserState = {
     users: [],
@@ -66,6 +66,22 @@ const userSlice = createSlice({
                 state.message = "User deleted successfully";
             })
             .addCase(deleteUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+
+            // Update Profile
+            .addCase(updateProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                state.me = action.payload;
+                state.message = "Profile updated successfully";
+            })
+            .addCase(updateProfile.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });
