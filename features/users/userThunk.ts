@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/services/apiClient";
 import { API_ENDPOINTS } from "@/services/apiEndpoints";
-import { IUpdateProfile } from "./userModel";
+import { ApiResponse } from "./userModel";
 
 
 export const getAllUsers = createAsyncThunk(
@@ -9,7 +9,7 @@ export const getAllUsers = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_ALL_USERS);
-            return response.data.data;
+            return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || "Failed to fetch users");
         }
@@ -21,13 +21,19 @@ export const getMe = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_ME);
-            const data = response.data.data;
-            if (data) {
-                if (data.studentProfile) data.Profile = data.studentProfile;
-                else if (data.aluminiProfile) data.Profile = data.aluminiProfile;
-                else if (data.teacherProfile) data.Profile = data.teacherProfile;
-                else if (data.profile) data.Profile = data.profile;
-            }
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || "Failed to fetch user");
+        }
+    }
+);
+
+
+export const getUserById = createAsyncThunk("user/getUserById",
+    async (id: string, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_BY_ID(id));
+            const data = response.data;
             return data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || "Failed to fetch user");
@@ -35,24 +41,19 @@ export const getMe = createAsyncThunk(
     }
 );
 
-export const updateProfile = createAsyncThunk(
-    "user/updateProfile",
-    async (profileData: IUpdateProfile, { rejectWithValue }) => {
+
+export const updateProfile = createAsyncThunk("user/updateProfile",
+    async (profileData: any, { rejectWithValue }) => {
         try {
             const response = await apiClient.patch(API_ENDPOINTS.AUTH.UPDATE_PROFILE, profileData);
-            const data = response.data.data;
-            if (data) {
-                if (data.studentProfile) data.Profile = data.studentProfile;
-                else if (data.aluminiProfile) data.Profile = data.aluminiProfile;
-                else if (data.teacherProfile) data.Profile = data.teacherProfile;
-                else if (data.profile) data.Profile = data.profile;
-            }
+            const data = response.data;
             return data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || "Failed to update profile");
         }
     }
 );
+
 
 export const deleteUser = createAsyncThunk(
     "user/deleteUser",

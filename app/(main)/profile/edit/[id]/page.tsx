@@ -1,4 +1,3 @@
-import React from 'react'
 import EditProfileSection from '@/components/main/profile/EditProfileSection'
 
 export const metadata = {

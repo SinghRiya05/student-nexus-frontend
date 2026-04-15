@@ -1,14 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { UserState } from "./userModel";
-import { getAllUsers, deleteUser, getMe, updateProfile } from "./userThunk";
+import { UserInitialSliceState } from "./userModel";
+import { getAllUsers, deleteUser, getMe, updateProfile, getUserById } from "./userThunk";
 
-const initialState: UserState = {
+const initialState: UserInitialSliceState = {
     users: [],
+    singleUser: null,
     me: null,
-    loading: false,
-    success: false,
-    message: null,
-    error: null,
+    userLoading: false,
+    userSuccess: false,
+    userMessage: null,
+    userError: null,
+};
+
+const normalizeUser = (user: any) => {
+    if (!user) return null;
+    const Profile = user.studentProfile || user.aluminiProfile || user.teacherProfile || user.profile;
+    return { ...user, Profile };
 };
 
 const userSlice = createSlice({
@@ -16,74 +23,89 @@ const userSlice = createSlice({
     initialState,
     reducers: {
         clearUserState: (state) => {
-            state.loading = false;
-            state.success = false;
-            state.message = null;
-            state.error = null;
+            state.userLoading = false;
+            state.userSuccess = false;
+            state.userMessage = null;
+            state.userError = null;
         },
     },
     extraReducers: (builder) => {
         builder
             // Get All Users
             .addCase(getAllUsers.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+                state.userLoading = true;
+                state.userError = null;
             })
             .addCase(getAllUsers.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                state.users = action.payload;
+                state.userLoading = false;
+                state.userSuccess = true;
+                state.users = (action.payload.data || []).map(normalizeUser);
             })
             .addCase(getAllUsers.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
+                state.userLoading = false;
+                state.userError = action.payload as string;
             })
 
             // Get Me
             .addCase(getMe.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+                state.userLoading = true;
+                state.userError = null;
             })
             .addCase(getMe.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                state.me = action.payload;
+                state.userLoading = false;
+                state.userSuccess = true;
+                state.me = normalizeUser(action.payload.data);
             })
             .addCase(getMe.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
+                state.userLoading = false;
+                state.userError = action.payload as string;
+            })
+
+            // Get User By Id
+            .addCase(getUserById.pending, (state) => {
+                state.userLoading = true;
+                state.userError = null;
+            })
+            .addCase(getUserById.fulfilled, (state, action) => {
+                state.userLoading = false;
+                state.userSuccess = true;
+                state.singleUser = normalizeUser(action.payload.data);
+            })
+            .addCase(getUserById.rejected, (state, action) => {
+                state.userLoading = false;
+                state.userError = action.payload as string;
             })
 
             // Delete User
             .addCase(deleteUser.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+                state.userLoading = true;
+                state.userError = null;
             })
             .addCase(deleteUser.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
+                state.userLoading = false;
+                state.userSuccess = true;
                 state.users = state.users.filter((u) => u._id !== action.payload);
-                state.message = "User deleted successfully";
+                state.userMessage = "User deleted successfully";
             })
             .addCase(deleteUser.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
+                state.userLoading = false;
+                state.userError = action.payload as string;
             })
 
             // Update Profile
             .addCase(updateProfile.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+                state.userLoading = true;
+                state.userError = null;
             })
             .addCase(updateProfile.fulfilled, (state, action) => {
-                state.loading = false;
-                state.success = true;
-                state.me = action.payload;
-                state.message = "Profile updated successfully";
+                state.userLoading = false;
+                state.userSuccess = true;
+                state.me = normalizeUser(action.payload.data);
+                state.userMessage = "Profile updated successfully";
             })
             .addCase(updateProfile.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
+                state.userLoading = false;
+                state.userError = action.payload as string;
             });
     },
 });

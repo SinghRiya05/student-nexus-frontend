@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/utils/hook";
 import { logoutUser } from '@/features/auth/authThunk';
+import { ASSET_URL } from "@/services/apiEndpoints";
 import { getFollowing, getPendingFollowRequests, getSentRequests, getFollowers, acceptFollowRequest, rejectFollowRequest } from "@/features/follow/followThunk";
 import {
   GraduationCap,
@@ -65,7 +66,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const unreadCount = NOTIFICATIONS.filter((n) => n.unread).length;
 
   const dispatch = useAppDispatch();
-  const me = useAppSelector((state) => state.user.me);
+  const { user: authUser } = useAppSelector((state) => state.auth);
   const { pendingRequests } = useAppSelector((state) => state.follow);
 
   const closeAll = () => {
@@ -75,13 +76,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
   };
   
   useEffect(() => {
-    if (me?._id) {
+    if (authUser?._id) {
       dispatch(getFollowing());
       dispatch(getPendingFollowRequests());
       dispatch(getSentRequests());
       dispatch(getFollowers());
     }
-  }, [me?._id, dispatch]);
+  }, [authUser?._id, dispatch]);
 
   return (
     <>
@@ -184,7 +185,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     ) : (
                       pendingRequests.map((req: any) => (
                         <div key={req._id} className="flex gap-3 px-4 py-3 transition hover:bg-gray-50 items-center">
-                          <img src={req.follower?.avatar || "/user.jpg"} alt="avatar" className="h-9 w-9 rounded-full object-cover shrink-0" />
+                          <img src={req.follower?.avatar ? `${ASSET_URL}${req.follower.avatar}` : "/user.jpg"} alt="avatar" className="h-9 w-9 rounded-full object-cover shrink-0" />
                           <div className="flex-1">
                             <p className="text-[0.78rem] font-bold text-gray-800">{req.follower?.firstName} {req.follower?.lastName}</p>
                             <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
@@ -253,15 +254,15 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); setRequestsOpen(false); }}
                 className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-2.5 py-1.5 transition hover:border-indigo-200 hover:bg-indigo-50"
               >
-                {me?.avatar ? (
-                  <img src={me.avatar} className="h-7 w-7 rounded-lg object-cover" alt="Profile" />
+                {authUser?.avatar ? (
+                  <img src={`${ASSET_URL}${authUser.avatar}`} className="h-7 w-7 rounded-lg object-cover" alt="Profile" />
                 ) : (
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-violet-600 text-[0.7rem] font-bold text-white uppercase">
-                    {me?.firstName?.[0] || "?"}
+                    {authUser?.firstName?.[0] || "?"}
                   </div>
                 )}
                 <span className="hidden text-[0.78rem] font-semibold text-gray-800 sm:block">
-                  {me?.firstName || "User"}
+                  {authUser?.firstName || "User"}
                 </span>
                 <ChevronDown
                   size={13}
@@ -275,16 +276,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   {/* User info */}
                   <div className="border-b border-gray-100 p-4">
                     <div className="flex items-center gap-3">
-                      {me?.avatar ? (
-                        <img src={me.avatar} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl object-cover" alt="Profile" />
+                      {authUser?.avatar ? (
+                        <img src={`${ASSET_URL}${authUser.avatar}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl object-cover" alt="Profile" />
                       ) : (
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-violet-600 text-lg font-bold text-white uppercase">
-                          {me?.firstName?.[0] || "?"}
+                          {authUser?.firstName?.[0] || "?"}
                         </div>
                       )}
                       <div className="overflow-hidden">
-                        <p className="text-[0.82rem] font-bold text-gray-900 truncate">{me?.firstName} {me?.lastName}</p>
-                        <p className="text-[0.68rem] text-gray-400 truncate capitalize">{me?.roleId?.name?.toLowerCase() || "Student"} • {me?.universityId?.name || "University"}</p>
+                        <p className="text-[0.82rem] font-bold text-gray-900 truncate">{authUser?.firstName} {authUser?.lastName}</p>
+                        <p className="text-[0.68rem] text-gray-400 truncate capitalize">{authUser?.roleId?.name?.toLowerCase() || "Student"} • {authUser?.universityId?.name || "University"}</p>
                       </div>
                     </div>
                   </div>

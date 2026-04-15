@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { logoutUser } from '@/features/auth/authThunk'
 import { getMe } from '@/features/users/userThunk'
+import { ASSET_URL } from '@/services/apiEndpoints'
 
 export default function LeftSection() {
     const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
@@ -56,9 +57,18 @@ export default function LeftSection() {
                 animate={{ opacity: 1, y: 0 }}
                 className="overflow-hidden rounded-3xl glass-card border-none  group"
             >
-                {/* Decorative Header */}
-                <div className="h-16 bg-linear-to-br from-primary via-primary/80 to-[#7387ff] relative overflow-hidden">
-                    <div className="absolute inset-0 opacity-20 grid-overlay" />
+                {/* Decorative Header / Profile Banner */}
+                <div className="h-16 relative overflow-hidden bg-linear-to-br from-primary via-primary/80 to-[#7387ff]">
+                    {me?.coverImage ? (
+                        <img
+                            src={`${ASSET_URL}${me.coverImage}`}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            alt="Banner"
+                        />
+                    ) : (
+                        <div className="absolute inset-0 opacity-20 grid-overlay" />
+                    )}
+                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
                     <motion.div
                         animate={{
                             scale: [1, 1.2, 1],
@@ -79,7 +89,7 @@ export default function LeftSection() {
                                 {me?.avatar ? (
                                     <img
                                         className="w-full h-full object-cover rounded-xl"
-                                        src={`http://localhost:5000${me.avatar}`}
+                                        src={`${ASSET_URL}${me.avatar}`}
                                         alt={me.firstName || "User"}
                                     />
                                 ) : (
@@ -97,12 +107,12 @@ export default function LeftSection() {
                         <div className="w-full space-y-1.5 mb-4">
                             <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
                                 <School className="w-3 h-3 text-primary" />
-                                {me?.universityId?.name.toUpperCase() || "University"}
+                                {me?.universityId?.name?.toUpperCase() || "University"}
                             </div>
                             <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
                                 <MapPin className="w-3 h-3 text-primary" />
-                                {me?.universityId?.state?.name?.toUpperCase() && me?.universityId?.city?.name?.toUpperCase()
-                                    ? `${me.universityId.state.name.toUpperCase()}, ${me.universityId.city.name.toUpperCase()}`
+                                {me?.universityId?.state?.name && me?.universityId?.city?.name
+                                    ? `${me?.universityId?.state?.name?.toUpperCase()}, ${me?.universityId?.city?.name?.toUpperCase()}`
                                     : "Location not set"}
                             </div>
                         </div>

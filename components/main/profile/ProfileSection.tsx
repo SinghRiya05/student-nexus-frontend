@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BASE_URL } from "@/services/apiEndpoints";
+import { ASSET_URL } from "@/services/apiEndpoints";
 import Image from "next/image";
 import {
     Camera,
@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getMyProfile } from "@/features/student/studentThunk";
-import { getMe } from "@/features/users/userThunk";
+import { getMe, getUserById } from "@/features/users/userThunk";
 
 // ─── Sections ─────────────────────────────────────────────────────────────
 
@@ -77,11 +77,14 @@ export default function ProfileSection() {
 
     const dispatch = useAppDispatch()
 
-    const user = useAppSelector((state) => state.user.me)
-    console.log(user)
+    const { singleUser: user } = useAppSelector((state) => state.user);
+    const { user: authUser } = useAppSelector((state) => state.auth);
+
     useEffect(() => {
-        dispatch(getMe());
-    }, [dispatch])
+        if (authUser?._id) {
+            dispatch(getUserById(authUser._id));
+        }
+    }, [dispatch, authUser?._id])
     const router = useRouter();
 
     const classmates = [
@@ -110,7 +113,7 @@ export default function ProfileSection() {
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 mix-blend-multiply z-10" />
                     {user?.coverImage ? (
                         <img
-                            src={`http://localhost:5000${user.coverImage}`}
+                            src={`${ASSET_URL}${user.coverImage}`}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             alt="Cover"
                         />
@@ -126,7 +129,7 @@ export default function ProfileSection() {
                         <div className="h-32 w-32 rounded-[2rem] border-4 border-white overflow-hidden shadow-2xl bg-indigo-50 ring-2 ring-indigo-100 flex items-center justify-center font-black text-4xl text-indigo-500">
                             {user?.avatar ? (
                                 <img
-                                    src={`http://localhost:5000${user.avatar}`}
+                                    src={`${ASSET_URL}${user.avatar}`}
                                     className="w-full h-full object-cover"
                                     alt="Profile"
                                 />
@@ -134,36 +137,45 @@ export default function ProfileSection() {
                                 user?.firstName?.charAt(0).toUpperCase() || "?"
                             )}
                         </div>
-                        <button className="absolute bottom-2 right-2 h-9 w-9 bg-blue-600 text-white rounded-xl flex items-center justify-center border-[3px] border-white shadow-xl hover:bg-blue-700 transition-all hover:scale-110">
-                            <Camera size={16} />
-                        </button>
                     </div>
 
                     {/* Text Info + Action Buttons */}
                     <div className=" flex flex-col lg:flex-row items-start md:items-center justify-between gap-5 w-full">
                         {/* Name & Meta */}
                         <div className="space-y-2">
-                            <h2 className="text-xl md:text-2xl font-black text-[#1a1a3b] leading-tight flex items-center gap-2">
-                                {user?.firstName} {user?.lastName}
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-xl md:text-2xl font-black text-[#1a1a3b] leading-tight">
+                                    {user?.firstName} {user?.lastName}
+                                </h2>
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${
+                                    user?.roleId?.name === "STUDENT" ? 'bg-emerald-100 text-emerald-700' : 
+                                    user?.roleId?.name === "TEACHER" ? 'bg-indigo-100 text-indigo-700' : 'bg-rose-100 text-rose-700'
+                                }`}>
+                                    {user?.roleId?.name || "Member"}
+                                </span>
                                 {user?.verificationStatus && (
                                     <span className="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
                                         Verified <CheckCircle size={10} />
                                     </span>
                                 )}
-                            </h2>
+                            </div>
                             <div className="flex flex-wrap items-center gap-5 text-gray-500 font-bold text-sm">
+                                {user?.startYear && (
+                                    <div className="flex items-center gap-2">
+                                        <Briefcase className="w-4 h-4 text-gray-400" />
+                                        {user.startYear} {user.endYear ? `- ${user.endYear}` : ""}
+                                    </div>
+                                )}
                                 <div className="flex items-center gap-2">
-                                    <GraduationCap className="w-4 h-4 text-indigo-500" />
-                                    {user?.courseIds?.[0]?.courseName || "Course not added"}
-                                </div>
-                                <div className="flex items-center gap-2 border-gray-200">
                                     <MapPin className="w-4 h-4 text-rose-500" />
-                                    {user?.universityId ? `${user.universityId.name} (${user.universityId.short_name})` : "University not added"}
+                                    {user?.universityId ? `${user.universityId.name}` : "University not added"}
                                 </div>
-                                <div className="flex items-center gap-2 border-gray-200">
-                                    <Users className="w-4 h-4 text-emerald-500" />
-                                    {user?.startYear && user?.endYear ? `${user.startYear} - ${user.endYear}` : "Term not set"}
-                                </div>
+                                {user?.roleId?.name === "STUDENT" && user?.courseIds?.[0]?.courseName && (
+                                    <div className="flex items-center gap-2">
+                                        <GraduationCap className="w-4 h-4 text-indigo-500" />
+                                        {user.courseIds[0].courseName}
+                                    </div>
+                                )}
                                 {user?.Profile?.hobby_badge && (
                                     <div className="flex items-center gap-2 border-gray-200">
                                         <Activity className="w-4 h-4 text-purple-500" />
@@ -176,7 +188,7 @@ export default function ProfileSection() {
                         {/* Action Buttons */}
                         <div className="flex items-center gap-3 shrink-0">
                             <Button
-                                onClick={() => router.push("/profile/edit")}
+                                onClick={() => router.push(`/profile/edit/${user?._id}`)}
                                 variant="outline"
                                 className="h-10 px-5 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-2 shadow-sm"
                             >
@@ -196,7 +208,80 @@ export default function ProfileSection() {
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
                 {/* Left Column (Main Content) */}
                 <div className="lg:col-span-7 space-y-8">
-                    <AboutMe bio={user?.bio} />
+                    <AboutMe bio={user?.bio || user?.Profile?.bio} />
+
+                    {/* Role Specific Career/Academic Details */}
+                    {user?.roleId?.name === "TEACHER" && (
+                        <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <GraduationCap size={20} />
+                                </div>
+                                <h3 className="text-xl font-black text-[#1a1a3b]">Educational Background</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Designation</p>
+                                    <p className="text-lg font-bold text-indigo-600">{user?.teacherProfile?.designation || user?.Profile?.designation || "Not specified"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Department</p>
+                                    <p className="text-lg font-bold text-gray-700">{user?.teacherProfile?.department || user?.Profile?.department || "Not specified"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Experience</p>
+                                    <p className="text-lg font-bold text-gray-700">{user?.teacherProfile?.experienceYears || user?.Profile?.experienceYears || 0} Years</p>
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+
+                    {user?.roleId?.name === "ALUMINI" && (
+                        <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <Briefcase size={20} />
+                                </div>
+                                <h3 className="text-xl font-black text-[#1a1a3b]">Career Summary</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Current Company</p>
+                                    <p className="text-lg font-bold text-blue-600">{user?.aluminiProfile?.currentCompany || user?.Profile?.currentCompany || "Not specified"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Job Title</p>
+                                    <p className="text-lg font-bold text-gray-700">{user?.aluminiProfile?.jobTitle || user?.Profile?.jobTitle || "Not specified"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Experience</p>
+                                    <p className="text-lg font-bold text-gray-700">{user?.aluminiProfile?.experienceYears || user?.Profile?.experienceYears || 0} Years</p>
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+
+                    {user?.roleId?.name === "STUDENT" && (
+                        <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="h-10 w-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                    <GraduationCap size={20} />
+                                </div>
+                                <h3 className="text-xl font-black text-[#1a1a3b]">Academic Status</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Course</p>
+                                    <p className="text-lg font-bold text-emerald-600">{user?.courseIds?.[0]?.courseName || "Not assigned"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Current Semester</p>
+                                    <p className="text-lg font-bold text-gray-700">{user?.studentProfile?.semesterId?.name || user?.Profile?.semesterId?.name || "Not set"}</p>
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+
                     {/* Experience & Projects */}
                     <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
                         <div className="flex items-center justify-between mb-8">
@@ -206,7 +291,7 @@ export default function ProfileSection() {
                                 </div>
                                 <h3 className="text-xl font-black text-[#1a1a3b]">Experience & Projects</h3>
                             </div>
-                            <Button variant="ghost" onClick={() => router.push("/profile/edit")} className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl">
+                            <Button variant="ghost" onClick={() => router.push(`/profile/edit/${user?._id}`)} className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl">
                                 Add New
                             </Button>
                         </div>

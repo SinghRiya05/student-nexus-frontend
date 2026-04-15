@@ -23,6 +23,17 @@ export const profileSchema = z.object({
         date: z.string().optional(),
         description: z.string().optional(),
     })),
+
+    // Teacher specific
+    designation: z.string().optional(),
+    department: z.string().optional(),
+
+    // Alumni specific
+    currentCompany: z.string().optional(),
+    jobTitle: z.string().optional(),
+
+    // Shared by Teacher/Alumni
+    experienceYears: z.string().optional(),
 });
 
 export type ProfileValues = z.infer<typeof profileSchema>;

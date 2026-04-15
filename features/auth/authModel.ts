@@ -6,8 +6,20 @@ export interface IUser {
     email: string;
     phone: string;
     password: string;
-    courseIds: string[];
-    roleId: string;
+    avatar?: string;
+    coverImage?: string;
+    courseIds?: string[];
+    universityId?: {
+        _id: string;
+        name: string;
+        short_name?: string;
+    };
+    roleId: {
+        _id: string;
+        name: string; // "TEACHER" | "STUDENT" | "ALUMINI"
+        status: "INACTIVE" | "ACTIVE";
+        isDeleted: boolean;
+    };
     verificationStatus: boolean;
     followersCount: number;
     followingCount: number;

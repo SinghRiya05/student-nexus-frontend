@@ -2,6 +2,8 @@ import { Alumni_Sans } from "next/font/google";
 import { id } from "zod/v4/locales";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASEURL;
+export const ASSET_URL = process.env.NEXT_PUBLIC_ASSET_BACKEND_BASEURL;
+
 
 export const API_ENDPOINTS = {
     AUTH: {
@@ -15,6 +17,7 @@ export const API_ENDPOINTS = {
         DELETE_USER: (id: string) => `/auth/delete-user/${id}`,
         GET_ALL_USERS: "/auth/get-all-users",
         GET_ME: "/auth/get-me",
+        GET_BY_ID: (id: string) => `/auth/get-by-id/${id}`,
         UPDATE_PROFILE: "/auth/update-profile",
         TOGGLE_PRIVACY: "/auth/toggle-privacy",
         FORGOT_PASSWORD: "/auth/forgot-password",
