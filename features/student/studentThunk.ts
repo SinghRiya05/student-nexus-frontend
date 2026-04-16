@@ -51,6 +51,18 @@ export const getStudentsByMatchedHobbyBadge = createAsyncThunk<IStudentResponse,
     }
 );
 
+export const getStudentById = createAsyncThunk<IStudentResponse, string>(
+    "student/getStudentById",
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(API_ENDPOINTS.STUDENT.GET_BY_ID(id));
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
 export const getStudentsByMatchedCourseAndSameUniversity = createAsyncThunk<IStudentResponse, void>(
     "student/getStudentsByMatchedCourseAndSameUniversity",
     async (_, { rejectWithValue }) => {

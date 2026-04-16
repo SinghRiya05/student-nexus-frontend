@@ -62,6 +62,8 @@ export interface ICurrentUser extends IStudent {
 
 export interface studentState {
     students: IStudent[];
+    classmates: IStudent[];
+    batchmates: IStudent[];
     singleStudent: IStudent | null;
     loading: boolean;
     error: string | null;

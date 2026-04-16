@@ -19,8 +19,15 @@ import {
     Code,
     CheckCircle,
     ShieldCheck,
-    Activity
+    Activity,
+    Target,
+    Sparkles,
+    Calendar,
+    Clock,
+    Upload
 } from "lucide-react";
+import { motion } from "motion/react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -147,10 +154,9 @@ export default function ProfileSection() {
                                 <h2 className="text-xl md:text-2xl font-black text-[#1a1a3b] leading-tight">
                                     {user?.firstName} {user?.lastName}
                                 </h2>
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${
-                                    user?.roleId?.name === "STUDENT" ? 'bg-emerald-100 text-emerald-700' : 
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${user?.roleId?.name === "STUDENT" ? 'bg-emerald-100 text-emerald-700' :
                                     user?.roleId?.name === "TEACHER" ? 'bg-indigo-100 text-indigo-700' : 'bg-rose-100 text-rose-700'
-                                }`}>
+                                    }`}>
                                     {user?.roleId?.name || "Member"}
                                 </span>
                                 {user?.verificationStatus && (
@@ -199,10 +205,20 @@ export default function ProfileSection() {
                                 <UserPlus className="w-4 h-4" />
                                 Connect
                             </Button>
+
                         </div>
+
                     </div>
                 </div>
             </div>
+
+            {user?.roleId?.name === "TEACHER" && (
+                <div className="flex justify-end">
+                    <Button className="h-10 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm flex gap-2 shadow-xl shadow-blue-500/30">
+                        <Upload className="w-4 h-4" />
+                        Upload Resources
+                    </Button></div>
+            )}
 
             {/* 2. Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
@@ -262,25 +278,99 @@ export default function ProfileSection() {
                     )}
 
                     {user?.roleId?.name === "STUDENT" && (
-                        <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="h-10 w-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                    <GraduationCap size={20} />
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Card className="bg-white overflow-hidden rounded-2xl border-gray-100 shadow-sm group hover:shadow-md transition-all duration-300">
+                                <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <GraduationCap size={120} />
                                 </div>
-                                <h3 className="text-xl font-black text-[#1a1a3b]">Academic Status</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Course</p>
-                                    <p className="text-lg font-bold text-emerald-600">{user?.courseIds?.[0]?.courseName || "Not assigned"}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Current Semester</p>
-                                    <p className="text-lg font-bold text-gray-700">{user?.studentProfile?.semesterId?.name || user?.Profile?.semesterId?.name || "Not set"}</p>
-                                </div>
-                            </div>
-                        </Card>
+                                <CardContent className="p-8 relative z-10">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner group-hover:scale-110 transition-transform">
+                                                <Target size={24} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-black text-[#1a1a3b]">Academic Status</h3>
+                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Current Progress</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles className="text-amber-400 animate-pulse" size={18} />
+                                            <span className="text-[10px] font-black bg-amber-50 text-amber-600 px-2 py-1 rounded-lg uppercase">On Track</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-8">
+                                        {/* Progress Bar Section */}
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-end">
+                                                <span className="text-sm font-black text-[#1a1a3b]">Course Journey</span>
+                                                <span className="text-2xl font-black text-emerald-600">
+                                                    {Math.round(((user?.studentProfile?.semesterId?.number || 0) / ((user?.courseIds?.[0]?.durationYears || 4) * 2)) * 100)}%
+                                                </span>
+                                            </div>
+                                            <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50 flex items-center">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${Math.min(100, Math.max(0, ((user?.studentProfile?.semesterId?.number || 0) / ((user?.courseIds?.[0]?.durationYears || 4) * 2)) * 100))}%` }}
+                                                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                                                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                                                />
+                                            </div>
+                                            <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
+                                                <span>Start: {user?.startYear || "N/A"}</span>
+                                                <span>Est. Graduation: {user?.endYear || "N/A"}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-emerald-100 hover:bg-emerald-50/30 transition-all group/item">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-emerald-500 shadow-sm transition-colors">
+                                                        <Briefcase size={16} />
+                                                    </div>
+                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Enrolled Course</p>
+                                                </div>
+                                                <p className="text-lg font-black text-[#1a1a3b] leading-tight group-hover/item:text-emerald-700 transition-colors">
+                                                    {user?.courseIds?.[0]?.courseName || "Not assigned"}
+                                                </p>
+                                            </div>
+
+                                            <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all group/item">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-blue-500 shadow-sm transition-colors">
+                                                        <Clock size={16} />
+                                                    </div>
+                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Period</p>
+                                                </div>
+                                                <p className="text-lg font-black text-[#1a1a3b] leading-tight group-hover/item:text-blue-700 transition-colors">
+                                                    {user?.studentProfile?.semesterId?.name || user?.Profile?.semesterId?.name || "Not set"}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/50">
+                                            <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                                                <Calendar size={18} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-wider">Next Milestone</p>
+                                                <p className="text-sm font-bold text-indigo-900">Final Exams Preparation</p>
+                                            </div>
+                                            <Button variant="ghost" size="sm" className="ml-auto text-indigo-600 hover:bg-indigo-100 font-bold rounded-xl h-8 px-3">
+                                                View Goals
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     )}
+
 
                     {/* Experience & Projects */}
                     <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">

@@ -1,10 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { studentState } from "./studentModel";
-import { getAllStudents, getMyProfile, getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedHobbyBadge, getStudentsByMatchedSemesterWithCourseAndSameUniversity, getStudentsByMyUniversity } from "./studentThunk";
+import { getAllStudents, getMyProfile, getStudentById, getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedHobbyBadge, getStudentsByMatchedSemesterWithCourseAndSameUniversity, getStudentsByMyUniversity } from "./studentThunk";
 
 
 const initialState: studentState = {
     students: [],
+    classmates: [],
+    batchmates: [],
     singleStudent: null,
     loading: false,
     error: null,
@@ -53,6 +55,19 @@ const studentSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
+
+            // get student by id
+            .addCase(getStudentById.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getStudentById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.singleStudent = action.payload.data;
+            })
+            .addCase(getStudentById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
             // get students by matched hobby badge
             .addCase(getStudentsByMatchedHobbyBadge.pending, (state) => {
                 state.loading = true;
@@ -71,7 +86,7 @@ const studentSlice = createSlice({
             })
             .addCase(getStudentsByMatchedCourseAndSameUniversity.fulfilled, (state, action) => {
                 state.loading = false;
-                state.students = action.payload.data;
+                state.batchmates = action.payload.data;
             })
             .addCase(getStudentsByMatchedCourseAndSameUniversity.rejected, (state, action) => {
                 state.loading = false;
@@ -83,7 +98,7 @@ const studentSlice = createSlice({
             })
             .addCase(getStudentsByMatchedSemesterWithCourseAndSameUniversity.fulfilled, (state, action) => {
                 state.loading = false;
-                state.students = action.payload.data;
+                state.classmates = action.payload.data;
             })
             .addCase(getStudentsByMatchedSemesterWithCourseAndSameUniversity.rejected, (state, action) => {
                 state.loading = false;

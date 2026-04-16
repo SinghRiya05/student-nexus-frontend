@@ -20,23 +20,6 @@ const NOTES_DATA = [
 export default function StudyResources() {
   return (
     <div className="space-y-4">
-      {/* Search & Actions Bar */}
-      <Card className="rounded-2xl border-none   bg-white p-2">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center px-4 py-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant/40" />
-            <Input
-              placeholder="Search across all resources...."
-              className="pl-10 h-10 bg-on-surface-variant/5 border-none text-on-surface ring-0 focus-visible:ring-primary/20 rounded-2xl placeholder:text-on-surface-variant/40"
-            />
-          </div>
-          <Button className="h-10 rounded-2xl bg-primary text-white hover:bg-primary-dim px-6 font-bold shadow-lg shadow-primary/20 transition-all shrink-0">
-            <Search className="mr-2 h-4 w-4" />
-            Search
-          </Button>
-        </div>
-      </Card>
-
       {/* Class Notes Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">

@@ -92,11 +92,13 @@ export const API_ENDPOINTS = {
         GET_BY_MY_UNIVERSITY: `/students/my-university`,
         GET_ME: `/students/me`,
         GET_BY_MATCHED_HOBBY_BADGE: `/students/matched-hobby`,
+        GET_BY_ID: (id: string) => `/students/${id}`,
         GET_BY_MATCHED_SEMESTER_WITH_COURSE_AND_SAME_UNIVERSITY: `/students/matched-semester-with-course-and-same-university`,
         GET_BY_MATCH_COURSE_AND_SAME_UNIVERSITY: `/students/match-course-and-same-university`,
     },
     ALUMNI: {
         GET_BY_MY_UNIVERSITY: `/alumni/my-university`,
+        GET_BY_ID: (id: string) => `/alumni/${id}`,
         GET_BY_UNIVERSITY_ID: (id: string) => `/alumni/university/${id}`,
         GET_BY_MY_COURSE: `/alumni/my-course`,
         GET_BY_JOB_TITLE: `/alumni/job-titles`,
@@ -113,10 +115,19 @@ export const API_ENDPOINTS = {
         SENT_REQUESTS: "/follow/sent-requests",
     },
     TEACHER: {
+        GET_BY_ID: (id: string) => `/teachers/${id}`,
         GET_SAME_UNIVERSITY_TEACHERS: "/teachers/same-university",
         GET_CLASS_TEACHERS: "/teachers/class-teachers",
         GET_OTHER_UNIVERSITY_TEACHERS: "/teachers/other-universities",
         GET_TEACHERS_BY_COURSE: (id: string) => `/teachers/by-course/${id}`,
+
+    },
+    RESOURCE: {
+        CREATE: "/teachers/resources",
+        GET_ALL_BY_TEACHER_ID: (id: string) => `/teachers/resources/teacher/${id}`,
+        GET_BY_ID: (id: string) => `/teachers/resources/${id}`,
+        UPDATE: (id: string) => `/teachers/resources/${id}`,
+        DELETE: (id: string) => `/teachers/resources/${id}`,
     }
 
 };

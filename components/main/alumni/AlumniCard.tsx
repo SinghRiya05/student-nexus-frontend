@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/utils/hook'
 import { sendFollowRequest, unfollow } from '@/features/follow/followThunk'
 import { cn } from '@/lib/utils'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useRouter } from 'next/navigation'
 
 interface AlumniCardProps {
     member: IAlumni
@@ -14,6 +15,7 @@ interface AlumniCardProps {
 
 export default function AlumniCard({ member }: AlumniCardProps) {
     const dispatch = useAppDispatch()
+    const router = useRouter()
     const { following, sentRequests, loading } = useAppSelector(state => state.follow)
 
     const userId = member._id
@@ -22,7 +24,8 @@ export default function AlumniCard({ member }: AlumniCardProps) {
     const isRequestedObj = sentRequests.find((r: any) => r.following?._id === userId || r.following === userId)
     const isRequested = !!isRequestedObj
 
-    const handleNetworkAction = () => {
+    const handleNetworkAction = (e: React.MouseEvent) => {
+        e.stopPropagation()
         if (!isFollowing && !isRequested) {
             dispatch(sendFollowRequest(userId))
         }
@@ -33,7 +36,8 @@ export default function AlumniCard({ member }: AlumniCardProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ y: -5 }}
-            className="group relative min-w-[240px] bg-white border border-[#b1addd]/15 p-6 rounded-[2rem] flex flex-col items-center text-center gap-4 hover:shadow-xl transition-all duration-300"
+            onClick={() => router.push(`/alumni/${userId}`)}
+            className="group relative min-w-[240px] bg-white border border-[#b1addd]/15 p-6 rounded-[2rem] flex flex-col items-center text-center gap-4 hover:shadow-xl transition-all duration-300 cursor-pointer"
         >
             {/* Top Right Menu */}
             {isFollowing && (
@@ -43,7 +47,15 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                             <button className="text-gray-400 hover:text-gray-700 transition"><MoreVertical size={16} /></button>
                         </PopoverTrigger>
                         <PopoverContent className="w-32 p-1.5 rounded-xl border border-gray-100 shadow-lg" align="end">
-                            <button onClick={() => dispatch(unfollow(isFollowingObj._id))} className="w-full text-left px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition">Unfollow</button>
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    dispatch(unfollow(isFollowingObj._id));
+                                }} 
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition"
+                            >
+                                Unfollow
+                            </button>
                         </PopoverContent>
                     </Popover>
                 </div>
@@ -101,7 +113,14 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                 </div>
             </div>
 
-            {/* Action Button */}
+            {/* Action Buttons */}
+            <div className="w-full space-y-2">
+                <button
+                    onClick={() => router.push(`/alumni/${userId}`)}
+                    className="w-full py-2.5 rounded-2xl text-xs font-black bg-indigo-50 text-indigo-600 border border-indigo-100/50 hover:bg-indigo-100 transition-all flex items-center justify-center gap-2"
+                >
+                    View Profile
+                </button>
             <button
                 onClick={handleNetworkAction}
                 disabled={isRequested || loading}
@@ -125,6 +144,7 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                     </>
                 )}
             </button>
+            </div>
         </motion.div>
     )
 }

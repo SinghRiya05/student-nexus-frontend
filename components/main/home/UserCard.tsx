@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { MoreVertical } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useAppSelector, useAppDispatch } from "@/utils/hook"
+import { useRouter } from "next/navigation"
 import { sendFollowRequest, unfollow } from "@/features/follow/followThunk"
 
 interface UserCardProps {
@@ -26,7 +27,7 @@ export const UserCard = ({
     image,
     className
 }: UserCardProps) => {
-
+    const router = useRouter()
     const dispatch = useAppDispatch()
     const { following, sentRequests, loading } = useAppSelector(state => state.follow)
 
@@ -45,6 +46,7 @@ export const UserCard = ({
     if (variant === 'secondary') {
         return (
             <motion.div
+                onClick={() => router.push(`/students/${userId}`)}
                 whileHover={{ y: -5 }}
                 className={cn(
                     "relative min-w-[180px] snap-start bg-[#f0eaff] p-4 rounded-2xl flex flex-col items-center",
@@ -75,14 +77,14 @@ export const UserCard = ({
                     )}
                 </div>
                 <span className="text-xs font-bold mb-3 text-[#302e56]">{name}</span>
-                <button 
+                <button
                     onClick={handleAction}
                     disabled={isRequested || loading}
                     className={cn(
                         "px-4 py-1.5 border rounded-full text-[10px] font-bold transition-all",
-                        isFollowing ? "bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200" 
-                        : isRequested ? "bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed" 
-                        : "bg-white text-[#2949ef] border-[#2949ef]/20 hover:bg-[#2949ef] hover:text-white"
+                        isFollowing ? "bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200"
+                            : isRequested ? "bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed"
+                                : "bg-white text-[#2949ef] border-[#2949ef]/20 hover:bg-[#2949ef] hover:text-white"
                     )}
                 >
                     {isFollowing ? "Following" : isRequested ? "Requested" : "Follow"}
@@ -93,6 +95,7 @@ export const UserCard = ({
 
     return (
         <motion.div
+            onClick={() => router.push(`/students/${userId}`)}
             whileHover={{ y: -5 }}
             className={cn(
                 "relative min-w-[240px] snap-start bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 hover:shadow-md transition-shadow flex flex-col items-center text-center",
@@ -124,14 +127,14 @@ export const UserCard = ({
             </div>
             <h4 className="font-bold text-[#302e56]">{name}</h4>
             <p className="text-xs text-[#5d5a86] mb-4">{role}</p>
-            <button 
+            <button
                 onClick={handleAction}
                 disabled={isRequested || loading}
                 className={cn(
                     "w-full py-2 rounded-xl text-xs font-bold transition-colors",
-                    isFollowing ? "bg-indigo-50 text-indigo-600 hover:bg-rose-50 hover:text-rose-600" 
-                    : isRequested ? "bg-gray-100 text-gray-500 cursor-not-allowed" 
-                    : "bg-[#2949ef] text-white hover:bg-[#1339e3]"
+                    isFollowing ? "bg-indigo-50 text-indigo-600 hover:bg-rose-50 hover:text-rose-600"
+                        : isRequested ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                            : "bg-[#2949ef] text-white hover:bg-[#1339e3]"
                 )}
             >
                 {isFollowing ? "Following" : isRequested ? "Requested" : "Follow"}

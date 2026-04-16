@@ -1,6 +1,7 @@
 "use client"
 import React, { useEffect } from "react";
 import ProfessorSearch from "./ProfessorSearch";
+import { useRouter } from "next/navigation";
 import ProfessorCard from "./ProfessorCard";
 import FeaturedProfessorCard from "./FeaturedProfessorCard";
 import TrendingSidebar from "./TrendingSidebar";
@@ -41,19 +42,6 @@ export default function ProfessorListMain() {
     window.scrollTo({ top: 400, behavior: 'smooth' }); // Scroll to directory section
   };
 
-  const mapTeacherToFeatured = (prof: ITeacher, idx: number) => ({
-    id: prof._id,
-    name: `${prof.firstName} ${prof.lastName}`,
-    title: prof.teacherProfile?.designation || "Faculty",
-    department: prof.teacherProfile?.department || "Academic Dept",
-    tags: prof.courseIds?.map(c => c.course_short_name) || ["Faculty"],
-    rating: prof.trustScore !== undefined ? (prof.trustScore / 20).toFixed(1) : "4.5", 
-    reviews: prof.followersCount || 0,
-    badge: idx % 2 === 0 ? "Top Rated" : "Most Searched" as const,
-    image: prof.avatar || prof.profilePicture,
-    variant: idx % 2 === 0 ? "primary" : "secondary" as const,
-  });
-
   const mapTeacherToDirectory = (prof: ITeacher) => ({
     id: prof._id,
     name: `${prof.firstName} ${prof.lastName}`,
@@ -66,6 +54,8 @@ export default function ProfessorListMain() {
     isOnline: prof.verificationStatus,
     image: prof.avatar || prof.profilePicture,
   });
+
+  const router = useRouter();
 
   return (
     <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 pb-20 animate-fade-in-up">
@@ -100,10 +90,10 @@ export default function ProfessorListMain() {
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {sameUniversityTeachers.slice(0, 2).map((prof, idx) => (
-                <FeaturedProfessorCard 
-                  key={prof._id} 
-                  prof={prof} 
-                  badge={idx % 2 === 0 ? "Top Rated" : "Most Searched"} 
+                <FeaturedProfessorCard
+                  key={prof._id}
+                  prof={prof}
+                  badge={idx % 2 === 0 ? "Top Rated" : "Most Searched"}
                 />
               ))}
             </div>
@@ -143,7 +133,7 @@ export default function ProfessorListMain() {
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              
+
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <Button
                   key={page}

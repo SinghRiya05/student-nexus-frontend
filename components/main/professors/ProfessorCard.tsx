@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Button } from "@/components/ui/button"
+import { useRouter } from 'next/navigation'
 import { Star, Mail } from "lucide-react"
 import Link from 'next/link'
 
@@ -29,6 +30,7 @@ export default function ProfessorCard({
     isOnline = false,
     image
 }: ProfessorCardProps) {
+    const router = useRouter();
     return (
         <div className="bg-white border rounded-3xl p-6  hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-center text-center">
             <div className="relative mb-4">
@@ -67,7 +69,7 @@ export default function ProfessorCard({
             {/* Action Buttons */}
             <div className="w-full grid grid-cols-2 gap-3 mt-auto">
                 <Link href={`/professors/${id}`} className="w-full">
-                    <Button variant={"outline"} className="w-full py-2 px-4 rounded-xl  text-on-surface text-xs font-bold hover:bg-surface-container-highest transition-colors">
+                    <Button variant={"outline"} onClick={() => router.push(`/professors/${id}`)} className="w-full py-2 px-4 rounded-xl  text-on-surface text-xs font-bold hover:bg-surface-container-highest transition-colors">
                         Profile
                     </Button>
                 </Link>

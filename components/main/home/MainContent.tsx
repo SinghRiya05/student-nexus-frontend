@@ -6,7 +6,7 @@ import { Plus, MoveRight, Building2, Terminal, Globe, Landmark, Home, Send } fro
 import { UserCard } from "./UserCard"
 import { cn } from "@/lib/utils"
 import { useRouter } from 'next/navigation'
-import { useAppDispatch } from "@/utils/hook"
+import { useAppDispatch, useAppSelector } from "@/utils/hook"
 import { getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedSemesterWithCourseAndSameUniversity } from "@/features/student/studentThunk"
 import { useEffect, useState } from "react"
 import { getTeachersFromSameUniversity } from '@/features/teacher/teacherThunk'
@@ -16,33 +16,17 @@ export default function MainContent() {
     const router = useRouter()
     const dispatch = useAppDispatch()
 
-    const [classmates, setClassmates] = useState<any[]>([])
-    const [batchmates, setBatchmates] = useState<any[]>([])
-    const [SameUniversityTeachers, setSameUniversityTeachers] = useState<any[]>([])
-    const [alumni, setAlumni] = useState<any[]>([])
-
+    const { classmates, batchmates, loading: studentLoading } = useAppSelector((state) => state.student);
+    const { sameUniversityTeachers, loading: teacherLoading } = useAppSelector((state) => state.teacher);
+    const { universityAlumni: alumni, loading: alumniLoading } = useAppSelector((state) => state.alumni);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [classRes, batchRes, SameUniversityTeachersRes, alumniRes] = await Promise.all([
-                    dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity()).unwrap(),
-                    dispatch(getStudentsByMatchedCourseAndSameUniversity()).unwrap(),
-                    dispatch(getTeachersFromSameUniversity()).unwrap(),
-                    dispatch(fetchAlumniByMyUniversity()).unwrap()
-                ]);
-
-                setClassmates(classRes?.data || []);
-                setBatchmates(batchRes?.data || []);
-                setSameUniversityTeachers(SameUniversityTeachersRes?.data || []);
-                setAlumni(alumniRes || []);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        fetchData();
-    }, [dispatch]);
+        // Only fetch if data is not already present in Redux to prevent unnecessary calls
+        if (classmates.length === 0) dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity());
+        if (batchmates.length === 0) dispatch(getStudentsByMatchedCourseAndSameUniversity());
+        if (sameUniversityTeachers.length === 0) dispatch(getTeachersFromSameUniversity());
+        if (alumni.length === 0) dispatch(fetchAlumniByMyUniversity());
+    }, [dispatch, classmates.length, batchmates.length, sameUniversityTeachers.length, alumni.length]);
 
 
 
@@ -115,10 +99,10 @@ export default function MainContent() {
                     <button onClick={() => router.push("/professors")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-2">
-                    {SameUniversityTeachers.slice(0, 5).map((prof, idx) => (
-                        <div key={idx} className="min-w-[362px] bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex gap-4 snap-start mb-1 hover:shadow-md transition-shadow">
-                            {prof.avatar || prof.profilePicture ? (
-                                <img className="w-20 h-20 rounded-xl object-cover" src={prof.avatar || prof.profilePicture} alt={`${prof.firstName} ${prof.lastName}`} />
+                    {sameUniversityTeachers.slice(0, 5).map((prof, idx) => (
+                        <div key={idx} onClick={() => router.push(`/professors/${prof._id}`)} className="min-w-[362px] bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex gap-4 snap-start mb-1 hover:shadow-md transition-shadow">
+                            {prof.avatar ? (
+                                <img className="w-20 h-20 rounded-xl object-cover" src={prof.avatar} alt={`${prof.firstName} ${prof.lastName}`} />
                             ) : (
                                 <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">
                                     {prof.firstName?.[0]}
@@ -149,7 +133,7 @@ export default function MainContent() {
                             </div>
                         </div>
                     ))}
-                    {SameUniversityTeachers.length === 0 && (
+                    {sameUniversityTeachers.length === 0 && (
                         <p className="text-sm text-gray-400 italic py-5">No professors found.</p>
                     )}
                 </div>
@@ -187,10 +171,10 @@ export default function MainContent() {
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {alumni.slice(0, 5).map((member, idx) => (
-                        <div key={idx} className="min-w-[240px] bg-white border border-[#b1addd]/10 p-5 rounded-3xl flex flex-col gap-4">
+                        <div key={idx} onClick={() => router.push(`/alumni/${member._id}`)} className="min-w-[240px] bg-white border border-[#b1addd]/10 p-5 rounded-3xl flex flex-col gap-4 hover:cursor-pointer">
                             <div className="flex items-center gap-4">
-                                {member.profilePicture || member.avatar ? (
-                                    <img className="w-12 h-12 rounded-full object-cover" src={member.profilePicture} alt={member.firstName} />
+                                {member.avatar ? (
+                                    <img className="w-12 h-12 rounded-full object-cover" src={member.avatar} alt={member.firstName} />
 
                                 ) : (
                                     <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">

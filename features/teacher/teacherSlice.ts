@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { TeacherState } from "./teacherModel";
-import { getTeacherBycourse, getTeacherFromOtherUniversity, getTeachersFromSameClass, getTeachersFromSameUniversity } from "./teacherThunk";
+import { getTeacherBycourse, getTeacherById, getTeacherFromOtherUniversity, getTeachersFromSameClass, getTeachersFromSameUniversity } from "./teacherThunk";
 
 const initialState: TeacherState = {
     teachers: [],
@@ -51,6 +51,18 @@ const teacherSlice = createSlice({
                 state.teachers = action.payload.data;
             })
             .addCase(getTeacherFromOtherUniversity.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+
+            .addCase(getTeacherById.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getTeacherById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.singleTeacher = action.payload.data;
+            })
+            .addCase(getTeacherById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })

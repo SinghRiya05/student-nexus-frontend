@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { AlumniState } from "./alumniModel";
-import { fetchAlumniByCompany, fetchAlumniByJobTitle, fetchAlumniByMyCourse, fetchAlumniByMyUniversity, fetchAlumniByUniversityId } from "./alumniThunk";
+import { fetchAlumniByCompany, fetchAlumniById, fetchAlumniByJobTitle, fetchAlumniByMyCourse, fetchAlumniByMyUniversity, fetchAlumniByUniversityId } from "./alumniThunk";
 
 const initialState: AlumniState = {
     universityAlumni: [],
     courseAlumni: [],
     alumni: [],
+    singleAlumni: null,
     alumniByJobTitle: [],
     alumniByCompany: [],
     loading: false,
@@ -55,6 +56,17 @@ const alumniSlice = createSlice({
                 state.universityAlumni = action.payload;
             })
             .addCase(fetchAlumniByMyUniversity.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchAlumniById.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchAlumniById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.singleAlumni = action.payload;
+            })
+            .addCase(fetchAlumniById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })

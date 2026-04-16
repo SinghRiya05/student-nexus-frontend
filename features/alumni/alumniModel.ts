@@ -43,6 +43,12 @@ export interface ApiResponse {
     data: IAlumni[];
 }
 
+export interface singleApiResponse {
+    success: boolean;
+    message: string;
+    data: IAlumni;
+}
+
 export interface IJobTitleGroup {
     jobTitle: string;
     alumni: IAlumni[];
@@ -68,9 +74,10 @@ export interface IAlumniByCompanyResponse {
 export interface AlumniState {
     universityAlumni: IAlumni[];
     courseAlumni: IAlumni[];
+    singleAlumni: IAlumni | null;
     alumni: IAlumni[]; // For general or ID-based fetching
     alumniByJobTitle: IJobTitleGroup[];
     alumniByCompany: ICompanyGroup[];
     loading: boolean;
     error: string | null;
-}
+}

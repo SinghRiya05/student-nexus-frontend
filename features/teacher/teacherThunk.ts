@@ -39,6 +39,18 @@ export const getTeacherFromOtherUniversity = createAsyncThunk<IGetTeachersRespon
     }
 )
 
+export const getTeacherById = createAsyncThunk(
+    "teacher/getTeacherById",
+    async (id: string, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(API_ENDPOINTS.TEACHER.GET_BY_ID(id));
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response.data.message);
+        }
+    }
+)
+
 export const getTeacherBycourse = createAsyncThunk(
     "teacher/getTeacherBycourse",
     async (id: string, { rejectWithValue }) => {

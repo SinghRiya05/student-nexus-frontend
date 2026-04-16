@@ -1,7 +1,7 @@
 import apiClient from "@/services/apiClient";
 import { API_ENDPOINTS } from "@/services/apiEndpoints";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { ApiResponse, IAlumni, IAlumniByCompanyResponse, IAlumniByJobTitleResponse } from "./alumniModel";
+import { ApiResponse, IAlumni, singleApiResponse, IAlumniByCompanyResponse, IAlumniByJobTitleResponse } from "./alumniModel";
 
 export const fetchAlumniByJobTitle = createAsyncThunk(
     'alumni/fetchAlumniByJobTitle',
@@ -35,6 +35,18 @@ export const fetchAlumniByMyUniversity = createAsyncThunk(
             return response.data.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch alumni by my university");
+        }
+    }
+);
+
+export const fetchAlumniById = createAsyncThunk(
+    'alumni/fetchAlumniById',
+    async (id: string, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get<singleApiResponse>(API_ENDPOINTS.ALUMNI.GET_BY_ID(id));
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch alumni by id");
         }
     }
 );
