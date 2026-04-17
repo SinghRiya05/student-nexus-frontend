@@ -48,7 +48,7 @@ const MOCK_POSTS = [
       organization: "Tesla Open AI",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael"
     },
-    content: "Data doesn't lie, but it can be misinterpreted. The most critical skill for a data scientist isn't coding—it's storytelling with context. 📊📈",
+    content: "Data doesn't lie, but it can be misinterpreted. The most critical skill for a data scientist isn't coding—it's storytelling with context. lorem lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod. Quisquam, quod. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod. Quisquam, quod. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod. Quisquam, quod. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod. Quisquam, quod. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod. Quisquam, quod. 📊📈",
     tags: ["DataScience", "AI", "Storytelling", "MachineLearning"],
     likes: 215,
     comments: 56,

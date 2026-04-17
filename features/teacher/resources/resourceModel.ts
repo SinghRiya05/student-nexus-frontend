@@ -18,6 +18,11 @@ export interface ITeacher {
     avatar: string;
 }
 
+export interface ISemester {
+    _id: string;
+    name: string;
+}
+
 export interface IResource {
     _id: string;
     title: string;
@@ -25,8 +30,9 @@ export interface IResource {
     fileUrl: File;
     isPaid: boolean;
     price: number;
-    course: ICourse;
-    university: IUniversity;
+    courseId: ICourse;
+    universityId: IUniversity;
+    semesterId: ISemester;
     teacherId: ITeacher;
     createdAt: string;
     updatedAt: string;

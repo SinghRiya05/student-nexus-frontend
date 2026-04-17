@@ -23,7 +23,6 @@ import { getSemestersByCourseId } from "@/features/semester/semesterThunk";
 import { createResource, updateResource } from "@/features/teacher/resources/resourceThunk";
 import { IResource } from "@/features/teacher/resources/resourceModel";
 import apiClient from "@/services/apiClient";
-import { ASSET_URL } from "@/services/apiEndpoints";
 
 const schema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
@@ -45,7 +44,7 @@ interface Props {
 export default function UploadResourceModal({ isOpen, onClose, editResource }: Props) {
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
-    const { semesters } = useAppSelector((state) => state.semester);
+    const { semestersByCourseId } = useAppSelector((state) => state.semester);
     const { loading } = useAppSelector((state) => state.resource);
 
     const [file, setFile] = useState<File | null>(null);
@@ -56,6 +55,8 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
     const [uploading, setUploading] = useState(false);
 
     const courses = user?.courseIds || [];
+
+
 
     const {
         register,
@@ -78,6 +79,7 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
     useEffect(() => {
         if (selectedCourseId) {
             dispatch(getSemestersByCourseId(selectedCourseId));
+            console.log(selectedCourseId)
             setValue("semesterId", "");
         }
     }, [selectedCourseId, dispatch, setValue]);
@@ -130,30 +132,28 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
 
         setUploading(true);
         try {
-            let fileUrl = editResource?.fileUrl as unknown as string || "";
+            const formData = new FormData();
+            formData.append("title", data.title);
+            formData.append("description", data.description);
+            formData.append("courseId", data.courseId);
+            formData.append("semesterId", data.semesterId);
+            formData.append("isPaid", String(isPaid));
+            formData.append("price", String(isPaid ? (data.price || 0) : 0));
 
+            // Append the file if present
             if (file) {
-                const formData = new FormData();
-                formData.append("file", file);
-                const res = await apiClient.post("/upload", formData, {
-                    headers: { "Content-Type": "multipart/form-data" },
-                });
-                fileUrl = res.data.data?.fileUrl || res.data.fileUrl || res.data.data;
+                formData.append("fileUrl", file);
+            } else if (editResource) {
+                // If editing and no new file, we can optionally send the existing URL 
+                // but the backend won't overwrite if file is missing in multipart.
+                // However, the validation requires fileUrl if it's a create. 
+                // For update, it's optional in the schema but let's see.
             }
 
-            const payload = {
-                ...data,
-                fileUrl,
-                isPaid: isPaid,
-                price: isPaid ? (data.price || 0) : 0,
-                universityId: user?.universityId?._id || user?.universityId,
-                teacherId: user?._id,
-            };
-
             if (editResource) {
-                await dispatch(updateResource({ id: editResource._id, resource: payload as any })).unwrap();
+                await dispatch(updateResource({ id: editResource._id, resource: formData as any })).unwrap();
             } else {
-                await dispatch(createResource(payload as any)).unwrap();
+                await dispatch(createResource(formData as any)).unwrap();
             }
 
             setUploadSuccess(true);
@@ -163,8 +163,9 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
                 reset();
                 setFile(null);
             }, 1500);
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+            toast.error(err || "Failed to save resource");
         } finally {
             setUploading(false);
         }
@@ -283,7 +284,7 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
                                         className="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-gray-50 font-medium text-[#1a1a3b] text-sm focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <option value="">Select semester</option>
-                                        {semesters?.map((s: any) => (
+                                        {semestersByCourseId?.map((s: any) => (
                                             <option key={s._id} value={s._id}>{s.name}</option>
                                         ))}
                                     </select>

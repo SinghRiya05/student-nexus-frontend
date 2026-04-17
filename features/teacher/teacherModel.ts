@@ -27,6 +27,8 @@ export interface ITeacher {
     lastName: string;
     email: string;
     phone: string;
+    avatar?: string;
+    coverImage?: string;
     universityId: IUniversity;   // populated object
     courseIds: ICourse[];        // array of courses
     roleId: string;

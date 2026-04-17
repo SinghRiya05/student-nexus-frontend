@@ -5,12 +5,12 @@ import { ICreateResource, IUpdateResource } from "./resourceModel";
 
 export const createResource = createAsyncThunk(
     "resource/createResource",
-    async (resource: ICreateResource, { rejectWithValue }) => {
+    async (resource: FormData | ICreateResource, { rejectWithValue }) => {
         try {
             const response = await apiClient.post(API_ENDPOINTS.RESOURCE.CREATE, resource);
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response?.data?.message || "Failed to create resource");
         }
     }
 );
@@ -41,12 +41,12 @@ export const getResourceById = createAsyncThunk(
 
 export const updateResource = createAsyncThunk(
     "resource/updateResource",
-    async ({ id, resource }: { id: string, resource: IUpdateResource }, { rejectWithValue }) => {
+    async ({ id, resource }: { id: string, resource: FormData | IUpdateResource }, { rejectWithValue }) => {
         try {
             const response = await apiClient.put(API_ENDPOINTS.RESOURCE.UPDATE(id), resource);
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response?.data?.message || "Failed to update resource");
         }
     }
 );

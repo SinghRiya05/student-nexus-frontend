@@ -28,6 +28,7 @@ import {
   School,
   UserRound,
   Bookmark,
+  User2Icon,
 } from "lucide-react";
 
 const NAV_LINKS = [
@@ -74,7 +75,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     setProfileOpen(false);
     setRequestsOpen(false);
   };
-  
+
   useEffect(() => {
     if (authUser?._id) {
       dispatch(getFollowing());
@@ -181,11 +182,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   </div>
                   <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
                     {pendingRequests?.length === 0 ? (
-                       <div className="px-4 py-5 text-center text-sm text-gray-500 italic">No pending requests</div>
+                      <div className="px-4 py-5 text-center text-sm text-gray-500 italic">No pending requests</div>
                     ) : (
                       pendingRequests.map((req: any) => (
                         <div key={req._id} className="flex gap-3 px-4 py-3 transition hover:bg-gray-50 items-center">
-                          <img src={req.follower?.avatar ? `${ASSET_URL}${req.follower.avatar}` : "/user.jpg"} alt="avatar" className="h-9 w-9 rounded-full object-cover shrink-0" />
+                          <img src={req.follower?.avatar ? `${ASSET_URL}${req.follower.avatar}` : "/user.png"} alt="avatar" className="h-9 w-9 rounded-full object-cover shrink-0" />
                           <div className="flex-1">
                             <p className="text-[0.78rem] font-bold text-gray-800">{req.follower?.firstName} {req.follower?.lastName}</p>
                             <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
@@ -309,7 +310,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   </div>
 
                   <div className="border-t border-gray-100 py-1.5">
-                    <button 
+                    <button
                       onClick={() => dispatch(logoutUser())}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[0.8rem] font-medium text-rose-500 transition hover:bg-rose-50"
                     >

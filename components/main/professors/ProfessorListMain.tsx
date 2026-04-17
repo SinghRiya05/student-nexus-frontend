@@ -3,11 +3,8 @@ import React, { useEffect } from "react";
 import ProfessorSearch from "./ProfessorSearch";
 import { useRouter } from "next/navigation";
 import ProfessorCard from "./ProfessorCard";
-import FeaturedProfessorCard from "./FeaturedProfessorCard";
-import TrendingSidebar from "./TrendingSidebar";
-import { ChevronLeft, ChevronRight, Star, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "motion/react";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getTeacherFromOtherUniversity, getTeachersFromSameUniversity } from "@/features/teacher/teacherThunk";
 import { ITeacher } from "@/features/teacher/teacherModel";
@@ -55,8 +52,6 @@ export default function ProfessorListMain() {
     image: prof.avatar || prof.profilePicture,
   });
 
-  const router = useRouter();
-
   return (
     <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 pb-20 animate-fade-in-up">
       {/* Main Content (Left/Center) */}
@@ -81,24 +76,6 @@ export default function ProfessorListMain() {
           </div>
         )}
 
-        {/* Featured Mentors */}
-        {!loading && sameUniversityTeachers.length > 0 && (
-          <section className="space-y-6">
-            <h2 className="text-xl font-bold text-on-surface flex items-center gap-2">
-              <Star className="h-5 w-5 text-tertiary fill-tertiary" />
-              Featured Mentors (BBD University)
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {sameUniversityTeachers.slice(0, 2).map((prof, idx) => (
-                <FeaturedProfessorCard
-                  key={prof._id}
-                  prof={prof}
-                  badge={idx % 2 === 0 ? "Top Rated" : "Most Searched"}
-                />
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* Directory Grid */}
         <section id="faculty-directory" className="space-y-8 pt-4">
@@ -162,10 +139,6 @@ export default function ProfessorListMain() {
         </section>
       </div>
 
-      {/* Right Sidebar (Sticky Trending Section) */}
-      <aside className="hidden xl:block w-70 shrink-0 sticky top-20 h-fit">
-        <TrendingSidebar />
-      </aside>
     </div>
   );
 }

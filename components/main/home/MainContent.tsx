@@ -12,22 +12,103 @@ import { useEffect, useState } from "react"
 import { getTeachersFromSameUniversity } from '@/features/teacher/teacherThunk'
 import { fetchAlumniByMyUniversity } from '@/features/alumni/alumniThunk'
 
+// --- Skeleton Components ---
+const UserCardSkeletonPrimary = () => (
+    <div className="min-w-[240px] snap-start bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex flex-col items-center text-center animate-pulse">
+        <div className="w-16 h-16 rounded-full mb-3 bg-gray-200 mt-2"></div>
+        <div className="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+        <div className="h-3 w-16 bg-gray-200 rounded mb-4"></div>
+        <div className="w-full py-2 h-8 rounded-xl bg-gray-200 mt-auto"></div>
+    </div>
+);
+
+const UserCardSkeletonSecondary = () => (
+    <div className="min-w-[180px] snap-start bg-gray-50/50 p-4 rounded-2xl flex flex-col items-center animate-pulse border border-gray-100">
+        <div className="w-12 h-12 rounded-full mb-3 bg-gray-200 mt-2"></div>
+        <div className="h-3 w-20 bg-gray-200 rounded mb-4"></div>
+        <div className="h-6 w-20 rounded-full bg-gray-200"></div>
+    </div>
+);
+
+const ProfessorSkeleton = () => (
+    <div className="min-w-[362px] bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex gap-4 snap-start mb-1 animate-pulse">
+        <div className="w-20 h-20 rounded-xl bg-gray-200 flex-shrink-0"></div>
+        <div className="flex-1">
+            <div className="flex justify-between items-start">
+                <div className="w-full">
+                    <div className="h-4 w-32 bg-gray-200 rounded mb-2"></div>
+                    <div className="flex flex-col gap-1.5">
+                        <div className="h-3 w-24 bg-gray-200 rounded"></div>
+                        <div className="h-2 w-16 bg-gray-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+            <div className="mt-4 h-3 w-20 bg-gray-200 rounded"></div>
+        </div>
+    </div>
+);
+
+const AlumniSkeleton = () => (
+    <div className="min-w-[240px] bg-white border border-[#b1addd]/10 p-5 rounded-3xl flex flex-col gap-4 animate-pulse">
+        <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0"></div>
+            <div className="flex-1">
+                <div className="h-4 w-24 bg-gray-200 rounded mb-1.5"></div>
+                <div className="h-3 w-20 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div className="w-full h-8 rounded-xl bg-gray-200"></div>
+    </div>
+);
+
 export default function MainContent() {
     const router = useRouter()
     const dispatch = useAppDispatch()
 
-    const { classmates, batchmates, loading: studentLoading } = useAppSelector((state) => state.student);
-    const { sameUniversityTeachers, loading: teacherLoading } = useAppSelector((state) => state.teacher);
-    const { universityAlumni: alumni, loading: alumniLoading } = useAppSelector((state) => state.alumni);
+    const { classmates, batchmates } = useAppSelector((state) => state.student);
+    const { sameUniversityTeachers } = useAppSelector((state) => state.teacher);
+    const { universityAlumni: alumni } = useAppSelector((state) => state.alumni);
+
+    const [fetching, setFetching] = useState({
+        classmates: true,
+        batchmates: true,
+        teachers: true,
+        alumni: true
+    });
 
     useEffect(() => {
-        // Only fetch if data is not already present in Redux to prevent unnecessary calls
-        if (classmates.length === 0) dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity());
-        if (batchmates.length === 0) dispatch(getStudentsByMatchedCourseAndSameUniversity());
-        if (sameUniversityTeachers.length === 0) dispatch(getTeachersFromSameUniversity());
-        if (alumni.length === 0) dispatch(fetchAlumniByMyUniversity());
-    }, [dispatch, classmates.length, batchmates.length, sameUniversityTeachers.length, alumni.length]);
+        let mounted = true;
 
+        const fetchData = async () => {
+            // Classmates
+            if (classmates.length === 0) {
+                await dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity());
+            }
+            if (mounted) setFetching(prev => ({ ...prev, classmates: false }));
+
+            // Batchmates
+            if (batchmates.length === 0) {
+                await dispatch(getStudentsByMatchedCourseAndSameUniversity());
+            }
+            if (mounted) setFetching(prev => ({ ...prev, batchmates: false }));
+
+            // Teachers
+            if (sameUniversityTeachers.length === 0) {
+                await dispatch(getTeachersFromSameUniversity());
+            }
+            if (mounted) setFetching(prev => ({ ...prev, teachers: false }));
+
+            // Alumni
+            if (alumni.length === 0) {
+                await dispatch(fetchAlumniByMyUniversity());
+            }
+            if (mounted) setFetching(prev => ({ ...prev, alumni: false }));
+        };
+
+        fetchData();
+
+        return () => { mounted = false; };
+    }, [dispatch]);
 
 
 
@@ -53,18 +134,24 @@ export default function MainContent() {
                     <button onClick={() => router.push("/students")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                    {classmates.slice(0, 5).map((user: any, idx: number) => (
-                        <UserCard
-                            key={idx}
-                            userId={user._id}
-                            name={`${user.firstName} ${user.lastName}`}
-                            role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
-                            image={user.avatar || user.profilePicture || undefined}
-                            variant="primary"
-                        />
-                    ))}
-                    {classmates.length === 0 && (
-                        <p className="text-sm text-gray-400 italic py-5">No classmates discovered yet.</p>
+                    {fetching.classmates ? (
+                        [1, 2, 3, 4, 5].map((i) => <UserCardSkeletonPrimary key={i} />)
+                    ) : (
+                        <>
+                            {classmates.slice(0, 5).map((user: any, idx: number) => (
+                                <UserCard
+                                    key={idx}
+                                    userId={user._id}
+                                    name={`${user.firstName} ${user.lastName}`}
+                                    role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                                    image={user.avatar || user.profilePicture || undefined}
+                                    variant="primary"
+                                />
+                            ))}
+                            {classmates.length === 0 && (
+                                <p className="text-sm text-gray-400 italic py-5">No classmates discovered yet.</p>
+                            )}
+                        </>
                     )}
                 </div>
             </section>
@@ -76,18 +163,24 @@ export default function MainContent() {
                     <button onClick={() => router.push("/students")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                    {batchmates.slice(0, 5).map((user: any, idx: number) => (
-                        <UserCard
-                            key={idx}
-                            userId={user._id}
-                            name={`${user.firstName} ${user.lastName}`}
-                            role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
-                            image={user.avatar || user.profilePicture || undefined}
-                            variant="secondary"
-                        />
-                    ))}
-                    {batchmates.length === 0 && (
-                        <p className="text-sm text-gray-400 italic py-5">No batchmates discovered yet.</p>
+                    {fetching.batchmates ? (
+                        [1, 2, 3, 4, 5].map((i) => <UserCardSkeletonSecondary key={i} />)
+                    ) : (
+                        <>
+                            {batchmates.slice(0, 5).map((user: any, idx: number) => (
+                                <UserCard
+                                    key={idx}
+                                    userId={user._id}
+                                    name={`${user.firstName} ${user.lastName}`}
+                                    role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                                    image={user.avatar || user.profilePicture || undefined}
+                                    variant="secondary"
+                                />
+                            ))}
+                            {batchmates.length === 0 && (
+                                <p className="text-sm text-gray-400 italic py-5">No batchmates discovered yet.</p>
+                            )}
+                        </>
                     )}
                 </div>
             </section>
@@ -99,42 +192,48 @@ export default function MainContent() {
                     <button onClick={() => router.push("/professors")} className="text-[#2949ef] text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-2">
-                    {sameUniversityTeachers.slice(0, 5).map((prof, idx) => (
-                        <div key={idx} onClick={() => router.push(`/professors/${prof._id}`)} className="min-w-[362px] bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex gap-4 snap-start mb-1 hover:shadow-md transition-shadow">
-                            {prof.avatar ? (
-                                <img className="w-20 h-20 rounded-xl object-cover" src={prof.avatar} alt={`${prof.firstName} ${prof.lastName}`} />
-                            ) : (
-                                <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">
-                                    {prof.firstName?.[0]}
-                                </div>
-                            )}
-                            <div className="flex-1">
-                                <div className="flex justify-between items-start">
-                                    <div className="overflow-hidden">
-                                        <h4 className="font-bold text-base text-[#302e56] truncate">{prof.firstName} {prof.lastName}</h4>
-                                        <div className="flex flex-col">
-                                            <p className="text-xs text-[#5d5a86] truncate">{prof.teacherProfile.designation}</p>
-                                            <p className="text-[10px] text-[#5d5a86]/70">Exp: {prof.teacherProfile.experienceYears} years</p>
+                    {fetching.teachers ? (
+                        [1, 2, 3, 4].map((i) => <ProfessorSkeleton key={i} />)
+                    ) : (
+                        <>
+                            {sameUniversityTeachers.slice(0, 5).map((prof, idx) => (
+                                <div key={idx} onClick={() => router.push(`/professors/${prof._id}`)} className="min-w-[362px] bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex gap-4 snap-start mb-1 hover:shadow-md transition-shadow">
+                                    {prof.avatar ? (
+                                        <img className="w-20 h-20 rounded-xl object-cover" src={prof.avatar} alt={`${prof.firstName} ${prof.lastName}`} />
+                                    ) : (
+                                        <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">
+                                            {prof.firstName?.[0]}
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <div className="overflow-hidden">
+                                                <h4 className="font-bold text-base text-[#302e56] truncate">{prof.firstName} {prof.lastName}</h4>
+                                                <div className="flex flex-col">
+                                                    <p className="text-xs text-[#5d5a86] truncate">{prof.teacherProfile.designation}</p>
+                                                    <p className="text-[10px] text-[#5d5a86]/70">Exp: {prof.teacherProfile.experienceYears} years</p>
+                                                </div>
+                                            </div>
+                                            <button className="h-7 w-7 rounded-full bg-[#6bfde0] text-[#005f51] flex items-center justify-center hover:scale-105 transition-transform flex-shrink-0">
+                                                <Plus className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <div className="mt-3 text-xs text-gray-500 font-medium">
+                                            {prof.courseIds?.length > 0 ? (
+                                                <span className="truncate block">
+                                                    {prof.courseIds.map((c: any) => c.course_short_name).join(", ")}
+                                                </span>
+                                            ) : (
+                                                "Faculty"
+                                            )}
                                         </div>
                                     </div>
-                                    <button className="h-7 w-7 rounded-full bg-[#6bfde0] text-[#005f51] flex items-center justify-center hover:scale-105 transition-transform flex-shrink-0">
-                                        <Plus className="w-4 h-4" />
-                                    </button>
                                 </div>
-                                <div className="mt-3 text-xs text-gray-500 font-medium">
-                                    {prof.courseIds?.length > 0 ? (
-                                        <span className="truncate block">
-                                            {prof.courseIds.map((c: any) => c.course_short_name).join(", ")}
-                                        </span>
-                                    ) : (
-                                        "Faculty"
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                    {sameUniversityTeachers.length === 0 && (
-                        <p className="text-sm text-gray-400 italic py-5">No professors found.</p>
+                            ))}
+                            {sameUniversityTeachers.length === 0 && (
+                                <p className="text-sm text-gray-400 italic py-5">No professors found.</p>
+                            )}
+                        </>
                     )}
                 </div>
             </section>
@@ -170,30 +269,36 @@ export default function MainContent() {
                     <button onClick={() => router.push("/alumni")} className="text-[#2949ef] text-sm font-semibold hover:underline">Career Network</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {alumni.slice(0, 5).map((member, idx) => (
-                        <div key={idx} onClick={() => router.push(`/alumni/${member._id}`)} className="min-w-[240px] bg-white border border-[#b1addd]/10 p-5 rounded-3xl flex flex-col gap-4 hover:cursor-pointer">
-                            <div className="flex items-center gap-4">
-                                {member.avatar ? (
-                                    <img className="w-12 h-12 rounded-full object-cover" src={member.avatar} alt={member.firstName} />
-
-                                ) : (
-                                    <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">
-                                        {member.firstName?.[0]}
+                    {fetching.alumni ? (
+                        [1, 2, 3, 4, 5].map((i) => <AlumniSkeleton key={i} />)
+                    ) : (
+                        <>
+                            {alumni.slice(0, 5).map((member, idx) => (
+                                <div key={idx} onClick={() => router.push(`/alumni/${member._id}`)} className="min-w-[240px] bg-white border border-[#b1addd]/10 p-5 rounded-3xl flex flex-col gap-4 hover:cursor-pointer">
+                                    <div className="flex items-center gap-4">
+                                        {member.avatar ? (
+                                            <img className="w-12 h-12 rounded-full object-cover" src={member.avatar} alt={member.firstName} />
+                                        ) : (
+                                            <div className="w-20 h-20 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-2xl border border-indigo-100 uppercase flex-shrink-0">
+                                                {member.firstName?.[0]}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <h4 className="font-bold text-sm text-[#302e56]">{member.firstName} {member.lastName}</h4>
+                                            <p className="text-[10px] text-[#5d5a86]">{member.aluminiProfile?.jobTitle} • {member.aluminiProfile?.currentCompany}</p>
+                                        </div>
                                     </div>
-                                )
-
-                                }
-                                <div>
-                                    <h4 className="font-bold text-sm text-[#302e56]">{member.firstName} {member.lastName}</h4>
-                                    <p className="text-[10px] text-[#5d5a86]">{member.aluminiProfile?.jobTitle} • {member.aluminiProfile?.currentCompany}</p>
+                                    <button className="w-full py-2 bg-[#f0ebff] text-[#2949ef] rounded-xl text-xs font-bold hover:bg-[#e3dfff] transition-colors flex items-center justify-center gap-2">
+                                        <Send className="w-3 h-3" />
+                                        Send Request
+                                    </button>
                                 </div>
-                            </div>
-                            <button className="w-full py-2 bg-[#f0ebff] text-[#2949ef] rounded-xl text-xs font-bold hover:bg-[#e3dfff] transition-colors flex items-center justify-center gap-2">
-                                <Send className="w-3 h-3" />
-                                Send Request
-                            </button>
-                        </div>
-                    ))}
+                            ))}
+                            {alumni.length === 0 && (
+                                <p className="text-sm text-gray-400 italic py-5">No alumni discovered yet.</p>
+                            )}
+                        </>
+                    )}
                 </div>
             </section>
         </div>

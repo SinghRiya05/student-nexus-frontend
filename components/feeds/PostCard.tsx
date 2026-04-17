@@ -32,7 +32,17 @@ export interface PostCardProps {
 export function PostCard({ user, content, tags, likes, comments, views, publishedAt, images }: PostCardProps) {
   const [isLiked, setIsLiked] = React.useState(false)
   const [isSaved, setIsSaved] = React.useState(false)
+  const [isExpanded, setIsExpanded] = React.useState(false)
+  const [shouldShowExpand, setShouldShowExpand] = React.useState(false)
+  const contentRef = React.useRef<HTMLParagraphElement>(null)
   const [selectedImg, setSelectedImg] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (contentRef.current) {
+      const isTruncated = contentRef.current.scrollHeight > contentRef.current.clientHeight
+      setShouldShowExpand(isTruncated)
+    }
+  }, [content])
 
   return (
     <motion.div
@@ -75,9 +85,36 @@ export function PostCard({ user, content, tags, likes, comments, views, publishe
 
           {/* Content */}
           <div className={cn("mb-5", !tags.length && !images?.length && "mb-0")}>
-            <p className="text-foreground/90 text-sm md:text-base leading-relaxed whitespace-pre-line tracking-tight">
+            <p
+              ref={contentRef}
+              className="text-foreground/90 text-sm md:text-base leading-relaxed tracking-tight"
+              style={
+                !isExpanded
+                  ? {
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word"
+                  }
+                  : {
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word"
+                  }
+              }
+            >
               {content}
             </p>
+
+            {(shouldShowExpand || isExpanded) && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-primary hover:underline text-sm font-bold mt-1 transition-all"
+              >
+                {isExpanded ? "Show less" : "Read more"}
+              </button>
+            )}
           </div>
 
           {/* Images Grid */}

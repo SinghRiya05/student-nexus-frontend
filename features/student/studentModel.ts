@@ -37,6 +37,7 @@ export interface IStudent {
     followingCount: number;
     status: string;
     universityId: IUniversity;
+    semesterId: ISemester;
     studentProfile?: IStudentProfile | null;
     bio?: string;
     coverImage?: string;

@@ -24,9 +24,17 @@ import {
     Sparkles,
     Calendar,
     Clock,
-    Upload
+    Upload,
+    Trash2,
+    ExternalLink,
+    FileText,
+    Lock,
+    Unlock,
+    Edit2,
+    Building
 } from "lucide-react";
 import { motion } from "motion/react";
+import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,12 +42,17 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getMyProfile } from "@/features/student/studentThunk";
 import { getMe, getUserById } from "@/features/users/userThunk";
+import UploadResourceModal from "./UploadResourceModal";
+import NetworkPopup from "./NetworkPopup";
+import { deleteResource, getAllResourcesByTeacherId } from "@/features/teacher/resources/resourceThunk";
+import { IResource } from "@/features/teacher/resources/resourceModel";
+import { getFollowers, getFollowing } from "@/features/follow/followThunk";
 
 // ─── Sections ─────────────────────────────────────────────────────────────
 
 const AboutMe = ({ bio }: { bio?: string }) => (
-    <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
-        <div className="flex items-center gap-3 mb-6">
+    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+        <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 transition-transform group-hover:scale-110">
                 <Users size={20} />
             </div>
@@ -51,15 +64,6 @@ const AboutMe = ({ bio }: { bio?: string }) => (
     </div>
 );
 
-const StatCard = ({ label, value, subtext, color }: { label: string; value: string; subtext: string; color: string }) => (
-    <div className={`p-8 rounded-2xl border-2 border-transparent transition-all hover:translate-y-[-4px] cursor-pointer ${color}`}>
-        <p className="text-[10px] font-black uppercase tracking-widest mb-3 opacity-60">{label}</p>
-        <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-4xl font-black">{value}</span>
-            <span className="text-sm font-bold opacity-60">{subtext}</span>
-        </div>
-    </div>
-);
 
 function ExperienceItem({ icon: Icon, title, role, date, description }: any) {
     return (
@@ -80,18 +84,117 @@ function ExperienceItem({ icon: Icon, title, role, date, description }: any) {
 
 // ─── Main Component ───────────────────────────────────────────────────────
 
+const ProfileSkeleton = () => (
+    <div className="space-y-8 animate-pulse duration-1000">
+        {/* Cover & Top Bar */}
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="h-32 bg-indigo-50 w-full" />
+            <div className="px-10 py-8 flex md:flex-row items-center md:items-start gap-5">
+                <div className="relative group shrink-0">
+                    <div className="h-32 w-32 rounded-[2rem] border-4 border-white bg-indigo-50 shadow-sm" />
+                </div>
+                <div className="flex flex-col lg:flex-row items-start md:items-center justify-between gap-5 w-full">
+                    <div className="space-y-3 w-full max-w-sm">
+                        <div className="h-7 w-3/4 bg-gray-200 rounded-lg" />
+                        <div className="flex gap-4">
+                            <div className="h-4 w-20 bg-gray-100 rounded-full" />
+                            <div className="h-4 w-32 bg-gray-100 rounded-full" />
+                        </div>
+                    </div>
+                    <div className="flex gap-3 shrink-0">
+                        <div className="h-10 w-32 bg-gray-100 rounded-2xl" />
+                        <div className="h-10 w-32 bg-gray-200 rounded-2xl" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
+            <div className="lg:col-span-7 space-y-8">
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <div className="h-6 w-32 bg-gray-200 rounded-lg" />
+                    <div className="h-4 w-full bg-gray-100 rounded" />
+                    <div className="h-4 w-5/6 bg-gray-100 rounded" />
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-64 flex flex-col justify-between">
+                    <div className="h-6 w-48 bg-gray-200 rounded-lg" />
+                    <div className="space-y-3">
+                        <div className="h-12 w-full bg-gray-50 rounded-xl" />
+                        <div className="h-12 w-full bg-gray-50 rounded-xl" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="lg:col-span-3 space-y-8">
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <div className="h-5 w-32 bg-gray-200 rounded-lg" />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="h-24 bg-gray-50 rounded-2xl" />
+                        <div className="h-24 bg-gray-50 rounded-2xl" />
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4 h-64">
+                    <div className="h-5 w-32 bg-gray-200 rounded-lg mb-6" />
+                    <div className="space-y-4">
+                        <div className="flex gap-4"><div className="h-4 w-4 bg-gray-200 rounded-full shrink-0" /><div className="h-4 w-full bg-gray-100 rounded" /></div>
+                        <div className="flex gap-4"><div className="h-4 w-4 bg-gray-200 rounded-full shrink-0" /><div className="h-4 w-full bg-gray-100 rounded" /></div>
+                        <div className="flex gap-4"><div className="h-4 w-4 bg-gray-200 rounded-full shrink-0" /><div className="h-4 w-3/4 bg-gray-100 rounded" /></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 export default function ProfileSection() {
 
     const dispatch = useAppDispatch()
 
-    const { singleUser: user } = useAppSelector((state) => state.user);
+    const { singleUser: user, loading: userLoading } = useAppSelector((state) => state.user);
     const { user: authUser } = useAppSelector((state) => state.auth);
+    const { resources, loading: resourceLoading } = useAppSelector((state) => state.resource);
+    const { followers, following } = useAppSelector((state) => state.follow);
+
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [selectedResourceForEdit, setSelectedResourceForEdit] = useState<IResource | null>(null);
+    const [activePopup, setActivePopup] = useState<'Followers' | 'Following' | null>(null);
 
     useEffect(() => {
         if (authUser?._id) {
             dispatch(getUserById(authUser._id));
         }
     }, [dispatch, authUser?._id])
+
+
+    useEffect(() => {
+        if (user?._id && user?.roleId?.name === "TEACHER") {
+            dispatch(getAllResourcesByTeacherId(user._id));
+        }
+    }, [dispatch, user?._id, user?.roleId?.name]);
+
+    useEffect(() => {
+        dispatch(getFollowers());
+        dispatch(getFollowing());
+    }, [dispatch]);
+
+    const handleEditResource = (resource: IResource) => {
+        setSelectedResourceForEdit(resource);
+        setIsUploadModalOpen(true);
+    };
+
+    const handleDeleteResource = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this resource?")) {
+            try {
+                await dispatch(deleteResource(id)).unwrap();
+                toast.success("Resource deleted successfully");
+            } catch (error: any) {
+                toast.error(error || "Failed to delete resource");
+            }
+        }
+    };
+    
     const router = useRouter();
 
     const classmates = [
@@ -100,16 +203,37 @@ export default function ProfileSection() {
         { name: "Mike", img: "https://i.pravatar.cc/150?u=3" },
     ];
 
-    const groups = [
-        { name: "Dev Society BBD", members: "840 Members", icon: LayoutGrid, color: "text-indigo-600 bg-indigo-50" },
-        { name: "Design Collective", members: "2.1k Members", icon: Edit3, color: "text-emerald-600 bg-emerald-50" }
-    ];
-
     const activities = [
         { text: "Shared a new project 'Nexus UI Framework' to the Dev Society.", date: "2 hours ago", color: "bg-blue-500" },
         { text: "Earned 'Top Contributor' badge in Hackathon Prep group.", date: "Yesterday", color: "bg-emerald-500" },
         { text: "Followed 3 new professors in the Computer Science department.", date: "3 days ago", color: "bg-indigo-500" }
     ];
+
+    const mappedFollowers = followers.map((f: any) => {
+        const u = f.follower;
+        if (!u || typeof u === 'string') return null;
+        return {
+            id: u._id,
+            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User',
+            role: "Member",
+            avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
+            isFollowing: following.some((fwing: any) => fwing.following && typeof fwing.following !== 'string' && fwing.following._id === u._id)
+        }
+    }).filter(Boolean);
+
+    const mappedFollowing = following.map((f: any) => {
+        const u = f.following;
+        if (!u || typeof u === 'string') return null;
+        return {
+            id: u._id,
+            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User',
+            role: "Member",
+            avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
+            isFollowing: true
+        }
+    }).filter(Boolean);
+
+    if (userLoading) return <ProfileSkeleton />;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -189,6 +313,14 @@ export default function ProfileSection() {
                                     </div>
                                 )}
                             </div>
+                            <div className="text-gray-500 font-bold text-sm">
+                                {user?.roleId?.name === "TEACHER" && authUser?._id === user?._id && (
+                                    <div className="flex flex-col items-start gap-2">
+                                        <div className="flex items-start gap-2"><Building className="w-4 h-4 text-gray-400" /> <span className="text-gray-500 font-bold text-sm">{user.teacherProfile.department}</span></div>
+                                        <div className="flex items-start gap-2"><Briefcase className="w-4 h-4 text-gray-400" /> <span className="text-gray-500 font-bold text-sm">{user.teacherProfile.designation}</span></div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Action Buttons */}
@@ -212,14 +344,6 @@ export default function ProfileSection() {
                 </div>
             </div>
 
-            {user?.roleId?.name === "TEACHER" && (
-                <div className="flex justify-end">
-                    <Button className="h-10 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm flex gap-2 shadow-xl shadow-blue-500/30">
-                        <Upload className="w-4 h-4" />
-                        Upload Resources
-                    </Button></div>
-            )}
-
             {/* 2. Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
                 {/* Left Column (Main Content) */}
@@ -228,8 +352,8 @@ export default function ProfileSection() {
 
                     {/* Role Specific Career/Academic Details */}
                     {user?.roleId?.name === "TEACHER" && (
-                        <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                            <div className="flex items-center gap-3 mb-8">
+                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-3 ">
                                 <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                                     <GraduationCap size={20} />
                                 </div>
@@ -253,8 +377,8 @@ export default function ProfileSection() {
                     )}
 
                     {user?.roleId?.name === "ALUMINI" && (
-                        <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                            <div className="flex items-center gap-3 mb-8">
+                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-3 ">
                                 <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                                     <Briefcase size={20} />
                                 </div>
@@ -287,7 +411,7 @@ export default function ProfileSection() {
                                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <GraduationCap size={120} />
                                 </div>
-                                <CardContent className="p-8 relative z-10">
+                                <CardContent className="p-5 relative z-10">
                                     <div className="flex items-center justify-between mb-8">
                                         <div className="flex items-center gap-3">
                                             <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner group-hover:scale-110 transition-transform">
@@ -373,15 +497,15 @@ export default function ProfileSection() {
 
 
                     {/* Experience & Projects */}
-                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-8">
+                    <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                        <div className="flex items-center justify-between ">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                                     <Briefcase size={20} />
                                 </div>
                                 <h3 className="text-xl font-black text-[#1a1a3b]">Experience & Projects</h3>
                             </div>
-                            <Button variant="ghost" onClick={() => router.push(`/profile/edit/${user?._id}`)} className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl">
+                            <Button variant="ghost" onClick={() => setIsUploadModalOpen(true)} className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl">
                                 Add New
                             </Button>
                         </div>
@@ -400,17 +524,120 @@ export default function ProfileSection() {
                                     </React.Fragment>
                                 ))
                             ) : (
-                                <div className="flex flex-col items-center justify-center py-10 text-center opacity-40">
-                                    <Briefcase className="w-12 h-12 mb-4" />
+                                <div className="flex flex-col items-center justify-center text-center opacity-40">
+                                    <Briefcase className="w-12 h-12" />
                                     <p className="font-bold">No projects or experience added yet.</p>
                                 </div>
                             )}
                         </div>
                     </Card>
 
+                    {/* Teacher Resources Section */}
+                    {user?.roleId?.name === "TEACHER" && (
+                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm overflow-hidden relative">
+                            <div className="flex items-center justify-between ">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 transition-transform group-hover:scale-110">
+                                        <FileText size={20} />
+                                    </div>
+                                    <h3 className="text-xl font-black text-[#1a1a3b]">Educational Resources</h3>
+                                </div>
+                                {authUser?._id === user?._id && (
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setSelectedResourceForEdit(null);
+                                            setIsUploadModalOpen(true);
+                                        }}
+                                        className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl"
+                                    >
+                                        <Plus className="w-4 h-4" /> Add New
+                                    </Button>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                {resources && resources.length > 0 ? (
+                                    resources.map((resource) => (
+                                        <div
+                                            key={resource._id}
+                                            onClick={() => window.open(`${ASSET_URL}${resource.fileUrl}`, '_blank')}
+                                            className="group/card relative bg-slate-100 border border-gray-100 rounded-2xl p-5 hover:bg-white hover:border-blue-100 hover:shadow-md transition-all duration-300 cursor-pointer"
+                                        >
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-blue-500 transition-colors group-hover/card:bg-blue-50">
+                                                        <FileText size={20} />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <h4 className="font-black text-[#1a1a3b] text-sm line-clamp-1 group-hover/card:text-blue-600 transition-colors">{resource.title}</h4>
+                                                        <p className="text-[11px] font-bold text-gray-400 line-clamp-1 opacity-70">
+                                                            {resource.description}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                                    {resource.isPaid ? (
+                                                        <span className="flex items-center gap-1 text-[10px] font-black bg-amber-50 text-amber-600 px-2.5 py-1.5 rounded-lg uppercase">
+                                                            <Lock size={10} /> ₹{resource.price}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-1 text-[10px] font-black bg-emerald-50 text-emerald-600 px-2.5 py-1.5 rounded-lg uppercase">
+                                                            <Unlock size={10} /> Free
+                                                        </span>
+                                                    )}
+
+                                                    {authUser?._id === user?._id && (
+                                                        <div className="flex items-center gap-1 ml-1">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleEditResource(resource);
+                                                                }}
+                                                                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeleteResource(resource._id);
+                                                                }}
+                                                                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-md uppercase">
+                                                    {resource.courseId?.courseName || "Course"}
+                                                </span>
+                                                {resource.semesterId && (
+                                                    <span className="text-[10px] font-black bg-white text-slate-500 px-2.5 py-1 rounded-md uppercase border border-slate-200">
+                                                        {resource.semesterId.name}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full py-12 flex flex-col items-center justify-center text-center opacity-40">
+                                        <Upload className="w-12 h-12 mb-4" />
+                                        <p className="font-bold">No resources uploaded yet.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+                    )}
+
                     {/* Skills */}
-                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                        <div className="flex items-center gap-3 mb-8">
+                    <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                                 <Users size={20} />
                             </div>
@@ -427,8 +654,8 @@ export default function ProfileSection() {
                                     </span>
                                 ))
                             ) : (
-                                <div className="w-full flex flex-col items-center justify-center py-10 text-center opacity-40">
-                                    <Code className="w-12 h-12 mb-4" />
+                                <div className="w-full flex flex-col items-center justify-center text-center opacity-40">
+                                    <Code className="w-12 h-12" />
                                     <p className="font-bold">No skills added yet.</p>
                                 </div>
                             )}
@@ -439,15 +666,21 @@ export default function ProfileSection() {
                 {/* Right Column (Sidebar) */}
                 <div className="lg:col-span-3 space-y-8">
                     {/* Trust & Network Stats */}
-                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                        <h3 className="font-black text-[#1a1a3b] text-base mb-6">Network Stats</h3>
+                    <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                        <h3 className="font-black text-[#1a1a3b] text-base mb-4">Network Stats</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-center">
-                                <p className="text-2xl font-black text-indigo-600 mb-1">{user?.followersCount || 0}</p>
+                            <div 
+                                onClick={() => setActivePopup('Followers')}
+                                className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-all group"
+                            >
+                                <p className="text-2xl font-black text-indigo-600 mb-1 group-hover:scale-110 transition-transform">{user?.followersCount || 0}</p>
                                 <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Followers</p>
                             </div>
-                            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 text-center">
-                                <p className="text-2xl font-black text-emerald-600 mb-1">{user?.followingCount || 0}</p>
+                            <div 
+                                onClick={() => setActivePopup('Following')}
+                                className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 text-center cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
+                            >
+                                <p className="text-2xl font-black text-emerald-600 mb-1 group-hover:scale-110 transition-transform">{user?.followingCount || 0}</p>
                                 <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Following</p>
                             </div>
                             <div className="col-span-2 p-4 rounded-2xl bg-amber-50/50 border border-amber-100 flex items-center justify-between">
@@ -460,45 +693,28 @@ export default function ProfileSection() {
                     </Card>
 
                     {/* Classmates & Friends */}
-                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="font-black text-[#1a1a3b] text-base">Classmates & Friends</h3>
-                            <span className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-2 py-1 rounded-lg">142</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="flex -space-x-4">
-                                {classmates.map((c, i) => (
-                                    <div key={i} className="h-12 w-12 rounded-2xl border-4 border-white overflow-hidden shadow-sm">
-                                        <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
-                                    </div>
-                                ))}
+                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && (
+                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-black text-[#1a1a3b] text-base">Classmates & Friends</h3>
+                                <span className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-2 py-1 rounded-lg">142</span>
                             </div>
-                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 text-xs font-black flex items-center justify-center border-4 border-white shadow-sm">
-                                +138
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* My Groups */}
-                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                        <h3 className="font-black text-[#1a1a3b] text-base mb-8">My Groups</h3>
-                        <div className="space-y-6">
-                            {groups.map((group, i) => (
-                                <div key={i} className="flex items-center justify-between group cursor-pointer">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${group.color}`}>
-                                            <group.icon size={22} />
+                            <div className="flex items-center gap-2">
+                                <div className="flex -space-x-4">
+                                    {classmates.map((c, i) => (
+                                        <div key={i} className="h-12 w-12 rounded-2xl border-4 border-white overflow-hidden shadow-sm hover:z-10 hover:scale-110 transition-transform cursor-pointer">
+                                            <img src={c.img} alt={c.name} className="w-full h-full object-cover" />
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-[#1a1a3b] text-[14px] leading-tight truncate max-w-[140px] group-hover:text-blue-600 transition-colors">{group.name}</h4>
-                                            <p className="text-[10px] font-black text-gray-400 opacity-60 uppercase">{group.members}</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-indigo-600 transition-all group-hover:translate-x-1" />
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    </Card>
+                                <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 text-xs font-black flex items-center justify-center border-4 border-white shadow-sm cursor-pointer hover:bg-indigo-100 transition-colors">
+                                    +138
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+
+
 
                     {/* Recent Activity */}
                     <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
@@ -508,10 +724,10 @@ export default function ProfileSection() {
                             <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-100/50" />
 
                             {activities.map((act, i) => (
-                                <div key={i} className="relative pl-8 space-y-1">
-                                    <div className={`absolute left-0 top-1.5 h-4 w-4 rounded-full border-[3px] border-white shadow-sm ${act.color}`} />
+                                <div key={i} className="relative pl-8 space-y-1 group">
+                                    <div className={`absolute left-0 top-1.5 h-4 w-4 rounded-full border-[3px] border-white shadow-sm group-hover:scale-125 transition-transform ${act.color}`} />
                                     <p className="text-xs font-bold text-gray-400">{act.date}</p>
-                                    <p className="text-[13px] font-medium text-gray-600 leading-relaxed">
+                                    <p className="text-[13px] font-medium text-gray-600 leading-relaxed group-hover:text-[#1a1a3b] transition-colors">
                                         {act.text.split("'").map((t, j) => j % 2 === 1 ? <span key={j} className="text-blue-600 font-bold">{t}</span> : t)}
                                     </p>
                                 </div>
@@ -520,6 +736,22 @@ export default function ProfileSection() {
                     </Card>
                 </div>
             </div>
+
+            <UploadResourceModal
+                isOpen={isUploadModalOpen}
+                onClose={() => {
+                    setIsUploadModalOpen(false);
+                    setSelectedResourceForEdit(null);
+                }}
+                editResource={selectedResourceForEdit}
+            />
+
+            <NetworkPopup 
+                isOpen={activePopup !== null}
+                onClose={() => setActivePopup(null)}
+                title={activePopup || "Network"}
+                users={activePopup === 'Followers' ? mappedFollowers : mappedFollowing}
+            />
         </div>
     );
 }

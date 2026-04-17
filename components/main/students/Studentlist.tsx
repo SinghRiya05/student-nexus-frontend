@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 import UserCard from '../home/UserCard';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
-import { 
-    getAllStudents, 
-    getStudentsByMyUniversity, 
-    getStudentsByMatchedCourseAndSameUniversity, 
-    getStudentsByMatchedSemesterWithCourseAndSameUniversity 
+import {
+    getAllStudents,
+    getStudentsByMyUniversity,
+    getStudentsByMatchedCourseAndSameUniversity,
+    getStudentsByMatchedSemesterWithCourseAndSameUniversity
 } from "@/features/student/studentThunk";
 import { useEffect } from "react";
 
@@ -53,7 +53,7 @@ export default function Studentlist() {
     const tabs: FilterTab[] = ['All', 'My University', 'Batchmates', 'Classmates'];
 
     const dispatch = useAppDispatch();
-    const { students = [], loading } = useAppSelector((state: any) => state.student);
+    const { students = [], batchmates = [], classmates = [], loading } = useAppSelector((state: any) => state.student);
 
     // Fetch data whenever tab changes
     useEffect(() => {
@@ -63,14 +63,21 @@ export default function Studentlist() {
         if (activeTab === 'Classmates') dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity());
     }, [activeTab, dispatch]);
 
+    // Computed base list depending on the active tab
+    const baseList = useMemo(() => {
+        if (activeTab === 'Classmates') return classmates;
+        if (activeTab === 'Batchmates') return batchmates;
+        return students;
+    }, [activeTab, students, batchmates, classmates]);
+
     // Simulated filtering using live Redux data:
     const filteredStudents = useMemo(() => {
-        if (!students) return [];
-        let list = [...students];
+        if (!baseList) return [];
+        let list = [...baseList];
 
         // Course Filtering
         if (selectedCourse !== "All") {
-            list = list.filter(student => 
+            list = list.filter(student =>
                 student.courseIds?.some((course: any) => course.courseName.includes(selectedCourse))
             );
         }
@@ -78,20 +85,20 @@ export default function Studentlist() {
         // Apply Search Filtering
         if (searchQuery.trim()) {
             list = list.filter(student => {
-                const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
+                const fullName = `${student.firstName || ''} ${student.lastName || ''}`.toLowerCase();
                 return fullName.includes(searchQuery.toLowerCase());
             });
         }
 
         // Sorting Logic
         if (sortBy === "Alphabetical (A-Z)") {
-            list = list.sort((a, b) => a.firstName.localeCompare(b.firstName));
+            list = list.sort((a, b) => (a.firstName || "").localeCompare(b.firstName || ""));
         } else if (sortBy === "Alphabetical (Z-A)") {
-            list = list.sort((a, b) => b.firstName.localeCompare(a.firstName));
+            list = list.sort((a, b) => (b.firstName || "").localeCompare(a.firstName || ""));
         }
 
         return list;
-    }, [students, searchQuery, selectedCourse, sortBy]);
+    }, [baseList, searchQuery, selectedCourse, sortBy]);
 
     return (
         <div className="flex flex-col w-full h-full">
@@ -247,7 +254,7 @@ export default function Studentlist() {
                                     <UserCard
                                         userId={student._id}
                                         name={`${student.firstName} ${student.lastName}`}
-                                        role={student.courseIds?.length > 0 ? student.courseIds.map((c:any) => c.course_short_name).join(", ") : "Student"}
+                                        role={student.courseIds?.length > 0 ? student.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
                                         image={student.avatar || student.profilePicture || undefined}
                                         variant="primary"
                                         className="h-full w-full"

@@ -1,4 +1,5 @@
 import { ITeacher } from "@/features/teacher/teacherModel";
+import { ASSET_URL } from "@/services/apiEndpoints";
 import {
   MapPin,
   GraduationCap,
@@ -31,7 +32,7 @@ export default function ProfessorHero({
       <div className="h-32 md:h-48 relative overflow-hidden bg-slate-50 border-b border-gray-100">
         {member?.coverImage ? (
           <img
-            src={member.coverImage}
+            src={member.coverImage.startsWith('http') ? member.coverImage : `${ASSET_URL}${member.coverImage}`}
             className="w-full h-full object-cover"
             alt="Cover"
           />
@@ -46,10 +47,12 @@ export default function ProfessorHero({
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-20">
           {/* Avatar */}
           <div className="relative group shrink-0 -mt-20 md:-mt-24">
-            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-white ring-2 ring-indigo-100 flex items-center justify-center font-black text-4xl md:text-5xl text-indigo-500 shadow-2xl">
+            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-white ring-2 ring-indigo-100 flex items-center justify-center font-black text-3xl  text-indigo-500">
               {member?.avatar || member?.profilePicture ? (
                 <img
-                  src={member.avatar || member.profilePicture}
+                  src={(member.avatar || member.profilePicture || '').startsWith('http') 
+                    ? (member.avatar || member.profilePicture) 
+                    : `${ASSET_URL}${member.avatar || member.profilePicture}`}
                   className="w-full h-full object-cover"
                   alt="Profile"
                 />

@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getTeacherById } from "@/features/teacher/teacherThunk";
+import { getAllResourcesByTeacherId } from "@/features/teacher/resources/resourceThunk";
 
 import {
   User,
@@ -21,7 +22,8 @@ import {
   Award,
   TrendingUp,
   Sparkles,
-  Users
+  Users,
+  UserPlus
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -30,10 +32,12 @@ export default function ProfessorProfileMain() {
   const dispatch = useAppDispatch();
 
   const { singleTeacher: teacher, loading, error } = useAppSelector((state) => state.teacher);
+  const { resources } = useAppSelector((state) => state.resource);
 
   useEffect(() => {
     if (id) {
       dispatch(getTeacherById(id as string));
+      dispatch(getAllResourcesByTeacherId(id as string));
     }
   }, [id, dispatch]);
 
@@ -120,7 +124,7 @@ export default function ProfessorProfileMain() {
                 <h3 className="text-xl font-black text-[#1a1a3b]">Academic Resources</h3>
               </div>
             </div>
-            <StudyResources />
+            <StudyResources resources={resources} />
           </div>
 
           {/* Pagination */}
@@ -136,6 +140,30 @@ export default function ProfessorProfileMain() {
         {/* Sidebar Sections (Right) */}
         <aside className="lg:col-span-4 space-y-8 order-1 lg:order-2">
           <div className="sticky top-20 space-y-8">
+            {/* Network Stats */}
+            <Card className="bg-white p-5 rounded-xl border border-blue-100 shadow-xl shadow-gray-200/20">
+              <h3 className="font-black text-[#1a1a3b] text-base flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-indigo-600" />
+                Network Statistics
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-2 rounded-xl bg-indigo-50/50 border border-indigo-100/50 text-center group hover:bg-indigo-100/50 transition-colors">
+                  <p className="text-2xl font-black text-indigo-600 ">{teacher?.followersCount || 0}</p>
+                  <div className="flex items-center justify-center gap-1.5 opacity-60">
+                    <Users size={10} className="text-indigo-600" />
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Followers</p>
+                  </div>
+                </div>
+                <div className="p-2 rounded-xl bg-emerald-50/50 border border-emerald-100/50 text-center group hover:bg-emerald-100/50 transition-colors">
+                  <p className="text-2xl font-black text-emerald-600 ">{teacher?.followingCount || 0}</p>
+                  <div className="flex items-center justify-center gap-1.5 opacity-60">
+                    <UserPlus size={10} className="text-emerald-600" />
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none">Following</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
             <ScheduledClasses />
           </div>
         </aside>
