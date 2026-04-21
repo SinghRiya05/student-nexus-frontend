@@ -128,6 +128,22 @@ export const API_ENDPOINTS = {
         GET_BY_ID: (id: string) => `/teachers/resources/${id}`,
         UPDATE: (id: string) => `/teachers/resources/${id}`,
         DELETE: (id: string) => `/teachers/resources/${id}`,
-    }
+    },
+    FEED: {
+        CREATE: "/feeds",
+        GET_ALL: "/feeds",
+        GET_BY_ID: (id: string) => `/feeds/${id}`,
+        UPDATE: (id: string) => `/feeds/${id}`,
+        DELETE: (id: string) => `/feeds/${id}`,
+        COMMENT: {
+            CREATE: (feedId: string) => `/feeds/${feedId}/comment`,
+            GET_ALL: (feedId: string) => `/feeds/${feedId}/comments`,
+            DELETE: (commentId: string) => `/feeds/comment/${commentId}`,
+        },
+        LIKE: {
+            TOGGLE: (feedId: string) => `/feeds/${feedId}/like`,
+        },
+        TRENDING_HASHTAGS: "/feeds/trending-hashtags",
+    },
 
 };

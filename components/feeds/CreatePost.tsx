@@ -10,15 +10,23 @@ import { cn } from "@/lib/utils"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { useAppDispatch, useAppSelector } from "@/utils/hook"
+import { createFeed } from "@/features/feeds/feedThunk"
+import { ASSET_URL } from "@/services/apiEndpoints"
+import { toast } from "react-hot-toast"
 
 const CreatePostSchema = z.object({
-  content: z.string(),
-  media: z.array(z.string()),
-  link: z.string(),
-  hashtags: z.array(z.string()),
+  content: z.string().min(1, "Post content cannot be empty"),
+  media: z.any().optional(),
+  hashtags: z.array(z.string()).optional(),
 })
 
-type PostFormValues = z.infer<typeof CreatePostSchema>
+type PostFormValues = {
+  content: string;
+  media: File | null;
+  mediaPreview: string | null;
+  hashtags: string[];
+}
 
 export function CreatePost() {
   const [isFocused, setIsFocused] = React.useState(false)
@@ -26,19 +34,21 @@ export function CreatePost() {
   const [showHashtagInput, setShowHashtagInput] = React.useState(false)
   const [hashtagInput, setHashtagInput] = React.useState("")
 
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     reset,
-    formState: { isSubmitting, isValid },
+    formState: { isSubmitting },
   } = useForm<PostFormValues>({
-    resolver: zodResolver(CreatePostSchema),
     defaultValues: {
       content: "",
-      media: [],
-      link: "",
+      media: null,
+      mediaPreview: null,
       hashtags: [],
     },
   })
@@ -47,27 +57,41 @@ export function CreatePost() {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const onSubmit = async (data: PostFormValues) => {
-    // Mocking an API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    console.log("Post data submitted:", data)
+    try {
+      const formData = new FormData();
+      formData.append("content", data.content);
+      if (data.media) {
+        formData.append("media", data.media);
+      }
+      if (data.hashtags.length > 0) {
+        // Backend expects array or stringified array
+        formData.append("hashtags", JSON.stringify(data.hashtags));
+      }
 
-    // Reset all states
-    reset()
-    setShowLinkInput(false)
-    setShowHashtagInput(false)
-    setIsFocused(false)
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files && files.length > 0) {
-      const newMedia = Array.from(files).map((file) => URL.createObjectURL(file))
-      setValue("media", [...formValues.media, ...newMedia])
+      const result = await dispatch(createFeed(formData as any)).unwrap();
+      if (result) {
+        toast.success("Post published successfully!");
+        reset();
+        setShowLinkInput(false);
+        setShowHashtagInput(false);
+        setIsFocused(false);
+      }
+    } catch (error: any) {
+      toast.error(error || "Failed to publish post");
     }
   }
 
-  const removeMedia = (index: number) => {
-    setValue("media", formValues.media.filter((_, i) => i !== index))
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setValue("media", file);
+      setValue("mediaPreview", URL.createObjectURL(file));
+    }
+  }
+
+  const removeMedia = () => {
+    setValue("media", null);
+    setValue("mediaPreview", null);
   }
 
   const addHashtag = () => {
@@ -82,7 +106,7 @@ export function CreatePost() {
     setValue("hashtags", formValues.hashtags.filter((_, i) => i !== index))
   }
 
-  const isFormEmpty = !formValues.content.trim() && formValues.media.length === 0 && !formValues.link && formValues.hashtags.length === 0
+  const isFormEmpty = !formValues.content.trim() && !formValues.media
 
   return (
     <motion.div
@@ -101,7 +125,7 @@ export function CreatePost() {
               <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-[#7387ff] p-0.5 shadow-md group cursor-pointer overflow-hidden">
                 <div className="h-full w-full rounded-full bg-white p-0.5 overflow-hidden">
                   <img
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Riya"
+                    src={user?.avatar ? `${ASSET_URL}${user.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`}
                     alt="User Avatar"
                     className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform"
                   />
@@ -123,25 +147,23 @@ export function CreatePost() {
 
               <AnimatePresence>
                 {/* Image Preview Section */}
-                {formValues.media.length > 0 && (
+                {formValues.mediaPreview && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide py-2"
                   >
-                    {formValues.media.map((src, idx) => (
-                      <div key={idx} className="relative h-24 w-24 rounded-xl border border-border/50 overflow-hidden shrink-0 group shadow-sm bg-muted/20">
-                        <img src={src} alt="Upload" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
-                        <button
-                          type="button"
-                          onClick={() => removeMedia(idx)}
-                          className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors shadow-lg"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+                    <div className="relative h-48 w-full rounded-2xl border border-border/50 overflow-hidden shrink-0 group shadow-sm bg-muted/20">
+                      <img src={formValues.mediaPreview} alt="Upload" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                      <button
+                        type="button"
+                        onClick={removeMedia}
+                        className="absolute top-3 right-3 p-2 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors shadow-lg z-10"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </motion.div>
                 )}
 
@@ -224,7 +246,7 @@ export function CreatePost() {
                     onClick={() => fileInputRef.current?.click()}
                     className={cn(
                       "flex items-center gap-2 group rounded-full transition-all px-3 h-8",
-                      formValues.media.length > 0 ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-primary"
+                      formValues.media ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-primary"
                     )}
                   >
                     <ImageIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -233,13 +255,12 @@ export function CreatePost() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => { setShowLinkInput(!showLinkInput); setShowHashtagInput(false); }}
+                    disabled
                     className={cn(
-                      "flex items-center gap-2 group rounded-full transition-all px-3 h-8",
-                      formValues.link || showLinkInput ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-primary"
+                      "flex items-center gap-2 group rounded-full transition-all px-3 h-8 text-muted-foreground/30 grayscale cursor-not-allowed"
                     )}
                   >
-                    <Link2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <Link2 className="w-4 h-4" />
                     <span className="hidden sm:inline text-[11px] font-bold uppercase tracking-wider">Link</span>
                   </Button>
                   <Button
