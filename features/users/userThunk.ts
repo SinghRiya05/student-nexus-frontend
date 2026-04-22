@@ -68,3 +68,15 @@ export const deleteUser = createAsyncThunk(
     }
 );
 
+export const getMutualFollowers = createAsyncThunk(
+    "user/getMutualFollowers",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_MUTUAL_FOLLOWERS);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || "Failed to fetch mutual followers");
+        }
+    }
+);
+

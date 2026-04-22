@@ -46,7 +46,7 @@ import UploadResourceModal from "./UploadResourceModal";
 import NetworkPopup from "./NetworkPopup";
 import { deleteResource, getAllResourcesByTeacherId } from "@/features/teacher/resources/resourceThunk";
 import { IResource } from "@/features/teacher/resources/resourceModel";
-import { getFollowers, getFollowing } from "@/features/follow/followThunk";
+import { getFollowers, getFollowing, getSentRequests, sendFollowRequest, unfollow } from "@/features/follow/followThunk";
 
 // ─── Sections ─────────────────────────────────────────────────────────────
 
@@ -152,10 +152,10 @@ export default function ProfileSection() {
 
     const dispatch = useAppDispatch()
 
-    const { singleUser: user, loading: userLoading } = useAppSelector((state) => state.user);
+    const { singleUser: user, userLoading: userLoading } = useAppSelector((state) => state.user);
     const { user: authUser } = useAppSelector((state) => state.auth);
     const { resources, loading: resourceLoading } = useAppSelector((state) => state.resource);
-    const { followers, following } = useAppSelector((state) => state.follow);
+    const { followers, following, sentRequests } = useAppSelector((state) => state.follow);
 
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [selectedResourceForEdit, setSelectedResourceForEdit] = useState<IResource | null>(null);
@@ -177,6 +177,7 @@ export default function ProfileSection() {
     useEffect(() => {
         dispatch(getFollowers());
         dispatch(getFollowing());
+        dispatch(getSentRequests());
     }, [dispatch]);
 
     const handleEditResource = (resource: IResource) => {
@@ -190,11 +191,11 @@ export default function ProfileSection() {
                 await dispatch(deleteResource(id)).unwrap();
                 toast.success("Resource deleted successfully");
             } catch (error: any) {
-                toast.error(error || "Failed to delete resource");
+                toast.error(String(error || "Failed to delete resource"));
             }
         }
     };
-    
+
     const router = useRouter();
 
     const classmates = [
@@ -209,31 +210,61 @@ export default function ProfileSection() {
         { text: "Followed 3 new professors in the Computer Science department.", date: "3 days ago", color: "bg-indigo-500" }
     ];
 
+    const handleNetworkAction = async (id: string, isCurrentlyFollowing: boolean) => {
+        try {
+            if (isCurrentlyFollowing) {
+                // If following, trigger unfollow
+                await dispatch(unfollow(id)).unwrap();
+                toast.success("Unfollowed successfully");
+            } else {
+                // If not following, trigger follow request
+                await dispatch(sendFollowRequest(id)).unwrap();
+                toast.success("Follow request sent");
+            }
+        } catch (error: any) {
+            toast.error(String(error || "Action failed"));
+        }
+    };
+
     const mappedFollowers = followers.map((f: any) => {
         const u = f.follower;
         if (!u || typeof u === 'string') return null;
+
+        const isFollowing = following.some((fwing: any) =>
+            fwing.status === 'ACCEPTED' &&
+            (fwing.following?._id === u._id || fwing.following === u._id)
+        );
+
+        const isRequested = sentRequests.some((req: any) =>
+            req.status === 'PENDING' &&
+            (req.following?._id === u._id || req.following === u._id)
+        );
+
         return {
             id: u._id,
             name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User',
             role: "Member",
             avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
-            isFollowing: following.some((fwing: any) => fwing.following && typeof fwing.following !== 'string' && fwing.following._id === u._id)
+            isFollowing,
+            isRequested
         }
     }).filter(Boolean);
 
-    const mappedFollowing = following.map((f: any) => {
-        const u = f.following;
-        if (!u || typeof u === 'string') return null;
-        return {
-            id: u._id,
-            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User',
-            role: "Member",
-            avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
-            isFollowing: true
-        }
-    }).filter(Boolean);
+    const mappedFollowing = following
+        .filter((f: any) => f.status === 'ACCEPTED') // Filter only accepted following
+        .map((f: any) => {
+            const u = f.following;
+            if (!u || typeof u === 'string') return null;
+            return {
+                id: u._id,
+                name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User',
+                role: "Member",
+                avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
+                isFollowing: true
+            }
+        }).filter(Boolean);
 
-    if (userLoading) return <ProfileSkeleton />;
+    if (userLoading || !user) return <ProfileSkeleton />;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -241,7 +272,7 @@ export default function ProfileSection() {
             <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
                 {/* Cover Photo */}
                 <div className="h-32 relative overflow-hidden group bg-indigo-50/50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 mix-blend-multiply z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 mix-blend-multiply " />
                     {user?.coverImage ? (
                         <img
                             src={`${ASSET_URL}${user.coverImage}`}
@@ -333,10 +364,7 @@ export default function ProfileSection() {
                                 <Edit3 className="w-4 h-4 text-blue-600" />
                                 Edit Profile
                             </Button>
-                            <Button className="h-10 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm flex gap-2 shadow-xl shadow-blue-500/30">
-                                <UserPlus className="w-4 h-4" />
-                                Connect
-                            </Button>
+
 
                         </div>
 
@@ -411,7 +439,7 @@ export default function ProfileSection() {
                                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <GraduationCap size={120} />
                                 </div>
-                                <CardContent className="p-5 relative z-10">
+                                <CardContent className="p-5 relative">
                                     <div className="flex items-center justify-between mb-8">
                                         <div className="flex items-center gap-3">
                                             <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner group-hover:scale-110 transition-transform">
@@ -429,28 +457,6 @@ export default function ProfileSection() {
                                     </div>
 
                                     <div className="space-y-8">
-                                        {/* Progress Bar Section */}
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between items-end">
-                                                <span className="text-sm font-black text-[#1a1a3b]">Course Journey</span>
-                                                <span className="text-2xl font-black text-emerald-600">
-                                                    {Math.round(((user?.studentProfile?.semesterId?.number || 0) / ((user?.courseIds?.[0]?.durationYears || 4) * 2)) * 100)}%
-                                                </span>
-                                            </div>
-                                            <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50 flex items-center">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${Math.min(100, Math.max(0, ((user?.studentProfile?.semesterId?.number || 0) / ((user?.courseIds?.[0]?.durationYears || 4) * 2)) * 100))}%` }}
-                                                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-                                                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                                                />
-                                            </div>
-                                            <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
-                                                <span>Start: {user?.startYear || "N/A"}</span>
-                                                <span>Est. Graduation: {user?.endYear || "N/A"}</span>
-                                            </div>
-                                        </div>
-
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-emerald-100 hover:bg-emerald-50/30 transition-all group/item">
                                                 <div className="flex items-center gap-3 mb-2">
@@ -669,14 +675,14 @@ export default function ProfileSection() {
                     <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
                         <h3 className="font-black text-[#1a1a3b] text-base mb-4">Network Stats</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div 
+                            <div
                                 onClick={() => setActivePopup('Followers')}
                                 className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-all group"
                             >
                                 <p className="text-2xl font-black text-indigo-600 mb-1 group-hover:scale-110 transition-transform">{user?.followersCount || 0}</p>
                                 <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Followers</p>
                             </div>
-                            <div 
+                            <div
                                 onClick={() => setActivePopup('Following')}
                                 className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 text-center cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
                             >
@@ -746,11 +752,12 @@ export default function ProfileSection() {
                 editResource={selectedResourceForEdit}
             />
 
-            <NetworkPopup 
+            <NetworkPopup
                 isOpen={activePopup !== null}
                 onClose={() => setActivePopup(null)}
                 title={activePopup || "Network"}
                 users={activePopup === 'Followers' ? mappedFollowers : mappedFollowing}
+                onAction={handleNetworkAction}
             />
         </div>
     );

@@ -2,13 +2,15 @@
 
 import React from 'react'
 import { Button } from "@/components/ui/button"
-import { motion } from "motion/react"
+import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
-import { MoreVertical } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Loader2, MessageSquare, AlertCircle } from "lucide-react"
 import { useAppSelector, useAppDispatch } from "@/utils/hook"
 import { useRouter } from "next/navigation"
 import { sendFollowRequest, unfollow } from "@/features/follow/followThunk"
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { toast } from 'react-hot-toast'
 
 interface UserCardProps {
     userId?: string;
@@ -29,117 +31,212 @@ export const UserCard = ({
 }: UserCardProps) => {
     const router = useRouter()
     const dispatch = useAppDispatch()
-    const { following, sentRequests, loading } = useAppSelector(state => state.follow)
+    const [localLoading, setLocalLoading] = useState(false)
+    const [showUnfollowConfirm, setShowUnfollowConfirm] = useState(false)
+    const [optimisticStatus, setOptimisticStatus] = useState<'FOLLOWING' | 'REQUESTED' | 'NONE' | null>(null)
+    const [isMounted, setIsMounted] = useState(false)
+    const { following, followers, sentRequests } = useAppSelector(state => state.follow)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const isFollowingObj = following.find((f: any) => f.following?._id === userId || f.following === userId)
-    const isFollowing = !!isFollowingObj
-    const isRequestedObj = sentRequests.find((r: any) => r.following?._id === userId || r.following === userId)
-    const isRequested = !!isRequestedObj
+    const isFollowing = optimisticStatus === 'NONE' ? false : (optimisticStatus === 'FOLLOWING' ? true : !!isFollowingObj)
 
-    const handleAction = () => {
+    const isFollower = followers.some((f: any) => f.follower?._id === userId || f.follower === userId)
+    const isMutual = isFollowing && isFollower
+
+    const isRequestedObj = sentRequests.find((r: any) => r.following?._id === userId || r.following === userId)
+    const isRequested = optimisticStatus === 'NONE' ? false : (optimisticStatus === 'REQUESTED' ? true : !!isRequestedObj)
+
+    const handleAction = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (!userId) return;
+
+        if (isMutual) {
+            router.push('/chat');
+            return;
+        }
+
+        if (isFollowing) {
+            setShowUnfollowConfirm(true);
+            return;
+        }
+
         if (!isFollowing && !isRequested) {
-            dispatch(sendFollowRequest(userId))
+            setOptimisticStatus('REQUESTED')
+            setLocalLoading(true)
+            try {
+                await dispatch(sendFollowRequest(userId)).unwrap()
+            } catch (err) {
+                setOptimisticStatus(null) // Rollback
+                toast.error("Failed to follow")
+            } finally {
+                setLocalLoading(false)
+                setOptimisticStatus(null)
+            }
         }
     }
 
-    if (variant === 'secondary') {
-        return (
-            <motion.div
-                onClick={() => router.push(`/students/${userId}`)}
-                whileHover={{ y: -5 }}
-                className={cn(
-                    "relative min-w-[180px] snap-start bg-[#f0eaff] p-4 rounded-2xl flex flex-col items-center",
-                    className
-                )}
-            >
-                {isFollowing && (
-                    <div className="absolute top-3 right-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <button className="text-gray-400 hover:text-gray-700 transition"><MoreVertical size={14} /></button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-32 p-1.5 rounded-xl border border-gray-100 shadow-lg">
-                                <button onClick={() => dispatch(unfollow(isFollowingObj._id))} className="w-full text-left px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition">Unfollow</button>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                )}
-                <div className="w-12 h-12 rounded-full mb-2 overflow-hidden bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 mt-2">
-                    {image ? (
-                        <img
-                            src={image}
-                            alt={name}
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <span className="text-lg uppercase">{name?.[0]}</span>
-                    )}
-                </div>
-                <span className="text-xs font-bold mb-3 text-[#302e56]">{name}</span>
-                <button
-                    onClick={handleAction}
-                    disabled={isRequested || loading}
-                    className={cn(
-                        "px-4 py-1.5 border rounded-full text-[10px] font-bold transition-all",
-                        isFollowing ? "bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200"
-                            : isRequested ? "bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed"
-                                : "bg-white text-[#2949ef] border-[#2949ef]/20 hover:bg-[#2949ef] hover:text-white"
-                    )}
-                >
-                    {isFollowing ? "Following" : isRequested ? "Requested" : "Follow"}
-                </button>
-            </motion.div>
-        )
+    const handleUnfollow = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isFollowingObj) return;
+
+        setOptimisticStatus('NONE')
+        setLocalLoading(true)
+        try {
+            await dispatch(unfollow(userId)).unwrap()
+        } catch (err) {
+            setOptimisticStatus(null) // Rollback
+            toast.error("Failed to unfollow")
+        } finally {
+            setLocalLoading(false)
+            setOptimisticStatus(null)
+        }
     }
 
     return (
-        <motion.div
-            onClick={() => router.push(`/students/${userId}`)}
-            whileHover={{ y: -5 }}
-            className={cn(
-                "relative min-w-[240px] snap-start bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 hover:shadow-md transition-shadow flex flex-col items-center text-center",
-                className
+        <>
+            {variant === 'secondary' ? (
+                <motion.div
+                    onClick={() => router.push(`/students/${userId}`)}
+                    whileHover={{ y: -5 }}
+                    className={cn(
+                        "relative min-w-[180px] snap-start bg-[#f0eaff] p-4 rounded-2xl flex flex-col items-center",
+                        className
+                    )}
+                >
+                    <div className="w-12 h-12 rounded-full mb-2 overflow-hidden bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 mt-2">
+                        {image ? (
+                            <img src={image} alt={name} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-lg uppercase">{name?.[0]}</span>
+                        )}
+                    </div>
+                    <span className="text-xs font-bold mb-3 text-[#302e56]">{name}</span>
+                    <button
+                        onClick={handleAction}
+                        disabled={localLoading}
+                        className={cn(
+                            "px-4 py-1.5 border rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5",
+                            isMutual ? "bg-primary text-white border-primary hover:bg-primary/90"
+                                : isFollowing ? "bg-indigo-50 text-indigo-600 border-indigo-200"
+                                    : "bg-white text-[#2949ef] border-[#2949ef]/20 hover:bg-[#2949ef] hover:text-white"
+                        )}
+                    >
+                        {localLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                        {isMutual ? (
+                            <>
+                                <MessageSquare className="w-3 h-3" />
+                                Message
+                            </>
+                        ) : (
+                            isFollowing ? "Following" : isRequested ? "Requested" : "Follow"
+                        )}
+                    </button>
+                </motion.div>
+            ) : (
+                <motion.div
+                    onClick={() => router.push(`/students/${userId}`)}
+                    whileHover={{ y: -5 }}
+                    className={cn(
+                        "relative min-w-[240px] snap-start bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 hover:shadow-md transition-shadow flex flex-col items-center text-center",
+                        className
+                    )}
+                >
+                    <div className="w-16 h-16 rounded-full mb-3 overflow-hidden bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border-2 border-indigo-100 mt-2">
+                        {image ? (
+                            <img src={image} alt={name} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-2xl uppercase">{name?.[0]}</span>
+                        )}
+                    </div>
+                    <h4 className="font-bold text-[#302e56]">{name}</h4>
+                    <p className="text-xs text-[#5d5a86] mb-4">{role}</p>
+                    <button
+                        onClick={handleAction}
+                        disabled={localLoading}
+                        className={cn(
+                            "w-full py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2",
+                            isMutual ? "bg-primary text-white hover:bg-primary/90"
+                                : isFollowing ? "bg-indigo-50 text-indigo-600 hover:bg-rose-50 hover:text-rose-600"
+                                    : "bg-[#2949ef] text-white hover:bg-[#1339e3]"
+                        )}
+                    >
+                        {localLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                        {isMutual ? (
+                            <>
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                Message
+                            </>
+                        ) : (
+                            isFollowing ? "Following" : isRequested ? "Requested" : "Follow"
+                        )}
+                    </button>
+                </motion.div>
             )}
-        >
-            {isFollowing && (
-                <div className="absolute top-4 right-3">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <button className="text-gray-400 hover:text-gray-700 transition"><MoreVertical size={16} /></button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-32 p-1.5 rounded-xl border border-gray-100 shadow-lg" align="end">
-                            <button onClick={() => dispatch(unfollow(isFollowingObj._id))} className="w-full text-left px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition">Unfollow</button>
-                        </PopoverContent>
-                    </Popover>
-                </div>
+
+            {/* Global Unfollow Portal */}
+            {isMounted && typeof document !== 'undefined' && createPortal(
+                <AnimatePresence>
+                    {showUnfollowConfirm && (
+                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowUnfollowConfirm(false);
+                                }}
+                                className="absolute inset-0 bg-black/60 backdrop-blur-[4px]"
+                            />
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="relative bg-white  max-w-2xl rounded-xl p-8 shadow-2xl border border-gray-100 text-center"
+                            >
+                                <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <AlertCircle size={32} />
+                                </div>
+                                <h3 className="text-xl font-bold text-[#302e56] mb-2">Unfollow {name}?</h3>
+                                <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                                    Are you sure? You will stop seeing their updates in your feed.
+                                </p>
+
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            await handleUnfollow(e);
+                                            setShowUnfollowConfirm(false);
+                                        }}
+                                        disabled={localLoading}
+                                        className="w-full py-4 bg-rose-500 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-200"
+                                    >
+                                        {localLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                        Unfollow
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowUnfollowConfirm(false);
+                                        }}
+                                        className="w-full py-4 bg-gray-100 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
             )}
-            <div className="w-16 h-16 rounded-full mb-3 overflow-hidden bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border-2 border-indigo-100 mt-2">
-                {image ? (
-                    <img
-                        src={image}
-                        alt={name}
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <span className="text-2xl uppercase">{name?.[0]}</span>
-                )}
-            </div>
-            <h4 className="font-bold text-[#302e56]">{name}</h4>
-            <p className="text-xs text-[#5d5a86] mb-4">{role}</p>
-            <button
-                onClick={handleAction}
-                disabled={isRequested || loading}
-                className={cn(
-                    "w-full py-2 rounded-xl text-xs font-bold transition-colors",
-                    isFollowing ? "bg-indigo-50 text-indigo-600 hover:bg-rose-50 hover:text-rose-600"
-                        : isRequested ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                            : "bg-[#2949ef] text-white hover:bg-[#1339e3]"
-                )}
-            >
-                {isFollowing ? "Following" : isRequested ? "Requested" : "Follow"}
-            </button>
-        </motion.div>
+        </>
     )
 }
 

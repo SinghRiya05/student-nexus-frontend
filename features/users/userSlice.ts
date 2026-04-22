@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { UserInitialSliceState } from "./userModel";
-import { getAllUsers, deleteUser, getMe, updateProfile, getUserById } from "./userThunk";
+import { getAllUsers, deleteUser, getMe, updateProfile, getUserById, getMutualFollowers } from "./userThunk";
 
 const initialState: UserInitialSliceState = {
     users: [],
@@ -57,6 +57,21 @@ const userSlice = createSlice({
                 state.me = normalizeUser(action.payload.data);
             })
             .addCase(getMe.rejected, (state, action) => {
+                state.userLoading = false;
+                state.userError = action.payload as string;
+            })
+
+            // Get Mutual Followers
+            .addCase(getMutualFollowers.pending, (state) => {
+                state.userLoading = true;
+                state.userError = null;
+            })
+            .addCase(getMutualFollowers.fulfilled, (state, action) => {
+                state.userLoading = false;
+                state.userSuccess = true;
+                state.mutualFollowers = action.payload.data;
+            })
+            .addCase(getMutualFollowers.rejected, (state, action) => {
                 state.userLoading = false;
                 state.userError = action.payload as string;
             })

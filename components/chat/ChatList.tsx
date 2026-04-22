@@ -8,9 +8,10 @@ interface ChatListProps {
   conversations: Conversation[];
   activeId: string | null;
   onSelect: (id: string) => void;
+  onNewChat?: () => void;
 }
 
-export const ChatList: React.FC<ChatListProps> = ({ conversations, activeId, onSelect }) => {
+export const ChatList: React.FC<ChatListProps> = ({ conversations, activeId, onSelect, onNewChat }) => {
   const [search, setSearch] = useState('');
 
   const filtered = conversations.filter(c =>
@@ -23,7 +24,10 @@ export const ChatList: React.FC<ChatListProps> = ({ conversations, activeId, onS
       <div className="p-4 border-b border-border/40 shrink-0 bg-card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-black text-primary tracking-tight">Messages</h2>
-          <div className="p-2 hover:bg-primary/5 rounded-full cursor-pointer transition-colors text-primary">
+          <div
+            onClick={onNewChat}
+            className="p-2 hover:bg-primary/5 rounded-full cursor-pointer transition-colors text-primary"
+          >
             <Edit className="w-4 h-4" />
           </div>
         </div>

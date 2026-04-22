@@ -23,7 +23,11 @@ const followSlice = createSlice({
             })
             .addCase(sendFollowRequest.fulfilled, (state, action) => {
                 state.loading = false;
-                state.sentRequests.push(action.payload.data);
+                if (action.payload.data.status === "ACCEPTED") {
+                    state.following.push(action.payload.data);
+                } else {
+                    state.sentRequests.push(action.payload.data);
+                }
             })
             .addCase(sendFollowRequest.rejected, (state, action) => {
                 state.loading = false;
@@ -64,8 +68,12 @@ const followSlice = createSlice({
             })
             .addCase(unfollow.fulfilled, (state, action) => {
                 state.loading = false;
+                const userId = action.meta.arg;
                 state.following = state.following.filter(
-                    (following) => following._id !== action.meta.arg
+                    (f) => (typeof f.following === 'string' ? f.following : f.following?._id) !== userId
+                );
+                state.sentRequests = state.sentRequests.filter(
+                    (r) => (typeof r.following === 'string' ? r.following : r.following?._id) !== userId
                 );
             })
             .addCase(unfollow.rejected, (state, action) => {

@@ -120,14 +120,21 @@ export interface Semester {
   __v: number;
 }
 
+export interface MutualFollower {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+}
 
 
 export interface UserInitialSliceState {
-    users: User[];
-    singleUser: User | null;
-    me: User | null;
-    userLoading: boolean;
-    userSuccess: boolean;
-    userMessage: string | null;
-    userError: string | null;
+  users: User[];
+  singleUser: User | null;
+  me: User | null;
+  mutualFollowers: MutualFollower[];
+  userLoading: boolean;
+  userSuccess: boolean;
+  userMessage: string | null;
+  userError: string | null;
 }

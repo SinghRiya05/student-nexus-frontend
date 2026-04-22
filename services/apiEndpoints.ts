@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
         FORGOT_PASSWORD: "/auth/forgot-password",
         RESET_PASSWORD: "/auth/reset-password",
         VERIFY_RESET_OTP: "/auth/verify-reset-otp",
+        GET_MUTUAL_FOLLOWERS: "/auth/getMutualFollowers",
     },
     COUNTRY: {
         CREATE: "/country",
@@ -144,6 +145,14 @@ export const API_ENDPOINTS = {
             TOGGLE: (feedId: string) => `/feeds/${feedId}/like`,
         },
         TRENDING_HASHTAGS: "/feeds/trending-hashtags",
+    },
+    CHAT: {
+        GET_ALL: "/chat",
+        CREATE: "/chat",
+        SEND_MESSAGE: "/chat/message",
+        GET_MESSAGES: (id: string) => `/chat/messages/${id}`,
+        CLEAR_MESSAGES: (id: string) => `/chat/clear/${id}`,
+        DELETE_CHAT: (id: string) => `/chat/${id}`,
     },
 
 };

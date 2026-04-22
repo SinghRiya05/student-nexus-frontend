@@ -1,158 +1,206 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChatList, ChatWindow, Conversation, Message } from '@/components/chat';
+import { ChatList, ChatWindow, Conversation, Message, NewChatList } from '@/components/chat';
 import { cn } from '@/lib/utils';
-
-// --- MOCK DATA ---
-const CURRENT_USER_ID = 'u_current_1';
-
-const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: 'c1',
-    participant: {
-      id: 'p1',
-      name: 'Dr. Sarah Jenkins',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
-      status: 'online',
-      role: 'Professor - Computer Science'
-    },
-    lastMessage: 'Let me know if you need help with the assignment.',
-    lastMessageTime: '10:42 AM',
-    unreadCount: 2
-  },
-  {
-    id: 'c2',
-    participant: {
-      id: 'p2',
-      name: 'Michael Chen',
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&q=80',
-      status: 'offline',
-      role: 'Student - Year 3'
-    },
-    lastMessage: 'Are we still meeting at the library at 4?',
-    lastMessageTime: 'Yesterday',
-    unreadCount: 0
-  },
-  {
-    id: 'c3',
-    participant: {
-      id: 'p3',
-      name: 'Engineering Admissions',
-      avatar: 'https://images.unsplash.com/photo-1562774053-701939374585?w=150&q=80',
-      status: 'away',
-      role: 'University Admin'
-    },
-    lastMessage: 'Your document verification is complete.',
-    lastMessageTime: 'Mon',
-    unreadCount: 0
-  }
-];
-
-const INITIAL_MESSAGES: Record<string, Message[]> = {
-  'c1': [
-    {
-      id: 'm1',
-      senderId: 'p1',
-      text: 'Hi there! Did you manage to look at the reading materials for week 3?',
-      timestamp: '10:30 AM',
-      isRead: true
-    },
-    {
-      id: 'm2',
-      senderId: CURRENT_USER_ID,
-      text: 'Yes Professor, I went through the AI chapters. Had a question about Neural Nets.',
-      timestamp: '10:35 AM',
-      isRead: true
-    },
-    {
-      id: 'm3',
-      senderId: 'p1',
-      text: 'Sure, we can discuss that during office hours tomorrow. Let me know if you need help with the assignment.',
-      timestamp: '10:42 AM',
-      isRead: true
-    }
-  ],
-  'c2': [
-    {
-      id: 'm4',
-      senderId: 'p2',
-      text: 'Hey! Are we still meeting at the library at 4?',
-      timestamp: 'Yesterday',
-      isRead: true
-    }
-  ],
-  'c3': [
-    {
-      id: 'm5',
-      senderId: 'p3',
-      text: 'Dear student, your document verification is complete.',
-      timestamp: 'Mon',
-      isRead: true
-    }
-  ]
-};
+import { useAppDispatch, useAppSelector } from '@/utils/hook';
+import { getMutualFollowers, getMe } from '@/features/users/userThunk';
+import { MutualFollower } from '@/features/users/userModel';
+import { ASSET_URL } from '@/services/apiEndpoints';
+import { fetchChats, getMessages, accessChat, sendMessage as sendMessageThunk } from '@/features/chat/chatThunk';
+import { addMessage, setSelectedChatId, setTypingStatus, markAllMessagesAsReadInChat, } from '@/features/chat/chatSlice';
+import { initiateSocketConnection, disconnectSocket, subscribeToChat, subscribeToMessages, subscribeToNotifications, onTyping, onStopTyping, onMessageSeen, offTyping, offStopTyping, offMessageSeen, unsubscribeFromMessages, unsubscribeFromNotifications, sendMessageViaSocket } from '@/services/socket';
+import { IChat, IMessage } from '@/features/chat/chatModel';
+import { toast } from 'react-hot-toast';
+import { getSocket } from "@/services/socket";
 
 export default function ChatPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
-  const [messagesDict, setMessagesDict] = useState<Record<string, Message[]>>(INITIAL_MESSAGES);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [isMobileListVisible, setIsMobileListVisible] = useState(true);
+  const [sidebarView, setSidebarView] = useState<'list' | 'new-chat'>('list');
 
-  // Auto-hide list on mobile when a chat is selected
+  const dispatch = useAppDispatch();
+  const { accessToken } = useAppSelector(state => state.auth)
+  const { me } = useAppSelector(state => state.user);
+  const { mutualFollowers, userLoading } = useAppSelector(state => state.user);
+  const { chats, messages, selectedChatId, unreadCounts, loading: chatLoading } = useAppSelector(state => state.chat);
+
+  // --- IDENTITY HELPERS ---
+  const getParticipant = (chat: IChat) => {
+    return chat.users.find(u => u._id !== me?._id) || chat.users[0];
+  };
+
+  // --- MAPPING: Backend IChat -> Frontend Conversation ---
+  const mappedConversations: Conversation[] = chats.map(chat => {
+    const participant = getParticipant(chat);
+    return {
+      id: chat._id,
+      participant: {
+        id: participant._id,
+        name: `${participant.firstName} ${participant.lastName || ''}`,
+        avatar: participant.avatar ? `${ASSET_URL}${participant.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${participant.firstName}`,
+        status: 'online',
+        role: participant.roleId?.name || 'STUDENT'
+      },
+      lastMessage: chat.latestMessage?.content || 'No messages yet',
+      lastMessageTime: chat.latestMessage
+        ? new Date(chat.latestMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '',
+      unreadCount: unreadCounts[chat._id] || 0
+    };
+  });
+
+  // --- MAPPING: Backend IMessage -> Frontend Message ---
+  const activeMessages: Message[] = useMemo(() => {
+    const rawMessages = selectedChatId ? (messages[selectedChatId] || []) : [];
+    if (rawMessages.length > 0) {
+      const sampleMsg = rawMessages[0];
+      const senderId = typeof sampleMsg.sender === 'string' ? sampleMsg.sender : sampleMsg.sender._id;
+    }
+    return rawMessages.map(msg => {
+      const senderId = typeof msg.sender === 'string' ? msg.sender : msg.sender._id;
+      const isOwn = me?._id ? (String(senderId).trim() === String(me._id).trim()) : false;
+      return {
+        id: msg._id,
+        senderId,
+        text: msg.content,
+        timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isOwn,
+        isRead: msg.readBy.includes(chats.find(c => c._id === selectedChatId)?.users.find(u => u._id !== me?._id)?._id || ''),
+        readByMe: msg.readBy.includes(me?._id || '')
+      };
+    });
+  }, [selectedChatId, messages, me, chats]);
+
+  const activeConversation = mappedConversations.find(c => c.id === selectedChatId) || null;
+
+
   useEffect(() => {
-    if (activeId !== null) {
-      // Small screen logic
+    if (me?._id && accessToken) {
+      initiateSocketConnection(accessToken);
+    }
+    return () => {
+      disconnectSocket();
+    };
+  }, [me]);
+
+  // --- HYDRATION & INITIAL FETCH ---
+  useEffect(() => {
+    if (!me) {
+      dispatch(getMe());
+    }
+    dispatch(fetchChats());
+  }, [dispatch, me]);
+
+  // --- SOCKET SUBSCRIPTIONS ---
+  useEffect(() => {
+    subscribeToMessages((err, msg: IMessage) => {
+      if (msg) {
+        const chatId = typeof msg.chat === 'string' ? msg.chat : msg.chat._id;
+        dispatch(addMessage(msg));
+        if (selectedChatId !== chatId) {
+          toast.success(`New message from ${msg.sender.firstName}`, {
+            icon: '💬',
+            style: { borderRadius: '10px', background: '#333', color: '#fff' },
+          });
+        }
+      }
+    });
+
+    subscribeToNotifications((err, msg: IMessage) => {
+      if (msg) {
+        dispatch(addMessage(msg));
+      }
+    });
+
+    onTyping((chatId: string) => {
+      if (selectedChatId === chatId) {
+        const chat = chats.find(c => c._id === chatId);
+        if (chat) {
+          const participant = chat.users.find(u => u._id !== me?._id);
+          if (participant) {
+            dispatch(setTypingStatus({ chatId, userId: participant._id, isTyping: true }));
+          }
+        }
+      }
+    });
+
+    onStopTyping((chatId: string) => {
+      if (selectedChatId === chatId) {
+        const chat = chats.find(c => c._id === chatId);
+        if (chat) {
+          const participant = chat.users.find(u => u._id !== me?._id);
+          if (participant) {
+            dispatch(setTypingStatus({ chatId, userId: participant._id, isTyping: false }));
+          }
+        }
+      }
+    });
+
+    onMessageSeen((data: { messageId?: string; chatId: string }) => {
+      const chat = chats.find(c => c._id === data.chatId);
+      if (chat) {
+        const participant = chat.users.find(u => u._id !== me?._id);
+        if (participant) {
+          dispatch(markAllMessagesAsReadInChat({
+            chatId: data.chatId,
+            userId: participant._id
+          }));
+        }
+      }
+    });
+    return () => {
+      unsubscribeFromMessages();
+      unsubscribeFromNotifications();
+      offTyping();
+      offStopTyping();
+      offMessageSeen();
+    };
+  }, [dispatch, selectedChatId, chats, me?._id]);
+
+  // --- JOIN CHAT ROOM ---
+  useEffect(() => {
+    if (selectedChatId) {
+      subscribeToChat(selectedChatId);
+      if (!messages[selectedChatId]) {
+        dispatch(getMessages(selectedChatId));
+      }
       if (window.innerWidth < 1024) {
         setIsMobileListVisible(false);
       }
     }
-  }, [activeId]);
-
-  const activeConversation = conversations.find(c => c.id === activeId) || null;
-  const activeMessages = activeId ? (messagesDict[activeId] || []) : [];
+  }, [selectedChatId, dispatch, messages]);
 
   const handleSendMessage = (text: string) => {
-    if (!activeId) return;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      senderId: CURRENT_USER_ID,
-      text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isRead: false
-    };
-
-    setMessagesDict(prev => ({
-      ...prev,
-      [activeId]: [...(prev[activeId] || []), newMessage]
-    }));
-
-    // Update conversation last message preview
-    setConversations(prev =>
-      prev.map(c =>
-        c.id === activeId
-          ? { ...c, lastMessage: text, lastMessageTime: 'Just now', unreadCount: 0 }
-          : c
-      )
-    );
+    if (!selectedChatId || !me?._id) return;
+    sendMessageViaSocket({
+      chatId: selectedChatId,
+      content: text
+    });
   };
 
   const handleSelectConversation = (id: string) => {
-    setActiveId(id);
+    dispatch(setSelectedChatId(id));
+    setSidebarView('list');
+  };
 
-    // Clear unread count when opening
-    setConversations(prev =>
-      prev.map(c =>
-        c.id === id ? { ...c, unreadCount: 0 } : c
-      )
-    );
+  const handleStartNewChat = () => {
+    setSidebarView('new-chat');
+    dispatch(getMutualFollowers());
+  };
+
+  const handleSelectMutualFollower = async (user: MutualFollower) => {
+    try {
+      await dispatch(accessChat({ userId: user._id })).unwrap();
+      setSidebarView('list');
+    } catch (error) {
+      toast.error("Failed to start conversation");
+    }
   };
 
   const handleBackToMobileList = () => {
     setIsMobileListVisible(true);
-    setActiveId(null);
+    dispatch(setSelectedChatId(null));
   };
 
   return (
@@ -164,16 +212,46 @@ export default function ChatPage() {
             "lg:relative lg:flex lg:w-[340px] xl:w-[400px] h-full shrink-0 border-r border-border/40",
             isMobileListVisible ? "absolute inset-0 z-20 flex w-full bg-background" : "hidden lg:flex"
           )}
-          initial={{ x: -300, opacity: 0 }}
+          initial={{ x: -100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -300, opacity: 0 }}
+          exit={{ x: -100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <ChatList
-            conversations={conversations}
-            activeId={activeId}
-            onSelect={handleSelectConversation}
-          />
+          <AnimatePresence mode="wait">
+            {sidebarView === 'list' ? (
+              <motion.div
+                key="chat-list"
+                className="w-full h-full"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChatList
+                  conversations={mappedConversations}
+                  activeId={selectedChatId}
+                  onSelect={handleSelectConversation}
+                  onNewChat={handleStartNewChat}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="new-chat-list"
+                className="w-full h-full"
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 20, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <NewChatList
+                  followers={mutualFollowers || []}
+                  onSelect={handleSelectMutualFollower}
+                  onBack={() => setSidebarView('list')}
+                  loading={userLoading}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Right Side: Chat Window */}
@@ -190,7 +268,7 @@ export default function ChatPage() {
           <ChatWindow
             conversation={activeConversation}
             messages={activeMessages}
-            currentUserId={CURRENT_USER_ID}
+            currentUserId={me?._id || ''}
             onSendMessage={handleSendMessage}
             onBack={handleBackToMobileList}
           />

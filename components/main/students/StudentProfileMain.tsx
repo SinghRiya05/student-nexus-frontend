@@ -60,6 +60,51 @@ const ExperienceItem = ({ title, role, date, description }: any) => (
     </div>
 );
 
+const StudentProfileSkeleton = () => (
+    <div className="space-y-6 animate-pulse">
+        {/* 1. Hero Header Skeleton */}
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="h-32 md:h-48 bg-gray-100" />
+            <div className="px-6 md:px-8 py-6 relative">
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] bg-gray-200 border-[6px] border-white shrink-0 -mt-16 md:-mt-20 relative z-20 shadow-sm" />
+                    <div className="flex-1 space-y-4 w-full mt-4 md:mt-0">
+                        <div className="flex flex-col md:flex-row items-center gap-3">
+                            <div className="h-8 w-48 bg-gray-200 rounded-xl" />
+                            <div className="h-5 w-24 bg-gray-100 rounded-lg" />
+                        </div>
+                        <div className="flex flex-wrap gap-4">
+                            <div className="h-4 w-32 bg-gray-100 rounded-md" />
+                            <div className="h-4 w-32 bg-gray-100 rounded-md" />
+                            <div className="h-4 w-12 bg-gray-100 rounded-md" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {/* 2. Main Content Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            <div className="lg:col-span-7 space-y-6">
+                <div className="h-40 bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
+                    <div className="h-6 w-32 bg-gray-200 rounded-lg" />
+                    <div className="space-y-2">
+                        <div className="h-4 w-full bg-gray-100 rounded" />
+                        <div className="h-4 w-5/6 bg-gray-100 rounded" />
+                    </div>
+                </div>
+                <div className="h-64 bg-white rounded-2xl border border-gray-100 p-6" />
+                <div className="h-48 bg-white rounded-2xl border border-gray-100 p-6" />
+            </div>
+            <div className="lg:col-span-3 space-y-6">
+                <div className="h-32 bg-white rounded-2xl border border-gray-100 p-6" />
+                <div className="h-48 bg-white rounded-2xl border border-gray-100 p-6" />
+                <div className="h-40 bg-white rounded-2xl border border-gray-100 p-6" />
+            </div>
+        </div>
+    </div>
+);
+
 // ─── Main Component ───────────────────────────────────────────────────────
 
 export default function StudentProfileMain({ id }: { id: string }) {
@@ -70,34 +115,34 @@ export default function StudentProfileMain({ id }: { id: string }) {
     const { following, sentRequests, loading: followLoading } = useAppSelector(state => state.follow);
     const { user: authUser } = useAppSelector(state => state.auth);
 
+    const [isHoveringFollow, setIsHoveringFollow] = useState(false);
+
     useEffect(() => {
         if (id) {
             dispatch(getStudentById(id));
         }
     }, [dispatch, id]);
 
-    const isFollowingObj = following.find((f: any) => f.following?._id === id || f.following === id);
+    const isFollowingObj = following.find((f: any) => 
+        (typeof f.following === 'string' ? f.following === id : f.following?._id === id)
+    );
     const isFollowing = !!isFollowingObj;
-    const isRequestedObj = sentRequests.find((r: any) => r.following?._id === id || r.following === id);
+    const isRequestedObj = sentRequests.find((r: any) => 
+        (typeof r.following === 'string' ? r.following === id : r.following?._id === id)
+    );
     const isRequested = !!isRequestedObj;
 
     const handleFollowAction = () => {
         if (!id) return;
         if (isFollowing) {
-            dispatch(unfollow(isFollowingObj._id));
+            // 🔥 FIXED: Pass target student ID directly
+            dispatch(unfollow(id));
         } else if (!isRequested) {
             dispatch(sendFollowRequest(id));
         }
     };
 
-    if (loading) {
-        return (
-            <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
-                <div className="h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                <p className="font-black text-indigo-600 animate-pulse uppercase tracking-widest text-xs">Loading Nexus Profile...</p>
-            </div>
-        );
-    }
+    if (loading) return <StudentProfileSkeleton />;
 
     if (error) {
         return (
@@ -188,15 +233,25 @@ export default function StudentProfileMain({ id }: { id: string }) {
                                     <>
                                         <Button
                                             onClick={handleFollowAction}
-                                            disabled={isRequested || followLoading}
+                                            onMouseEnter={() => setIsHoveringFollow(true)}
+                                            onMouseLeave={() => setIsHoveringFollow(false)}
+                                            disabled={(isRequested && !isFollowing) || followLoading}
                                             className={cn(
                                                 "h-11 px-6 md:px-8 rounded-2xl font-black text-sm flex gap-2 transition-all",
-                                                isFollowing ? "bg-rose-50 text-rose-600 hover:bg-rose-100 "
-                                                    : isRequested ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                        : "bg-blue-600 hover:bg-blue-700 text-white "
+                                                isFollowing 
+                                                    ? (isHoveringFollow ? "bg-rose-500 text-white shadow-lg shadow-rose-200" : "bg-emerald-50 text-emerald-600 border border-emerald-100")
+                                                    : isRequested 
+                                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                        : "bg-[#2949ef] hover:bg-blue-700 text-white shadow-lg shadow-indigo-100"
                                             )}
                                         >
-                                            {isFollowing ? "Unfollow" : isRequested ? "Requested" : <><UserPlus className="w-4 h-4" /> Follow</>}
+                                            {isFollowing ? (
+                                                isHoveringFollow ? "Unfollow" : <><CheckCircle className="w-4 h-4" /> Following</>
+                                            ) : isRequested ? (
+                                                "Requested"
+                                            ) : (
+                                                <><UserPlus className="w-4 h-4" /> Follow</>
+                                            )}
                                         </Button>
                                         <Button
                                             variant="outline"
@@ -398,9 +453,23 @@ export default function StudentProfileMain({ id }: { id: string }) {
                         <Button
                             variant="secondary"
                             onClick={handleFollowAction}
-                            className="w-full bg-white text-indigo-600 hover:bg-indigo-50 font-black rounded-xl h-11"
+                            onMouseEnter={() => setIsHoveringFollow(true)}
+                            onMouseLeave={() => setIsHoveringFollow(false)}
+                            disabled={(isRequested && !isFollowing) || followLoading}
+                            className={cn(
+                                "w-full font-black rounded-xl h-11 transition-all",
+                                isFollowing 
+                                    ? (isHoveringFollow ? "bg-rose-500 text-white" : "bg-emerald-500 text-white")
+                                    : "bg-white text-indigo-600 hover:bg-indigo-50"
+                            )}
                         >
-                            {isFollowing ? "Connected" : isRequested ? "Request Sent" : "Request Connection"}
+                            {isFollowing ? (
+                                isHoveringFollow ? "Unfollow" : "Connected"
+                            ) : isRequested ? (
+                                "Request Sent"
+                            ) : (
+                                "Request Connection"
+                            )}
                         </Button>
                     </Card>
                 </div>

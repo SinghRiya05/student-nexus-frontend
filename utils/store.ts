@@ -17,7 +17,7 @@ import teacherReducer from "@/features/teacher/teacherSlice";
 import alumniReducer from "@/features/alumni/alumniSlice";
 import resourceReducer from "@/features/teacher/resources/resourceSlice";
 import feedReducer from "@/features/feeds/feedSlice";
-
+import chatReducer from "@/features/chat/chatSlice";
 const rootReducer = combineReducers({
     country: countryReducer,
     role: roleReducer,
@@ -35,6 +35,7 @@ const rootReducer = combineReducers({
     alumni: alumniReducer,
     resource: resourceReducer,
     feed: feedReducer,
+    chat: chatReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

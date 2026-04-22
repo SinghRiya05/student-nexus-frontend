@@ -3,7 +3,9 @@ export interface Message {
   senderId: string;
   text: string;
   timestamp: string;
+  isOwn: boolean;
   isRead?: boolean;
+  readByMe?: boolean;
 }
 
 export interface User {

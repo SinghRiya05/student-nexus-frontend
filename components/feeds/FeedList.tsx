@@ -5,7 +5,7 @@ import { PostCard } from "./PostCard"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAppDispatch, useAppSelector } from "@/utils/hook"
 import { getAllFeeds } from "@/features/feeds/feedThunk"
-import { Loader2 } from "lucide-react"
+import { FeedSkeleton } from "./FeedSkeleton"
 
 export function FeedList() {
     const dispatch = useAppDispatch();
@@ -17,9 +17,10 @@ export function FeedList() {
 
     if (loading && feeds.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 space-y-4">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Loading Feeds...</p>
+            <div className="flex flex-col gap-2">
+                {[1, 2, 3].map((i) => (
+                    <FeedSkeleton key={i} />
+                ))}
             </div>
         );
     }
@@ -28,7 +29,7 @@ export function FeedList() {
         return (
             <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-100">
                 <p className="text-sm font-bold text-red-600 uppercase tracking-wider">Failed to load feeds</p>
-                <p className="text-xs text-red-400 mt-1">{error}</p>
+                <p className="text-xs text-red-400 mt-1">{String(error)}</p>
             </div>
         );
     }
