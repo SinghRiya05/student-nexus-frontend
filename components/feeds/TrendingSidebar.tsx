@@ -24,12 +24,12 @@ export function TrendingSidebar() {
     const displayHashtags = trendingHashtags.slice(0, 6);
 
     const hashtagColors = [
-        "bg-indigo-50/50 text-indigo-600 border-indigo-100/50 hover:bg-indigo-100/80",
-        "bg-rose-50/50 text-rose-600 border-rose-100/50 hover:bg-rose-100/80",
+        "bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/20",
+        "bg-accent/10 text-accent border-accent/20 hover:bg-accent/20",
         "bg-amber-50/50 text-amber-600 border-amber-100/50 hover:bg-amber-100/80",
         "bg-emerald-50/50 text-emerald-600 border-emerald-100/50 hover:bg-emerald-100/80",
-        "bg-sky-50/50 text-sky-600 border-sky-100/50 hover:bg-sky-100/80",
-        "bg-violet-50/50 text-violet-600 border-violet-100/50 hover:bg-violet-100/80",
+        "bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/20",
+        "bg-accent/10 text-accent border-accent/20 hover:bg-accent/20",
     ];
 
     const scrollToPost = (postId: string) => {
@@ -50,12 +50,12 @@ export function TrendingSidebar() {
     return (
         <div className="space-y-6 lg:sticky top-20">
             {/* Section 1: Trending Hashtags (Interactive 2-row grid) */}
-            <Card className="rounded-2xl py-2 px-2 border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 bg-white/60 backdrop-blur-xl">
-                <div className="pt-2 px-4 pb-3 border-b border-gray-50 flex items-center gap-3">
+            <Card className="rounded-2xl py-2 px-2 overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 bg-white/90 backdrop-blur-xl">
+                <div className="pt-2 px-4 pb-3 border-b border-border/50 flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-xl">
                         <Hash size={18} className="text-primary animate-pulse" />
                     </div>
-                    <h3 className="font-extrabold text-[#1a1a3b] text-[13px] uppercase tracking-[0.2em] opacity-80">Trending Tags</h3>
+                    <h3 className="font-extrabold text-primary text-[13px] uppercase tracking-[0.2em] opacity-80">Trending Tags</h3>
                 </div>
 
                 <CardContent className="pb-2 pt-2">
@@ -81,8 +81,8 @@ export function TrendingSidebar() {
                                 </motion.div>
                             ))
                         ) : (
-                            <div className="col-span-full p-8 text-center bg-gray-50/50 rounded-2xl">
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">No trends yet</p>
+                            <div className="col-span-full p-8 text-center bg-background/50 rounded-2xl">
+                                <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest opacity-60">No trends yet</p>
                             </div>
                         )}
                     </div>
@@ -90,15 +90,15 @@ export function TrendingSidebar() {
             </Card>
 
             {/* Section 2: Top Discussions (Engagement based) */}
-            <Card className="rounded-2xl py-1 border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 bg-white/60 backdrop-blur-xl">
-                <div className="pt-4 px-4 border-b border-gray-50 flex items-center gap-3">
-                    <div className="p-2 bg-orange-500/10 rounded-xl text-orange-500">
-                        <TrendingUp size={18} className="animate-bounce" style={{ animationDuration: '3s' }} />
+            <Card className="rounded-2xl py-1 overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 bg-white/90 backdrop-blur-xl">
+                <div className="pt-4 px-4   flex items-center gap-3">
+                    <div className="p-2 bg-accent/10 rounded-xl text-black">
+                        <TrendingUp size={18} className="" />
                     </div>
-                    <h3 className="font-extrabold text-[#1a1a3b] text-[13px] uppercase tracking-[0.2em] opacity-80">Top Discussions</h3>
+                    <h3 className="font-extrabold text-black text-[13px] uppercase tracking-[0.2em] opacity-80">Top Discussions</h3>
                 </div>
 
-                <CardContent className=" space-y-1">
+                <CardContent className=" space-y-5">
                     {loading && topPosts?.length === 0 ? (
                         <div className="flex items-center justify-center p-8">
                             <Loader2 className="w-5 h-5 text-primary animate-spin" />
@@ -111,10 +111,10 @@ export function TrendingSidebar() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: idx * 0.1 }}
                                 onClick={() => scrollToPost(post._id)}
-                                className="w-full flex items-center gap-4 p-3 text-left group cursor-pointer bg-slate-100 rounded-lg transition-all duration-300 border border-gray-100 hover:border-primary/10"
+                                className="w-full flex items-center gap-5 px-3 py-2 text-left group cursor-pointer bg-gray-50 rounded-lg transition-all duration-300"
                             >
                                 {/* Left Side: Media or Avatar */}
-                                <div className="h-12 w-12 shrink-0 rounded-full overflow-hidden bg-slate-100 border-2 border-white relative shadow-sm group-hover:border-primary/30 transition-all duration-500 ring-2 ring-transparent group-hover:ring-primary/5">
+                                <div className="h-12 w-12 shrink-0 rounded-full overflow-hidden bg-background border-2 border-card relative shadow-sm group-hover:border-secondary transition-all duration-500 ring-2 ring-transparent group-hover:ring-secondary/5">
                                     <img
                                         src={post.media ? `${ASSET_URL}${post.media}` : (post.authorId.avatar ? `${ASSET_URL}${post.authorId.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId.firstName}`)}
                                         alt={post.authorId.firstName}
@@ -125,7 +125,7 @@ export function TrendingSidebar() {
                                 {/* Right Side: Name and Content */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between">
-                                        <h4 className="font-black text-[12px] text-[#1a1a3b] truncate uppercase tracking-tight group-hover:text-primary transition-colors">
+                                        <h4 className="font-black text-[12px] text-primary truncate uppercase tracking-tight group-hover:text-secondary transition-colors">
                                             {post.authorId.firstName} {post.authorId.lastName}
                                         </h4>
                                     </div>
@@ -136,8 +136,8 @@ export function TrendingSidebar() {
                             </motion.div>
                         ))
                     ) : (
-                        <div className="p-8 text-center bg-gray-50/50 rounded-2xl m-2">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">No top posts yet</p>
+                        <div className="p-8 text-center bg-background/50 rounded-2xl m-2">
+                            <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest opacity-60">No top posts yet</p>
                         </div>
                     )}
                 </CardContent>
@@ -146,9 +146,9 @@ export function TrendingSidebar() {
             {/* Footer Links */}
             <div className="px-6 flex flex-wrap gap-x-5 gap-y-3 opacity-30 hover:opacity-100 transition-opacity">
                 {['About', 'Privacy', 'Terms', 'Help'].map(link => (
-                    <a key={link} href="#" className="text-[9px] font-black uppercase tracking-[0.1em] text-[#1a1a3b] hover:text-primary transition-colors">{link}</a>
+                    <a key={link} href="#" className="text-[9px] font-black uppercase tracking-[0.1em] text-primary hover:text-secondary transition-colors">{link}</a>
                 ))}
-                <p className="text-[9px] font-bold text-gray-400 w-full mt-2 uppercase tracking-tighter">© 2026 StudentNexus. Made with ❤️ for Students.</p>
+                <p className="text-[9px] font-bold text-primary/30 w-full mt-2 uppercase tracking-tighter">© 2026 StudentNexus. Made with ❤️ for Students.</p>
             </div>
         </div>
     );

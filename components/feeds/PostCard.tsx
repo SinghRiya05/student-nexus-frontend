@@ -46,6 +46,7 @@ export interface PostCardProps {
   commentsCount: number;
   viewsCount: number;
   publishedAt: string;
+  isLiked?: boolean;
   media?: string;
 }
 
@@ -58,14 +59,20 @@ export function PostCard({
   commentsCount,
   viewsCount,
   publishedAt,
+  isLiked: initialLiked = false,
   media
 }: PostCardProps) {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const isAuthor = user?._id === author._id;
 
-  const [isLiked, setIsLiked] = React.useState(false)
+  const [isLiked, setIsLiked] = React.useState(initialLiked)
   const [isSaved, setIsSaved] = React.useState(false)
+
+  // Sync state with prop
+  React.useEffect(() => {
+    setIsLiked(initialLiked);
+  }, [initialLiked]);
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [shouldShowExpand, setShouldShowExpand] = React.useState(false)
   const contentRef = React.useRef<HTMLParagraphElement>(null)
@@ -90,6 +97,7 @@ export function PostCard({
   // Delete State
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const [deleteLoading, setDeleteLoading] = React.useState(false)
+  const [isLiking, setIsLiking] = React.useState(false)
 
   // Comment Handlers
   const fetchComments = async () => {
@@ -152,7 +160,7 @@ export function PostCard({
       transition={{ duration: 0.5 }}
       className="mb-6"
     >
-      <Card className="rounded-2xl shadow-sm hover:shadow-md transition-all duration-500  overflow-hidden">
+      <Card className="rounded-2xl shadow-sm hover:shadow-md transition-all bg-white/90 duration-500  overflow-hidden">
         <CardContent className="">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
@@ -164,9 +172,6 @@ export function PostCard({
                     alt={`${author.firstName} ${author.lastName}`}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                </div>
-                <div className="absolute inset-x-0 -bottom-1 flex justify-center">
-                  <div className="w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
               </div>
               <div>
@@ -180,16 +185,16 @@ export function PostCard({
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted/50 rounded-full h-8 w-8 outline-none">
+                <Button variant="ghost" size="icon" className="text-muted-foreground  rounded-full h-8 w-8 outline-none">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 border-gray-100 shadow-xl overflow-hidden bg-white/90 backdrop-blur-xl border">
+              <DropdownMenuContent align="end" className="w-56 rounded-lg p-2 border-gray-100 shadow-xl overflow-hidden bg-white/90 backdrop-blur-xl border">
                 {isAuthor && (
                   <>
                     <DropdownMenuItem
                       onClick={() => setIsEditDialogOpen(true)}
-                      className="flex items-center gap-3 p-3 cursor-pointer hover:bg-primary/5 rounded-xl transition-all group"
+                      className="flex items-center gap-3 p-3 cursor-pointer rounded-xl transition-all group"
                     >
                       <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                         <Edit2 className="w-3.5 h-3.5 text-primary" />
@@ -278,12 +283,12 @@ export function PostCard({
             <div className="px-6 mb-5">
               <div
                 onClick={() => setSelectedImg(`${ASSET_URL}${media}`)}
-                className="w-fit max-w-full rounded-xl overflow-hidden border border-gray-100 max-h-[150px] bg-gray-50/50 flex items-center justify-center cursor-zoom-in group/container relative hover:shadow-inner transition-all duration-500"
+                className=" max-w-full rounded-xl overflow-hidden border border-gray-100 bg-gray-50/50 flex items-center justify-center cursor-zoom-in group/container relative hover:shadow-inner transition-all duration-500"
               >
                 <img
                   src={`${ASSET_URL}${media}`}
                   alt="Post media"
-                  className="max-h-[150px] w-auto object-contain transition-transform duration-1000 group-hover/container:scale-105"
+                  className=" w-auto object-contain transition-transform duration-1000 group-hover/container:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover/container:bg-black/5 transition-colors duration-500" />
               </div>
@@ -331,19 +336,40 @@ export function PostCard({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 sm:gap-4">
                 <button
-                  onClick={() => {
-                    setIsLiked(!isLiked);
-                    dispatch(toggleLike(id));
+                  disabled={isLiking}
+                  onClick={async () => {
+                    if (isLiking) return;
+                    setIsLiking(true);
+                    
+                    try {
+                      // We toggle local state for immediate feedback
+                      setIsLiked(!isLiked);
+                      
+                      const res = await dispatch(toggleLike(id));
+                      if (toggleLike.fulfilled.match(res)) {
+                        // Backend returns the definitive state
+                        setIsLiked(res.payload.liked);
+                      } else {
+                        // Revert local state on failure
+                        setIsLiked(isLiked);
+                        toast.error("Failed to update like");
+                      }
+                    } catch (err) {
+                      console.error("Like error:", err);
+                    } finally {
+                      setIsLiking(false);
+                    }
                   }}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 border",
                     isLiked
                       ? "bg-rose-50 text-rose-500 border-rose-100"
-                      : "text-muted-foreground hover:text-rose-500 hover:bg-rose-50/50 border-transparent hover:border-rose-100"
+                      : "text-muted-foreground hover:text-rose-500 hover:bg-rose-50/50 border-transparent hover:border-rose-100",
+                    isLiking && "opacity-70 cursor-not-allowed"
                   )}
                 >
                   <Heart className={cn("w-4 h-4", isLiked && "fill-current animate-bounce")} style={{ animationIterationCount: 1 }} />
-                  <span className="text-[11px] font-black tracking-tight">{likesCount + (isLiked ? 1 : 0)}</span>
+                  <span className="text-[11px] font-black tracking-tight">{likesCount}</span>
                 </button>
 
                 <button

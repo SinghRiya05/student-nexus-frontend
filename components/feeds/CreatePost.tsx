@@ -115,15 +115,15 @@ export function CreatePost() {
       className="mb-8 sticky top-15 z-20"
     >
       <Card className={cn(
-        "rounded-2xl   transition-all outline-0 duration-300 bg-white ",
-        isFocused || showLinkInput || showHashtagInput ? "shadow-xl" : "shadow-sm"
+        "rounded-2xl   transition-all outline-0 duration-300 bg-white/90 ",
+        isFocused || showLinkInput || showHashtagInput ? "shadow-xl shadow-secondary/5" : "shadow-sm"
       )}>
         <CardContent className="p-5 border-0">
           <div className="flex gap-4">
             {/* User Avatar - Left Side */}
             <div className="shrink-0 pt-1">
-              <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-[#7387ff] p-0.5 shadow-md group cursor-pointer overflow-hidden">
-                <div className="h-full w-full rounded-full bg-white p-0.5 overflow-hidden">
+              <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-secondary p-0.5 shadow-md group cursor-pointer overflow-hidden">
+                <div className="h-full w-full rounded-full bg-card p-0.5 overflow-hidden">
                   <img
                     src={user?.avatar ? `${ASSET_URL}${user.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`}
                     alt="User Avatar"
@@ -159,45 +159,23 @@ export function CreatePost() {
                       <button
                         type="button"
                         onClick={removeMedia}
-                        className="absolute top-3 right-3 p-2 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors shadow-lg z-10"
+                        className="absolute top-3 right-3 p-2 bg-black/50 text-white rounded-full hover:bg-destructive transition-colors shadow-lg z-10"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   </motion.div>
                 )}
-
-                {/* Link Input Section */}
-                {showLinkInput && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-center gap-2 bg-muted/30 rounded-xl px-3 py-2 border border-primary/10 shadow-sm"
-                  >
-                    <Link2 className="w-4 h-4 text-primary shrink-0" />
-                    <input
-                      autoFocus
-                      placeholder="Paste your link here..."
-                      className="bg-transparent border-none text-sm w-full outline-none placeholder:text-muted-foreground/40 font-medium"
-                      {...register("link")}
-                    />
-                    <button type="button" onClick={() => { setValue("link", ""); setShowLinkInput(false); }} className="text-muted-foreground hover:text-red-500 transition-colors">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </motion.div>
-                )}
-
                 {/* Hashtag Input Section */}
                 {showHashtagInput && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="flex flex-col gap-2 bg-muted/30 rounded-xl px-3 py-2 border border-primary/10 shadow-sm"
+                    className="flex flex-col gap-2 bg-background rounded-xl px-3 py-2 border border-secondary/20 shadow-sm"
                   >
                     <div className="flex items-center gap-2">
-                      <Hash className="w-4 h-4 text-primary shrink-0" />
+                      <Hash className="w-4 h-4 text-secondary shrink-0" />
                       <input
                         autoFocus
                         placeholder="Add a hashtag..."
@@ -206,17 +184,17 @@ export function CreatePost() {
                         onChange={(e) => setHashtagInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addHashtag()}
                       />
-                      <button type="button" onClick={addHashtag} className="text-primary hover:scale-110 transition-transform">
+                      <button type="button" onClick={addHashtag} className="text-secondary hover:scale-110 transition-transform">
                         <Plus className="w-4 h-4" />
                       </button>
-                      <button type="button" onClick={() => setShowHashtagInput(false)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                      <button type="button" onClick={() => setShowHashtagInput(false)} className="text-primary/40 hover:text-destructive transition-colors">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                     {formValues.hashtags.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {formValues.hashtags.map((tag, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full border border-primary/20 flex items-center gap-1 group">
+                          <span key={i} className="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full border border-secondary/20 flex items-center gap-1 group">
                             #{tag}
                             <X
                               className="w-2.5 h-2.5 cursor-pointer hover:text-red-500 transition-colors"
@@ -246,23 +224,13 @@ export function CreatePost() {
                     onClick={() => fileInputRef.current?.click()}
                     className={cn(
                       "flex items-center gap-2 group rounded-full transition-all px-3 h-8",
-                      formValues.media ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-primary"
+                      formValues.media ? "text-secondary bg-secondary/10" : "text-primary/60 hover:text-secondary hover:bg-secondary/5"
                     )}
                   >
                     <ImageIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     <span className="hidden sm:inline text-[11px] font-bold uppercase tracking-wider">Upload</span>
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled
-                    className={cn(
-                      "flex items-center gap-2 group rounded-full transition-all px-3 h-8 text-muted-foreground/30 grayscale cursor-not-allowed"
-                    )}
-                  >
-                    <Link2 className="w-4 h-4" />
-                    <span className="hidden sm:inline text-[11px] font-bold uppercase tracking-wider">Link</span>
-                  </Button>
+
                   <Button
                     variant="ghost"
                     size="sm"
@@ -277,20 +245,19 @@ export function CreatePost() {
                   </Button>
                 </div>
 
-                <Button
+                <button
                   onClick={handleSubmit(onSubmit)}
                   disabled={isFormEmpty || isSubmitting}
                   className={cn(
-                    "rounded-full px-6 font-bold transition-all duration-300 shadow-lg text-[11px] uppercase tracking-widest h-9",
+                    "rounded-2xl px-6 font-bold border border-gray-300 transition-all duration-300 shadow-lg text-[11px] uppercase tracking-widest h-9",
                     !isFormEmpty
-                      ? "bg-primary text-white shadow-primary/25 hover:shadow-primary/40"
-                      : "bg-muted text-muted-foreground grayscale opacity-50"
+                      ? "bg-secondary text-white shadow-secondary/25 hover:shadow-secondary/40 hover:bg-secondary/90"
+                      : "bg-white/90 text-black"
                   )}
-                  size="sm"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <span className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="h-3 w-3 border-2 border-white/30 border-t-white rounded-2xl animate-spin" />
                       Posting
                     </span>
                   ) : (
@@ -299,7 +266,7 @@ export function CreatePost() {
                       Post
                     </span>
                   )}
-                </Button>
+                </button>
               </div>
             </div>
           </div>

@@ -41,19 +41,19 @@ const SectionTitle = ({ icon: Icon, title, colorClass }: { icon: any; title: str
         <div className={cn("h-10 w-10 rounded-2xl flex items-center justify-center transition-transform hover:scale-110", colorClass)}>
             <Icon size={20} />
         </div>
-        <h3 className="text-xl font-black text-[#1a1a3b]">{title}</h3>
+        <h3 className="text-xl font-black text-primary">{title}</h3>
     </div>
 );
 
 const ExperienceItem = ({ title, role, date, description }: any) => (
     <div className="flex gap-5 group cursor-default">
-        <div className="shrink-0 h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all border border-gray-100 group-hover:border-blue-100">
+        <div className="shrink-0 h-14 w-14 rounded-2xl bg-secondary/5 flex items-center justify-center text-secondary/40 group-hover:bg-secondary/10 group-hover:text-secondary transition-all border border-border group-hover:border-secondary/20">
             <Briefcase size={24} />
         </div>
         <div>
-            <h4 className="text-lg font-black text-[#1a1a3b] group-hover:text-blue-600 transition-colors uppercase tracking-tight">{title}</h4>
-            <p className="text-sm font-black text-gray-500 mb-2">{role} {date && <span className="mx-2 text-gray-300">•</span>} {date}</p>
-            <p className="text-[0.85rem] text-gray-400 font-bold leading-relaxed max-w-2xl">
+            <h4 className="text-lg font-black text-primary group-hover:text-secondary transition-colors uppercase tracking-tight">{title}</h4>
+            <p className="text-sm font-black text-primary/50 mb-2">{role} {date && <span className="mx-2 text-primary/20">•</span>} {date}</p>
+            <p className="text-[0.85rem] text-primary/40 font-bold leading-relaxed max-w-2xl">
                 {description || "No project description provided."}
             </p>
         </div>
@@ -147,14 +147,14 @@ export default function StudentProfileMain({ id }: { id: string }) {
     if (error) {
         return (
             <div className="h-[60vh] flex flex-col items-center justify-center text-center px-4">
-                <div className="bg-rose-50 p-6 rounded-3xl border border-rose-100 mb-6">
-                    <ShieldCheck className="w-16 h-16 text-rose-500 mb-4 mx-auto" />
-                    <h3 className="text-2xl font-black text-rose-900 mb-2">Profile Not Found</h3>
-                    <p className="text-rose-600 font-bold max-w-md">{error || "We couldn't find the student you're looking for."}</p>
+                <div className="bg-accent/5 p-6 rounded-3xl border border-accent/10 mb-6">
+                    <ShieldCheck className="w-16 h-16 text-accent mb-4 mx-auto" />
+                    <h3 className="text-2xl font-black text-primary mb-2">Profile Not Found</h3>
+                    <p className="text-primary/70 font-bold max-w-md">{error || "We couldn't find the student you're looking for."}</p>
                 </div>
                 <Button
                     onClick={() => router.push('/students')}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl px-8"
+                    className="bg-secondary hover:bg-secondary/90 text-white font-black rounded-2xl px-8"
                 >
                     Back to Directory
                 </Button>
@@ -169,9 +169,9 @@ export default function StudentProfileMain({ id }: { id: string }) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* 1. Hero Header */}
-            <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
+            <div className="bg-card rounded-2xl overflow-hidden border border-border shadow-xl shadow-secondary/10">
                 {/* Cover Photo */}
-                <div className="h-32 md:h-48 relative overflow-hidden bg-slate-50 border-b border-gray-100">
+                <div className="h-32 md:h-48 relative overflow-hidden bg-background border-b border-border">
                     {student.coverImage ? (
                         <img
                             src={`${ASSET_URL}${student.coverImage}`}
@@ -179,7 +179,7 @@ export default function StudentProfileMain({ id }: { id: string }) {
                             alt="Cover"
                         />
                     ) : (
-                        <div className="absolute inset-0 bg-indigo-50/50" />
+                        <div className="absolute inset-0 bg-secondary/10" />
                     )}
                 </div>
 
@@ -188,7 +188,7 @@ export default function StudentProfileMain({ id }: { id: string }) {
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-20">
                         {/* Avatar */}
                         <div className="relative group shrink-0">
-                            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-indigo-50 ring-2 ring-indigo-100 flex items-center justify-center font-black text-4xl md:text-5xl text-indigo-500">
+                            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-background overflow-hidden bg-secondary/10 ring-2 ring-secondary/20 flex items-center justify-center font-black text-4xl md:text-5xl text-secondary">
                                 {student.avatar ? (
                                     <img
                                         src={`${ASSET_URL}${student.avatar}`}
@@ -199,27 +199,27 @@ export default function StudentProfileMain({ id }: { id: string }) {
                                     student.firstName.charAt(0).toUpperCase()
                                 )}
                             </div>
-                            <div className="absolute bottom-2 right-2 h-6 w-6 bg-emerald-500 border-4 border-white rounded-full"></div>
+                            <div className="absolute bottom-2 right-2 h-6 w-6 bg-accent border-4 border-background rounded-full"></div>
                         </div>
 
                         {/* Text Info + Action Buttons (Right Side) */}
                         <div className="flex-1 flex flex-col lg:flex-row items-center md:items-start lg:items-center justify-between gap-6 w-full">
                             <div className="space-y-2 text-center md:text-left">
                                 <div className="flex flex-col md:flex-row items-center gap-3">
-                                    <h2 className="text-2xl md:text-3xl font-black text-[#1a1a3b] leading-tight">
+                                    <h2 className="text-2xl md:text-3xl font-black text-primary leading-tight">
                                         {student.firstName} {student.lastName}
                                     </h2>
-                                    <span className="bg-indigo-100 text-indigo-700 text-[10px] font-black px-3 py-1 rounded-xl uppercase tracking-wider">
+                                    <span className="bg-secondary/10 text-secondary text-[10px] font-black px-3 py-1 rounded-xl uppercase tracking-wider">
                                         Verified Student
                                     </span>
                                 </div>
-                                <div className="flex flex-wrap justify-start md:justify-start items-center gap-4 text-gray-500 font-bold text-sm">
+                                <div className="flex flex-wrap justify-start md:justify-start items-center gap-4 text-primary/50 font-bold text-sm">
                                     <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-rose-500" />
+                                        <MapPin className="w-4 h-4 text-accent" />
                                         {student.universityId?.name || "University"}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <GraduationCap className="w-4 h-4 text-indigo-500" />
+                                        <GraduationCap className="w-4 h-4 text-secondary" />
                                         {student.courseIds?.[0]?.courseName || "Course"}
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
@@ -239,10 +239,10 @@ export default function StudentProfileMain({ id }: { id: string }) {
                                             className={cn(
                                                 "h-11 px-6 md:px-8 rounded-2xl font-black text-sm flex gap-2 transition-all",
                                                 isFollowing 
-                                                    ? (isHoveringFollow ? "bg-rose-500 text-white shadow-lg shadow-rose-200" : "bg-emerald-50 text-emerald-600 border border-emerald-100")
+                                                    ? (isHoveringFollow ? "bg-destructive text-destructive-foreground" : "bg-accent/10 text-accent border border-accent/20")
                                                     : isRequested 
-                                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                        : "bg-[#2949ef] hover:bg-blue-700 text-white shadow-lg shadow-indigo-100"
+                                                        ? "bg-background text-primary/20 cursor-not-allowed border border-border"
+                                                        : "bg-secondary hover:bg-secondary/90 text-white shadow-lg shadow-secondary/20"
                                             )}
                                         >
                                             {isFollowing ? (
@@ -255,9 +255,9 @@ export default function StudentProfileMain({ id }: { id: string }) {
                                         </Button>
                                         <Button
                                             variant="outline"
-                                            className="h-11 px-5 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-2"
+                                            className="h-11 px-5 rounded-2xl border-2 border-border font-black text-sm text-primary hover:bg-background flex gap-2"
                                         >
-                                            <Send className="w-4 h-4 text-indigo-600" />
+                                            <Send className="w-4 h-4 text-secondary" />
                                             Message
                                         </Button>
                                     </>
@@ -273,9 +273,9 @@ export default function StudentProfileMain({ id }: { id: string }) {
                 {/* Left Column (Main Content) */}
                 <div className="lg:col-span-7 space-y-6">
                     {/* About Section */}
-                    <Card className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
-                        <SectionTitle icon={Users} title="About Student" colorClass="bg-indigo-50 text-indigo-600" />
-                        <p className="text-gray-500 font-medium leading-[1.8] text-[15px]">
+                    <Card className="bg-card p-5 rounded-2xl border border-border shadow-sm relative overflow-hidden group">
+                        <SectionTitle icon={Users} title="About Student" colorClass="bg-secondary/10 text-secondary" />
+                        <p className="text-primary/70 font-medium leading-[1.8] text-[15px]">
                             {student.bio || `${student.firstName} is a dedicated student at ${student.universityId?.name}. They are currently pursuing ${student.courseIds?.[0]?.courseName} and are an active member of the student community.`}
                         </p>
                     </Card>
@@ -286,19 +286,19 @@ export default function StudentProfileMain({ id }: { id: string }) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Card className="bg-white overflow-hidden rounded-2xl border-gray-100 shadow-sm group hover:shadow-md transition-all duration-300">
+                        <Card className="bg-card overflow-hidden rounded-2xl border-border shadow-sm group hover:shadow-md transition-all duration-300">
                             <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <GraduationCap size={120} />
                             </div>
                             <CardContent className="p-5 relative z-10">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner group-hover:scale-110 transition-transform">
+                                        <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner group-hover:scale-110 transition-transform">
                                             <Target size={24} />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black text-[#1a1a3b]">Academic Status</h3>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Course Details</p>
+                                            <h3 className="text-xl font-black text-primary">Academic Status</h3>
+                                            <p className="text-xs font-bold text-primary/40 uppercase tracking-wider">Course Details</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -308,50 +308,50 @@ export default function StudentProfileMain({ id }: { id: string }) {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-emerald-100 hover:bg-emerald-50/30 transition-all group/item">
+                                    <div className="p-4 rounded-2xl bg-background/50 border border-border hover:border-accent/20 hover:bg-accent/5 transition-all group/item">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-emerald-500 shadow-sm transition-colors">
+                                            <div className="h-8 w-8 rounded-xl bg-card flex items-center justify-center text-primary/20 group-hover/item:text-accent shadow-sm transition-colors">
                                                 <Briefcase size={16} />
                                             </div>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Enrolled Course</p>
+                                            <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest">Enrolled Course</p>
                                         </div>
-                                        <p className="text-lg font-black px-10 text-[#1a1a3b] leading-tight group-hover/item:text-emerald-700  transition-colors">
+                                        <p className="text-lg font-black px-10 text-primary leading-tight group-hover/item:text-accent  transition-colors">
                                             {student.courseIds?.[0]?.courseName || "Not assigned"}
                                         </p>
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all group/item">
+                                    <div className="p-4 rounded-2xl bg-background/50 border border-border hover:border-secondary/20 hover:bg-secondary/5 transition-all group/item">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-blue-500 shadow-sm transition-colors">
+                                            <div className="h-8 w-8 rounded-xl bg-card flex items-center justify-center text-primary/20 group-hover/item:text-secondary shadow-sm transition-colors">
                                                 <Clock size={16} />
                                             </div>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Semester</p>
+                                            <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest">Current Semester</p>
                                         </div>
-                                        <p className="text-lg px-10 font-black text-[#1a1a3b] leading-tight group-hover/item:text-blue-700 transition-colors">
+                                        <p className="text-lg px-10 font-black text-primary leading-tight group-hover/item:text-secondary transition-colors">
                                             {student.studentProfile?.semesterId?.name || "Not set"}
                                         </p>
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-amber-100 hover:bg-amber-50/30 transition-all group/item">
+                                    <div className="p-4 rounded-2xl bg-background/50 border border-border hover:border-amber-100 hover:bg-amber-50/30 transition-all group/item">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-amber-500 shadow-sm transition-colors">
+                                            <div className="h-8 w-8 rounded-xl bg-card flex items-center justify-center text-primary/20 group-hover/item:text-amber-500 shadow-sm transition-colors">
                                                 <Calendar size={16} />
                                             </div>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Start Year</p>
+                                            <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest">Start Year</p>
                                         </div>
-                                        <p className="text-lg px-10 font-black text-[#1a1a3b] leading-tight group-hover/item:text-amber-700 transition-colors">
+                                        <p className="text-lg px-10 font-black text-primary leading-tight group-hover/item:text-amber-700 transition-colors">
                                             {student.startYear || "N/A"}
                                         </p>
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group/item">
+                                    <div className="p-4 rounded-2xl bg-background/50 border border-border hover:border-secondary/20 hover:bg-secondary/5 transition-all group/item">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-indigo-500 shadow-sm transition-colors">
+                                            <div className="h-8 w-8 rounded-xl bg-card flex items-center justify-center text-primary/20 group-hover/item:text-secondary shadow-sm transition-colors">
                                                 <ShieldCheck size={16} />
                                             </div>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">End Year</p>
+                                            <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest">End Year</p>
                                         </div>
-                                        <p className="text-lg px-10 font-black text-[#1a1a3b] leading-tight group-hover/item:text-indigo-700 transition-colors">
+                                        <p className="text-lg px-10 font-black text-primary leading-tight group-hover/item:text-secondary transition-colors">
                                             {student.endYear || "N/A"}
                                         </p>
                                     </div>
@@ -362,8 +362,8 @@ export default function StudentProfileMain({ id }: { id: string }) {
 
 
                     {/* Projects Section */}
-                    <Card className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <SectionTitle icon={Briefcase} title="Experience & Projects" colorClass="bg-indigo-50 text-indigo-600" />
+                    <Card className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+                        <SectionTitle icon={Briefcase} title="Experience & Projects" colorClass="bg-secondary/10 text-secondary" />
                         <div className="space-y-6">
                             {student.studentProfile?.projects?.length ? (
                                 student.studentProfile.projects.map((project: any, i) => (
@@ -373,7 +373,7 @@ export default function StudentProfileMain({ id }: { id: string }) {
                                             role="Personal Project"
                                             description={typeof project === 'string' ? "" : project.description}
                                         />
-                                        {i < (student.studentProfile?.projects?.length || 0) - 1 && <div className="h-px bg-gray-100 w-full" />}
+                                        {i < (student.studentProfile?.projects?.length || 0) - 1 && <div className="h-px bg-border/50 w-full" />}
                                     </React.Fragment>
                                 ))
                             ) : (
@@ -389,16 +389,16 @@ export default function StudentProfileMain({ id }: { id: string }) {
                 {/* Right Column (Sidebar) */}
                 <div className="lg:col-span-3 space-y-6">
                     {/* Network Stats */}
-                    <Card className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <h3 className="font-black text-[#1a1a3b] text-base mb-6">Network Stats</h3>
+                    <Card className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+                        <h3 className="font-black text-primary text-base mb-6">Network Stats</h3>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-center animate-in fade-in zoom-in duration-500">
-                                <p className="text-2xl font-black text-indigo-600 mb-1">{student.followersCount || 0}</p>
-                                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Followers</p>
+                            <div className="p-4 rounded-2xl bg-secondary/5 border border-secondary/10 text-center animate-in fade-in zoom-in duration-500">
+                                <p className="text-2xl font-black text-secondary mb-1">{student.followersCount || 0}</p>
+                                <p className="text-[10px] font-bold text-secondary/40 uppercase tracking-wider">Followers</p>
                             </div>
-                            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 text-center animate-in fade-in zoom-in duration-700">
-                                <p className="text-2xl font-black text-emerald-600 mb-1">{student.followingCount || 0}</p>
-                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Following</p>
+                            <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10 text-center animate-in fade-in zoom-in duration-700">
+                                <p className="text-2xl font-black text-accent mb-1">{student.followingCount || 0}</p>
+                                <p className="text-[10px] font-bold text-accent/40 uppercase tracking-wider">Following</p>
                             </div>
                             <div className="col-span-2 p-4 rounded-2xl bg-amber-50/50 border border-amber-100 flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-amber-600 font-bold text-sm">
@@ -411,22 +411,22 @@ export default function StudentProfileMain({ id }: { id: string }) {
 
                     {/* Skills & Experience */}
                     <div className="grid grid-cols-1  gap-6">
-                        <Card className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <SectionTitle icon={Code} title="Technical Skills" colorClass="bg-emerald-50 text-emerald-600" />
+                        <Card className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+                            <SectionTitle icon={Code} title="Technical Skills" colorClass="bg-accent/10 text-accent" />
                             <div className="flex flex-wrap gap-2">
                                 {student.studentProfile?.skills?.length ? (
                                     student.studentProfile.skills.map((skill, i) => (
-                                        <span key={i} className="px-4 py-2 bg-gray-50  text-gray-700 text-xs font-black rounded-xl border border-gray-100">
+                                        <span key={i} className="px-4 py-2 bg-background  text-primary/70 text-xs font-black rounded-xl border border-border">
                                             {skill}
                                         </span>
                                     ))
                                 ) : (
-                                    <p className="text-xs text-gray-400 italic">No skills listed yet.</p>
+                                    <p className="text-xs text-primary/40 italic">No skills listed yet.</p>
                                 )}
                             </div>
                         </Card>
 
-                        <Card className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <Card className="bg-card p-6 rounded-2xl border border-border shadow-sm">
                             <SectionTitle icon={Activity} title="Interests" colorClass="bg-rose-50 text-rose-600" />
                             <div className="flex flex-wrap gap-2">
                                 {student.studentProfile?.hobby_badge ? (
@@ -444,10 +444,10 @@ export default function StudentProfileMain({ id }: { id: string }) {
 
 
                     {/* Quick Connect */}
-                    <Card className="bg-indigo-600 p-6 rounded-3xl shadow-xl shadow-indigo-100 text-white relative overflow-hidden">
+                    <Card className="bg-secondary p-6 rounded-3xl shadow-xl shadow-secondary/10 text-white relative overflow-hidden">
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                         <h3 className="font-black text-lg mb-2 relative z-10">Nexus Network</h3>
-                        <p className="text-indigo-100 text-[11px] font-bold leading-relaxed mb-6 relative z-10">
+                        <p className="text-background text-[11px] font-bold leading-relaxed mb-6 relative z-10">
                             Connect with {student.firstName} to share notes, collaborate on projects, and grow your network.
                         </p>
                         <Button

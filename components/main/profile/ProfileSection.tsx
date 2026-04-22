@@ -53,10 +53,10 @@ import { getFollowers, getFollowing, getSentRequests, sendFollowRequest, unfollo
 const AboutMe = ({ bio }: { bio?: string }) => (
     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
         <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 transition-transform group-hover:scale-110">
+            <div className="h-10 w-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary transition-transform group-hover:scale-110">
                 <Users size={20} />
             </div>
-            <h3 className="text-xl font-black text-[#1a1a3b]">About Me</h3>
+            <h3 className="text-xl font-black text-primary">About Me</h3>
         </div>
         <p className="text-gray-500 font-medium leading-[1.8] text-[15px]">
             {bio || "Tell us about yourself, your goals, and interests. Click 'Edit Profile' to share your story with the community."}
@@ -68,11 +68,11 @@ const AboutMe = ({ bio }: { bio?: string }) => (
 function ExperienceItem({ icon: Icon, title, role, date, description }: any) {
     return (
         <div className="flex gap-5 group cursor-default">
-            <div className="shrink-0 h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all border border-gray-100 group-hover:border-blue-100">
+            <div className="shrink-0 h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-secondary/10 group-hover:text-secondary transition-all border border-border group-hover:border-secondary/20">
                 <Icon size={24} />
             </div>
             <div>
-                <h4 className="text-lg font-black text-[#1a1a3b] group-hover:text-blue-600 transition-colors uppercase tracking-tight">{title}</h4>
+                <h4 className="text-lg font-black text-primary group-hover:text-secondary transition-colors uppercase tracking-tight">{title}</h4>
                 <p className="text-sm font-black text-gray-500 mb-2">{role} <span className="mx-2 text-gray-300">•</span> {date}</p>
                 <p className="text-[0.85rem] text-gray-400 font-bold leading-relaxed max-w-2xl">
                     {description || `A brief overview of your role and achievements at ${title}. Complete your profile to share your journey.`}
@@ -87,11 +87,11 @@ function ExperienceItem({ icon: Icon, title, role, date, description }: any) {
 const ProfileSkeleton = () => (
     <div className="space-y-8 animate-pulse duration-1000">
         {/* Cover & Top Bar */}
-        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-            <div className="h-32 bg-indigo-50 w-full" />
+        <div className="bg-background rounded-2xl overflow-hidden border border-border shadow-sm">
+            <div className="h-32 bg-secondary/5 w-full" />
             <div className="px-10 py-8 flex md:flex-row items-center md:items-start gap-5">
                 <div className="relative group shrink-0">
-                    <div className="h-32 w-32 rounded-[2rem] border-4 border-white bg-indigo-50 shadow-sm" />
+                    <div className="h-32 w-32 rounded-[2rem] border-4 border-background bg-secondary/5 shadow-sm" />
                 </div>
                 <div className="flex flex-col lg:flex-row items-start md:items-center justify-between gap-5 w-full">
                     <div className="space-y-3 w-full max-w-sm">
@@ -111,13 +111,13 @@ const ProfileSkeleton = () => (
 
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
             <div className="lg:col-span-7 space-y-8">
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                <div className="bg-background p-6 rounded-2xl border border-border shadow-sm space-y-4">
                     <div className="h-6 w-32 bg-gray-200 rounded-lg" />
                     <div className="h-4 w-full bg-gray-100 rounded" />
                     <div className="h-4 w-5/6 bg-gray-100 rounded" />
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-64 flex flex-col justify-between">
+                <div className="bg-background p-6 rounded-2xl border border-border shadow-sm h-64 flex flex-col justify-between">
                     <div className="h-6 w-48 bg-gray-200 rounded-lg" />
                     <div className="space-y-3">
                         <div className="h-12 w-full bg-gray-50 rounded-xl" />
@@ -127,7 +127,7 @@ const ProfileSkeleton = () => (
             </div>
 
             <div className="lg:col-span-3 space-y-8">
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                <div className="bg-background p-6 rounded-2xl border border-border shadow-sm space-y-4">
                     <div className="h-5 w-32 bg-gray-200 rounded-lg" />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="h-24 bg-gray-50 rounded-2xl" />
@@ -135,12 +135,12 @@ const ProfileSkeleton = () => (
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4 h-64">
+                <div className="bg-background p-6 rounded-2xl border border-border shadow-sm space-y-4 h-64">
                     <div className="h-5 w-32 bg-gray-200 rounded-lg mb-6" />
                     <div className="space-y-4">
                         <div className="flex gap-4"><div className="h-4 w-4 bg-gray-200 rounded-full shrink-0" /><div className="h-4 w-full bg-gray-100 rounded" /></div>
                         <div className="flex gap-4"><div className="h-4 w-4 bg-gray-200 rounded-full shrink-0" /><div className="h-4 w-full bg-gray-100 rounded" /></div>
-                        <div className="flex gap-4"><div className="h-4 w-4 bg-gray-200 rounded-full shrink-0" /><div className="h-4 w-3/4 bg-gray-100 rounded" /></div>
+                        <div className="flex gap-4"><div className="h-4 w-4 bg-gray-200 rounded-full shrink-0" /><div className="h-4 w-full bg-gray-100 rounded" /></div>
                     </div>
                 </div>
             </div>
@@ -205,9 +205,9 @@ export default function ProfileSection() {
     ];
 
     const activities = [
-        { text: "Shared a new project 'Nexus UI Framework' to the Dev Society.", date: "2 hours ago", color: "bg-blue-500" },
-        { text: "Earned 'Top Contributor' badge in Hackathon Prep group.", date: "Yesterday", color: "bg-emerald-500" },
-        { text: "Followed 3 new professors in the Computer Science department.", date: "3 days ago", color: "bg-indigo-500" }
+        { text: "Shared a new project 'Nexus UI Framework' to the Dev Society.", date: "2 hours ago", color: "bg-secondary" },
+        { text: "Earned 'Top Contributor' badge in Hackathon Prep group.", date: "Yesterday", color: "bg-accent" },
+        { text: "Followed 3 new professors in the Computer Science department.", date: "3 days ago", color: "bg-primary" }
     ];
 
     const handleNetworkAction = async (id: string, isCurrentlyFollowing: boolean) => {
@@ -269,10 +269,10 @@ export default function ProfileSection() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* 1. Hero Header */}
-            <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
+            <div className="bg-card rounded-2xl overflow-hidden border border-border shadow-xl shadow-gray-200/40">
                 {/* Cover Photo */}
-                <div className="h-32 relative overflow-hidden group bg-indigo-50/50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 mix-blend-multiply " />
+                <div className="h-32 relative overflow-hidden group bg-primary/5 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 mix-blend-multiply " />
                     {user?.coverImage ? (
                         <img
                             src={`${ASSET_URL}${user.coverImage}`}
@@ -280,7 +280,7 @@ export default function ProfileSection() {
                             alt="Cover"
                         />
                     ) : (
-                        <Camera className="w-8 h-8 text-indigo-200 absolute z-0 opacity-50" />
+                        <Camera className="w-8 h-8 text-primary/20 absolute z-0 opacity-50" />
                     )}
                 </div>
 
@@ -288,7 +288,7 @@ export default function ProfileSection() {
                 <div className="px-10 py-8 flex  md:flex-row items-center md:items-start gap-5">
                     {/* Avatar */}
                     <div className="relative group shrink-0">
-                        <div className="h-32 w-32 rounded-[2rem] border-4 border-white overflow-hidden shadow-2xl bg-indigo-50 ring-2 ring-indigo-100 flex items-center justify-center font-black text-4xl text-indigo-500">
+                        <div className="h-32 w-32 rounded-[2rem] border-4 border-card overflow-hidden shadow-2xl bg-secondary/5 ring-2 ring-secondary/10 flex items-center justify-center font-black text-4xl text-secondary">
                             {user?.avatar ? (
                                 <img
                                     src={`${ASSET_URL}${user.avatar}`}
@@ -328,18 +328,18 @@ export default function ProfileSection() {
                                     </div>
                                 )}
                                 <div className="flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-rose-500" />
+                                    <MapPin className="w-4 h-4 text-accent" />
                                     {user?.universityId ? `${user.universityId.name}` : "University not added"}
                                 </div>
                                 {user?.roleId?.name === "STUDENT" && user?.courseIds?.[0]?.courseName && (
                                     <div className="flex items-center gap-2">
-                                        <GraduationCap className="w-4 h-4 text-indigo-500" />
+                                        <GraduationCap className="w-4 h-4 text-secondary" />
                                         {user.courseIds[0].courseName}
                                     </div>
                                 )}
                                 {user?.Profile?.hobby_badge && (
-                                    <div className="flex items-center gap-2 border-gray-200">
-                                        <Activity className="w-4 h-4 text-purple-500" />
+                                    <div className="flex items-center gap-2 border-border">
+                                        <Activity className="w-4 h-4 text-primary" />
                                         <span className="capitalize">{user.Profile.hobby_badge}</span>
                                     </div>
                                 )}
@@ -359,13 +359,11 @@ export default function ProfileSection() {
                             <Button
                                 onClick={() => router.push(`/profile/edit/${user?._id}`)}
                                 variant="outline"
-                                className="h-10 px-5 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-2 shadow-sm"
+                                className="h-10 px-5 rounded-2xl border-2 border-border font-black text-sm text-primary hover:bg-gray-50 flex gap-2 shadow-sm"
                             >
-                                <Edit3 className="w-4 h-4 text-blue-600" />
+                                <Edit3 className="w-4 h-4 text-secondary" />
                                 Edit Profile
                             </Button>
-
-
                         </div>
 
                     </div>
@@ -380,17 +378,17 @@ export default function ProfileSection() {
 
                     {/* Role Specific Career/Academic Details */}
                     {user?.roleId?.name === "TEACHER" && (
-                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                        <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
                             <div className="flex items-center gap-3 ">
-                                <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                <div className="h-10 w-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
                                     <GraduationCap size={20} />
                                 </div>
-                                <h3 className="text-xl font-black text-[#1a1a3b]">Educational Background</h3>
+                                <h3 className="text-xl font-black text-primary">Educational Background</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Designation</p>
-                                    <p className="text-lg font-bold text-indigo-600">{user?.teacherProfile?.designation || user?.Profile?.designation || "Not specified"}</p>
+                                    <p className="text-lg font-bold text-secondary">{user?.teacherProfile?.designation || user?.Profile?.designation || "Not specified"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Department</p>
@@ -405,17 +403,17 @@ export default function ProfileSection() {
                     )}
 
                     {user?.roleId?.name === "ALUMINI" && (
-                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                        <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
                             <div className="flex items-center gap-3 ">
-                                <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                <div className="h-10 w-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
                                     <Briefcase size={20} />
                                 </div>
-                                <h3 className="text-xl font-black text-[#1a1a3b]">Career Summary</h3>
+                                <h3 className="text-xl font-black text-primary">Career Summary</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Current Company</p>
-                                    <p className="text-lg font-bold text-blue-600">{user?.aluminiProfile?.currentCompany || user?.Profile?.currentCompany || "Not specified"}</p>
+                                    <p className="text-lg font-bold text-secondary">{user?.aluminiProfile?.currentCompany || user?.Profile?.currentCompany || "Not specified"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Job Title</p>
@@ -435,18 +433,18 @@ export default function ProfileSection() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
                         >
-                            <Card className="bg-white overflow-hidden rounded-2xl border-gray-100 shadow-sm group hover:shadow-md transition-all duration-300">
+                            <Card className="bg-card overflow-hidden rounded-2xl border-border shadow-sm group hover:shadow-md transition-all duration-300">
                                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <GraduationCap size={120} />
                                 </div>
                                 <CardContent className="p-5 relative">
                                     <div className="flex items-center justify-between mb-8">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner group-hover:scale-110 transition-transform">
+                                            <div className="h-12 w-12 rounded-2xl bg-secondary/5 flex items-center justify-center text-secondary shadow-inner group-hover:scale-110 transition-transform">
                                                 <Target size={24} />
                                             </div>
                                             <div>
-                                                <h3 className="text-xl font-black text-[#1a1a3b]">Academic Status</h3>
+                                                <h3 className="text-xl font-black text-primary">Academic Status</h3>
                                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Current Progress</p>
                                             </div>
                                         </div>
@@ -458,40 +456,40 @@ export default function ProfileSection() {
 
                                     <div className="space-y-8">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-emerald-100 hover:bg-emerald-50/30 transition-all group/item">
+                                            <div className="p-4 rounded-2xl bg-gray-50/50 border border-border hover:border-accent/30 hover:bg-accent/5 transition-all group/item">
                                                 <div className="flex items-center gap-3 mb-2">
-                                                    <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-emerald-500 shadow-sm transition-colors">
+                                                    <div className="h-8 w-8 rounded-xl bg-background flex items-center justify-center text-gray-400 group-hover/item:text-accent shadow-sm transition-colors">
                                                         <Briefcase size={16} />
                                                     </div>
                                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Enrolled Course</p>
                                                 </div>
-                                                <p className="text-lg font-black text-[#1a1a3b] leading-tight group-hover/item:text-emerald-700 transition-colors">
+                                                <p className="text-lg font-black text-primary leading-tight group-hover/item:text-accent transition-colors">
                                                     {user?.courseIds?.[0]?.courseName || "Not assigned"}
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all group/item">
+                                            <div className="p-4 rounded-2xl bg-gray-50/50 border border-border hover:border-secondary/30 hover:bg-secondary/5 transition-all group/item">
                                                 <div className="flex items-center gap-3 mb-2">
-                                                    <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-blue-500 shadow-sm transition-colors">
+                                                    <div className="h-8 w-8 rounded-xl bg-background flex items-center justify-center text-gray-400 group-hover/item:text-secondary shadow-sm transition-colors">
                                                         <Clock size={16} />
                                                     </div>
                                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Period</p>
                                                 </div>
-                                                <p className="text-lg font-black text-[#1a1a3b] leading-tight group-hover/item:text-blue-700 transition-colors">
+                                                <p className="text-lg font-black text-primary leading-tight group-hover/item:text-secondary transition-colors">
                                                     {user?.studentProfile?.semesterId?.name || user?.Profile?.semesterId?.name || "Not set"}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/50">
-                                            <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/5 border border-secondary/10">
+                                            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-white shadow-lg shadow-secondary/20">
                                                 <Calendar size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-wider">Next Milestone</p>
-                                                <p className="text-sm font-bold text-indigo-900">Final Exams Preparation</p>
+                                                <p className="text-[10px] font-black text-secondary uppercase tracking-wider">Next Milestone</p>
+                                                <p className="text-sm font-bold text-primary">Final Exams Preparation</p>
                                             </div>
-                                            <Button variant="ghost" size="sm" className="ml-auto text-indigo-600 hover:bg-indigo-100 font-bold rounded-xl h-8 px-3">
+                                            <Button variant="ghost" size="sm" className="ml-auto text-secondary hover:bg-secondary/10 font-bold rounded-xl h-8 px-3">
                                                 View Goals
                                             </Button>
                                         </div>
@@ -503,15 +501,15 @@ export default function ProfileSection() {
 
 
                     {/* Experience & Projects */}
-                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
                         <div className="flex items-center justify-between ">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                <div className="h-10 w-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
                                     <Briefcase size={20} />
                                 </div>
-                                <h3 className="text-xl font-black text-[#1a1a3b]">Experience & Projects</h3>
+                                <h3 className="text-xl font-black text-primary">Experience & Projects</h3>
                             </div>
-                            <Button variant="ghost" onClick={() => setIsUploadModalOpen(true)} className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl">
+                            <Button variant="ghost" onClick={() => setIsUploadModalOpen(true)} className="font-black text-secondary text-sm flex gap-2 hover:bg-secondary/10 py-0 h-10 px-4 rounded-xl">
                                 Add New
                             </Button>
                         </div>
@@ -526,7 +524,7 @@ export default function ProfileSection() {
                                             description=""
                                             icon={Briefcase}
                                         />
-                                        {i < (user?.Profile?.projects?.length ?? 0) - 1 && <div className="h-px bg-gray-100 w-full" />}
+                                        {i < (user?.Profile?.projects?.length ?? 0) - 1 && <div className="h-px bg-border w-full" />}
                                     </React.Fragment>
                                 ))
                             ) : (
@@ -540,13 +538,13 @@ export default function ProfileSection() {
 
                     {/* Teacher Resources Section */}
                     {user?.roleId?.name === "TEACHER" && (
-                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm overflow-hidden relative">
+                        <Card className="bg-card p-5 rounded-2xl border-border shadow-sm overflow-hidden relative">
                             <div className="flex items-center justify-between ">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 transition-transform group-hover:scale-110">
+                                    <div className="h-10 w-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary transition-transform group-hover:scale-110">
                                         <FileText size={20} />
                                     </div>
-                                    <h3 className="text-xl font-black text-[#1a1a3b]">Educational Resources</h3>
+                                    <h3 className="text-xl font-black text-primary">Educational Resources</h3>
                                 </div>
                                 {authUser?._id === user?._id && (
                                     <Button
@@ -555,7 +553,7 @@ export default function ProfileSection() {
                                             setSelectedResourceForEdit(null);
                                             setIsUploadModalOpen(true);
                                         }}
-                                        className="font-black text-blue-600 text-sm flex gap-2 hover:bg-blue-50 py-0 h-10 px-4 rounded-xl"
+                                        className="font-black text-secondary text-sm flex gap-2 hover:bg-secondary/10 py-0 h-10 px-4 rounded-xl"
                                     >
                                         <Plus className="w-4 h-4" /> Add New
                                     </Button>
@@ -568,15 +566,15 @@ export default function ProfileSection() {
                                         <div
                                             key={resource._id}
                                             onClick={() => window.open(`${ASSET_URL}${resource.fileUrl}`, '_blank')}
-                                            className="group/card relative bg-slate-100 border border-gray-100 rounded-2xl p-5 hover:bg-white hover:border-blue-100 hover:shadow-md transition-all duration-300 cursor-pointer"
+                                            className="group/card relative bg-slate-50 border border-border rounded-2xl p-5 hover:bg-background hover:border-secondary transition-all duration-300 cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-blue-500 transition-colors group-hover/card:bg-blue-50">
+                                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-background border border-border flex items-center justify-center text-secondary transition-colors group-hover/card:bg-secondary/5">
                                                         <FileText size={20} />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <h4 className="font-black text-[#1a1a3b] text-sm line-clamp-1 group-hover/card:text-blue-600 transition-colors">{resource.title}</h4>
+                                                        <h4 className="font-black text-primary text-sm line-clamp-1 group-hover/card:text-secondary transition-colors">{resource.title}</h4>
                                                         <p className="text-[11px] font-bold text-gray-400 line-clamp-1 opacity-70">
                                                             {resource.description}
                                                         </p>
@@ -601,7 +599,7 @@ export default function ProfileSection() {
                                                                     e.stopPropagation();
                                                                     handleEditResource(resource);
                                                                 }}
-                                                                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                                                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-secondary hover:bg-secondary/10 transition-colors"
                                                             >
                                                                 <Edit2 size={14} />
                                                             </button>
@@ -620,11 +618,11 @@ export default function ProfileSection() {
                                             </div>
 
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-md uppercase">
+                                                <span className="text-[10px] font-black bg-secondary/10 text-secondary px-2.5 py-1 rounded-md uppercase">
                                                     {resource.courseId?.courseName || "Course"}
                                                 </span>
                                                 {resource.semesterId && (
-                                                    <span className="text-[10px] font-black bg-white text-slate-500 px-2.5 py-1 rounded-md uppercase border border-slate-200">
+                                                    <span className="text-[10px] font-black bg-background text-slate-500 px-2.5 py-1 rounded-md uppercase border border-border">
                                                         {resource.semesterId.name}
                                                     </span>
                                                 )}
@@ -642,18 +640,18 @@ export default function ProfileSection() {
                     )}
 
                     {/* Skills */}
-                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <div className="h-10 w-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
                                 <Users size={20} />
                             </div>
-                            <h3 className="text-xl font-black text-[#1a1a3b]">Skills</h3>
+                            <h3 className="text-xl font-black text-primary">Skills</h3>
                         </div>
                         <div className="flex flex-wrap gap-3">
                             {(user?.Profile?.skills?.length ?? 0) > 0 ? (
                                 user?.Profile?.skills?.map((skill: string, i: number) => (
                                     <span key={i} className={`px-6 py-3 rounded-2xl font-black text-sm transition-all cursor-default shadow-sm
-                                        ${i % 3 === 0 ? 'bg-indigo-50 text-indigo-600' : i % 3 === 1 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}
+                                        ${i % 3 === 0 ? 'bg-primary/10 text-primary' : i % 3 === 1 ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent'}
                                         hover:scale-105
                                     `}>
                                         {skill}
@@ -672,22 +670,22 @@ export default function ProfileSection() {
                 {/* Right Column (Sidebar) */}
                 <div className="lg:col-span-3 space-y-8">
                     {/* Trust & Network Stats */}
-                    <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
-                        <h3 className="font-black text-[#1a1a3b] text-base mb-4">Network Stats</h3>
+                    <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
+                        <h3 className="font-black text-primary text-base mb-4">Network Stats</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div
                                 onClick={() => setActivePopup('Followers')}
-                                className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-all group"
+                                className="p-4 rounded-2xl bg-secondary/5 border border-secondary/10 text-center cursor-pointer hover:bg-secondary/10 hover:border-secondary/20 transition-all group"
                             >
-                                <p className="text-2xl font-black text-indigo-600 mb-1 group-hover:scale-110 transition-transform">{user?.followersCount || 0}</p>
-                                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Followers</p>
+                                <p className="text-2xl font-black text-secondary mb-1 group-hover:scale-110 transition-transform">{user?.followersCount || 0}</p>
+                                <p className="text-[10px] font-bold text-secondary/60 uppercase tracking-wider">Followers</p>
                             </div>
                             <div
                                 onClick={() => setActivePopup('Following')}
-                                className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 text-center cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
+                                className="p-4 rounded-2xl bg-accent/5 border border-accent/10 text-center cursor-pointer hover:bg-accent/10 hover:border-accent/20 transition-all group"
                             >
-                                <p className="text-2xl font-black text-emerald-600 mb-1 group-hover:scale-110 transition-transform">{user?.followingCount || 0}</p>
-                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Following</p>
+                                <p className="text-2xl font-black text-accent mb-1 group-hover:scale-110 transition-transform">{user?.followingCount || 0}</p>
+                                <p className="text-[10px] font-bold text-accent/60 uppercase tracking-wider">Following</p>
                             </div>
                             <div className="col-span-2 p-4 rounded-2xl bg-amber-50/50 border border-amber-100 flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-amber-600 font-bold text-sm">
@@ -700,10 +698,10 @@ export default function ProfileSection() {
 
                     {/* Classmates & Friends */}
                     {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && (
-                        <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                        <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-black text-[#1a1a3b] text-base">Classmates & Friends</h3>
-                                <span className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-2 py-1 rounded-lg">142</span>
+                                <h3 className="font-black text-primary text-base">Classmates & Friends</h3>
+                                <span className="bg-secondary/10 text-secondary text-[10px] font-black px-2 py-1 rounded-lg">142</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="flex -space-x-4">
@@ -723,18 +721,18 @@ export default function ProfileSection() {
 
 
                     {/* Recent Activity */}
-                    <Card className="bg-white p-8 rounded-2xl border-gray-100 shadow-sm">
-                        <h3 className="font-black text-[#1a1a3b] text-base mb-8">Recent Activity</h3>
+                    <Card className="bg-card p-8 rounded-2xl border-border shadow-sm">
+                        <h3 className="font-black text-primary text-base mb-8">Recent Activity</h3>
                         <div className="space-y-8 relative">
                             {/* Line */}
-                            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-100/50" />
+                            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border/50" />
 
                             {activities.map((act, i) => (
                                 <div key={i} className="relative pl-8 space-y-1 group">
                                     <div className={`absolute left-0 top-1.5 h-4 w-4 rounded-full border-[3px] border-white shadow-sm group-hover:scale-125 transition-transform ${act.color}`} />
                                     <p className="text-xs font-bold text-gray-400">{act.date}</p>
-                                    <p className="text-[13px] font-medium text-gray-600 leading-relaxed group-hover:text-[#1a1a3b] transition-colors">
-                                        {act.text.split("'").map((t, j) => j % 2 === 1 ? <span key={j} className="text-blue-600 font-bold">{t}</span> : t)}
+                                    <p className="text-[13px] font-medium text-gray-600 leading-relaxed group-hover:text-primary transition-colors">
+                                        {act.text.split("'").map((t, j) => j % 2 === 1 ? <span key={j} className="text-secondary font-bold">{t}</span> : t)}
                                     </p>
                                 </div>
                             ))}

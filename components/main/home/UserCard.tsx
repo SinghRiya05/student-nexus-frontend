@@ -103,26 +103,26 @@ export const UserCard = ({
                     onClick={() => router.push(`/students/${userId}`)}
                     whileHover={{ y: -5 }}
                     className={cn(
-                        "relative min-w-[180px] snap-start bg-[#f0eaff] p-4 rounded-2xl flex flex-col items-center",
+                        "relative min-w-[180px] snap-start bg-secondary/8 p-4 rounded-2xl flex flex-col items-center",
                         className
                     )}
                 >
-                    <div className="w-12 h-12 rounded-full mb-2 overflow-hidden bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 mt-2">
+                    <div className="w-12 h-12 rounded-full mb-2 overflow-hidden bg-secondary/10 flex items-center justify-center text-primary font-bold border border-primary/30 mt-2">
                         {image ? (
                             <img src={image} alt={name} className="w-full h-full object-cover" />
                         ) : (
                             <span className="text-lg uppercase">{name?.[0]}</span>
                         )}
                     </div>
-                    <span className="text-xs font-bold mb-3 text-[#302e56]">{name}</span>
+                    <span className="text-xs font-bold mb-3 text-black">{name}</span>
                     <button
                         onClick={handleAction}
                         disabled={localLoading}
                         className={cn(
                             "px-4 py-1.5 border rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5",
-                            isMutual ? "bg-primary text-white border-primary hover:bg-primary/90"
-                                : isFollowing ? "bg-indigo-50 text-indigo-600 border-indigo-200"
-                                    : "bg-white text-[#2949ef] border-[#2949ef]/20 hover:bg-[#2949ef] hover:text-white"
+                            isMutual ? "bg-primary hover:bg-primary/90 cursor-pointer text-white border-primary hover:bg-primary/90"
+                                : isFollowing ? "bg-secondary/10 hover:bg-secondary/20 cursor-pointer text-black border-primary/20"
+                                    : "bg-primary/10 cursor-pointer hover:bg-primary/20 text-black border-primary/20 hover:bg-primary hover:text-white"
                         )}
                     >
                         {localLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
@@ -145,7 +145,7 @@ export const UserCard = ({
                         className
                     )}
                 >
-                    <div className="w-16 h-16 rounded-full mb-3 overflow-hidden bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border-2 border-indigo-100 mt-2">
+                    <div className="w-16 h-16 rounded-full mb-3 overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold border-2 border-primary/10 mt-2">
                         {image ? (
                             <img src={image} alt={name} className="w-full h-full object-cover" />
                         ) : (
@@ -160,8 +160,8 @@ export const UserCard = ({
                         className={cn(
                             "w-full py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2",
                             isMutual ? "bg-primary text-white hover:bg-primary/90"
-                                : isFollowing ? "bg-indigo-50 text-indigo-600 hover:bg-rose-50 hover:text-rose-600"
-                                    : "bg-[#2949ef] text-white hover:bg-[#1339e3]"
+                                : isFollowing ? "bg-secondary/10 cursor-pointer text-black hover:bg-secondary/20"
+                                    : "bg-primary/10 cursor-pointer text-black hover:bg-primary/20"
                         )}
                     >
                         {localLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}

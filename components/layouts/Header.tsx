@@ -95,17 +95,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
         />
       )}
 
-      <header className="sticky top-0 z-40 w-full border-b border-gray-100/80 bg-white/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 w-full border-b border-primary/10 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 lg:px-6">
 
           {/* ── Logo ── */}
           <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-[0_2px_12px_rgba(99,102,241,0.35)]">
-              <GraduationCap size={18} className="text-white" />
+            <div className="flex items-center">
+              <img src="/logo.png" alt="logo" className="w-55 h-40" />
             </div>
-            <span className="hidden text-[1.05rem] font-bold text-gray-900 sm:block">
-              Student<span className="text-indigo-500">Nexus</span>
-            </span>
           </Link>
 
           {/* ── Desktop Nav ── */}
@@ -117,14 +114,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   key={href}
                   href={href}
                   className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-[0.82rem] font-semibold transition-all ${active
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-secondary/10 text-secondary"
+                    : "text-primary hover:bg-secondary/10 "
                     }`}
                 >
                   <Icon size={15} />
                   {label}
                   {active && (
-                    <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                    <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
                   )}
                 </Link>
               );
@@ -148,7 +145,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 onFocus={() => setSearchOpen(true)}
                 onBlur={() => setSearchOpen(false)}
                 placeholder="Search anything…"
-                className="h-9 w-full rounded-xl border border-gray-200 bg-gray-50 pl-8 pr-3 text-[0.8rem] text-gray-800 placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/15 transition-all"
+                className="h-9 w-full rounded-xl border border-gray-200 bg-secondary/10 pl-8 pr-3 text-[0.8rem] text-gray-800 placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/15 transition-all"
               />
             </div>
           </div>
@@ -280,7 +277,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                       {authUser?.avatar ? (
                         <img src={`${ASSET_URL}${authUser.avatar}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl object-cover" alt="Profile" />
                       ) : (
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-violet-600 text-lg font-bold text-white uppercase">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-secondary/10 to-secondary/10 text-lg font-bold text-white uppercase">
                           {authUser?.firstName?.[0] || "?"}
                         </div>
                       )}
@@ -350,8 +347,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     href={href}
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 rounded-xl px-4 py-3 text-[0.85rem] font-semibold transition ${active
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-secondary/10 text-primary"
+                      : "text-gray-600 hover:bg-secondary/5 hover:text-primary"
                       }`}
                   >
                     <Icon size={16} />

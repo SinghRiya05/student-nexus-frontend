@@ -47,11 +47,11 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                             <button className="text-gray-400 hover:text-gray-700 transition"><MoreVertical size={16} /></button>
                         </PopoverTrigger>
                         <PopoverContent className="w-32 p-1.5 rounded-xl border border-gray-100 shadow-lg" align="end">
-                            <button 
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     dispatch(unfollow(isFollowingObj._id));
-                                }} 
+                                }}
                                 className="w-full text-left px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition"
                             >
                                 Unfollow
@@ -98,7 +98,7 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                         {member.courseIds?.length > 0 ? member.courseIds[0].course_short_name : member.universityId.name}
                     </span>
                 </div>
-                
+
                 {/* Simplified Skills/Exp label */}
                 <div className="flex items-center justify-center gap-3">
                     <div className="flex items-center gap-1 text-[10px] text-[#5d5a86]/60 font-medium">
@@ -121,29 +121,29 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                 >
                     View Profile
                 </button>
-            <button
-                onClick={handleNetworkAction}
-                disabled={isRequested || loading}
-                className={cn(
-                    "w-full py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2",
-                    isFollowing 
-                        ? "bg-indigo-50 text-indigo-600 border border-indigo-100" 
-                        : isRequested 
-                            ? "bg-gray-100 text-gray-500 cursor-not-allowed" 
-                            : "bg-[#2949ef] text-white hover:bg-[#1339e3] shadow-md shadow-[#2949ef]/10"
-                )}
-            >
-                {isFollowing ? (
-                    "Connected"
-                ) : isRequested ? (
-                    "Requested"
-                ) : (
-                    <>
-                        <Send size={12} />
-                        Network
-                    </>
-                )}
-            </button>
+                <button
+                    onClick={handleNetworkAction}
+                    disabled={isRequested || loading}
+                    className={cn(
+                        "w-full py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2",
+                        isFollowing
+                            ? "bg-indigo-50 text-indigo-600 border border-indigo-100"
+                            : isRequested
+                                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                : "bg-[#2949ef] text-white hover:bg-[#1339e3] shadow-md shadow-[#2949ef]/10"
+                    )}
+                >
+                    {isFollowing ? (
+                        "Connected"
+                    ) : isRequested ? (
+                        "Requested"
+                    ) : (
+                        <>
+                            <Send size={12} />
+                            Network
+                        </>
+                    )}
+                </button>
             </div>
         </motion.div>
     )

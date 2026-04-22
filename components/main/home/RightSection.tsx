@@ -27,7 +27,7 @@ export default function RightSection() {
     return (
         <aside className="w-full space-y-6">
             {/* Upcoming Events */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#b1addd]/10">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/10">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-[#302e56] font-headline">Upcoming Events</h3>
                     <CalendarIcon className="text-[#5d5a86] w-5 h-5" />
@@ -39,8 +39,8 @@ export default function RightSection() {
                                 <div className={cn(
                                     "h-10 w-10 min-w-[40px] rounded-xl flex flex-col items-center justify-center",
                                     event.color === 'primary' ? "bg-[#2949ef]/10 text-[#2949ef]" :
-                                    event.color === 'secondary' ? "bg-[#006c5c]/10 text-[#006c5c]" :
-                                    "bg-[#ad3407]/10 text-[#ad3407]"
+                                        event.color === 'secondary' ? "bg-[#006c5c]/10 text-[#006c5c]" :
+                                            "bg-[#ad3407]/10 text-[#ad3407]"
                                 )}>
                                     <span className="text-[10px] font-bold">{event.month}</span>
                                     <span className="text-sm font-black">{event.date}</span>
@@ -49,8 +49,8 @@ export default function RightSection() {
                                     <h5 className={cn(
                                         "text-xs font-bold transition-colors",
                                         event.color === 'primary' ? "group-hover:text-[#2949ef]" :
-                                        event.color === 'secondary' ? "group-hover:text-[#006c5c]" :
-                                        "group-hover:text-[#ad3407]"
+                                            event.color === 'secondary' ? "group-hover:text-[#006c5c]" :
+                                                "group-hover:text-[#ad3407]"
                                     )}>{event.title}</h5>
                                     <p className="text-[10px] text-[#5d5a86]">{event.location} • {event.time}</p>
                                 </div>
@@ -61,7 +61,7 @@ export default function RightSection() {
             </div>
 
             {/* Discover Groups */}
-            <div className="bg-[#f6f2ff] rounded-3xl p-6 border border-[#b1addd]/5">
+            <div className="bg-secondary/5 rounded-3xl p-6 border border-[#b1addd]/5">
                 <h3 className="font-bold text-[#302e56] font-headline mb-4">Discover Groups</h3>
                 <div className="space-y-4">
                     {groups.map((group, idx) => (
@@ -75,7 +75,7 @@ export default function RightSection() {
                                     <p className="text-[9px] text-[#5d5a86]">{group.members}</p>
                                 </div>
                             </div>
-                            <button className="text-[10px] font-bold text-[#2949ef] px-3 py-1 rounded-full border border-[#2949ef]/20 hover:bg-[#2949ef] hover:text-white transition-colors">Join</button>
+                            <button className="text-[10px] font-bold text-black px-3 py-1 rounded-full border border-secondary/40 hover:bg-primary hover:text-white transition-colors">Join</button>
                         </div>
                     ))}
                 </div>

@@ -27,7 +27,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
       });
     }
   }, [isAuthenticated, me, dispatch]);
-  
+
   const mode = (searchParams.get("mode") as
     "login" |
     "signup" |
@@ -52,7 +52,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
 
   // ✅ Authenticated View: Header, Sidebar, and Page Content
   return (
-    <div className="flex min-h-screen flex-col bg-[#fcf8ff]">
+    <div className="flex min-h-screen flex-col bg-white/10">
       <Header />
       <div className="w-full max-w-[85rem] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         {/* Persistent Left Sidebar */}

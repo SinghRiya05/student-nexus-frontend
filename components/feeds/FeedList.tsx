@@ -44,7 +44,7 @@ export function FeedList() {
     }
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-5">
             <AnimatePresence mode="popLayout">
                 {feeds.map((post) => (
                     <PostCard
@@ -57,6 +57,7 @@ export function FeedList() {
                         commentsCount={post.commentsCount}
                         viewsCount={post.viewsCount}
                         publishedAt={post.createdAt}
+                        isLiked={post.isLiked}
                         media={post.media}
                     />
                 ))}
