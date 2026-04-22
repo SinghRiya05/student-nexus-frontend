@@ -503,7 +503,7 @@ export default function ProfileSection() {
 
 
                     {/* Experience & Projects */}
-                    <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
                         <div className="flex items-center justify-between ">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
@@ -536,7 +536,7 @@ export default function ProfileSection() {
                                 </div>
                             )}
                         </div>
-                    </Card>
+                    </Card>}
 
                     {/* Teacher Resources Section */}
                     {user?.roleId?.name === "TEACHER" && (
@@ -642,7 +642,7 @@ export default function ProfileSection() {
                     )}
 
                     {/* Skills */}
-                    <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
+                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && <Card className="bg-white p-5 rounded-2xl border-gray-100 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                                 <Users size={20} />
@@ -666,7 +666,7 @@ export default function ProfileSection() {
                                 </div>
                             )}
                         </div>
-                    </Card>
+                    </Card>}
                 </div>
 
                 {/* Right Column (Sidebar) */}

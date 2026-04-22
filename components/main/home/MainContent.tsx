@@ -70,10 +70,10 @@ export default function MainContent() {
     const { universityAlumni: alumni } = useAppSelector((state) => state.alumni);
 
     const [fetching, setFetching] = useState({
-        classmates: true,
-        batchmates: true,
-        teachers: true,
-        alumni: true
+        classmates: classmates.length === 0,
+        batchmates: batchmates.length === 0,
+        teachers: sameUniversityTeachers.length === 0,
+        alumni: alumni.length === 0
     });
 
     useEffect(() => {

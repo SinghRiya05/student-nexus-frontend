@@ -215,7 +215,7 @@ export function PostCard({
                   </div>
                   <span className="text-[12px] font-bold text-[#1a1a3b]">{isAuthor ? "View Report Status" : "Report Post"}</span>
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuItem className="flex items-center gap-3 p-3 cursor-pointer hover:bg-blue-50 rounded-xl transition-all group mt-1">
                   <div className="p-1.5 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
                     <Share2 className="w-3.5 h-3.5 text-blue-500" />
@@ -298,7 +298,7 @@ export function PostCard({
               </DialogHeader>
               <div className="relative w-full h-full flex items-center justify-center p-4">
                 <img
-                  src={selectedImg || ""}
+                  src={selectedImg || "/user.svg"}
                   alt="Preview"
                   className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
                 />
@@ -346,15 +346,15 @@ export function PostCard({
                   <span className="text-[11px] font-black tracking-tight">{likesCount + (isLiked ? 1 : 0)}</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => {
                     setShowComments(!showComments);
                     if (!showComments) fetchComments();
                   }}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 border",
-                    showComments 
-                      ? "bg-blue-50 text-blue-500 border-blue-100" 
+                    showComments
+                      ? "bg-blue-50 text-blue-500 border-blue-100"
                       : "text-muted-foreground hover:text-blue-500 hover:bg-blue-50/50 hover:border-blue-100"
                   )}
                 >
@@ -408,20 +408,20 @@ export function PostCard({
                   {/* Comment Input */}
                   <div className="flex gap-3 mb-8">
                     <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 ring-2 ring-primary/10">
-                      <img 
-                        src={user?.avatar ? `${ASSET_URL}${user.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`} 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={user?.avatar ? `${ASSET_URL}${user.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`}
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 relative group">
-                      <Input 
+                      <Input
                         placeholder="Join the discussion..."
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                         className="h-10 pr-12 bg-gray-50/50 border-gray-100/50 rounded-xl focus:bg-white transition-all text-xs font-medium placeholder:text-gray-400"
                       />
-                      <button 
+                      <button
                         disabled={isSubmittingComment || !commentText.trim()}
                         onClick={handleAddComment}
                         className="absolute right-2 top-1.5 p-1.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all disabled:opacity-30 disabled:grayscale"
@@ -440,16 +440,16 @@ export function PostCard({
                       </div>
                     ) : commentsList.length > 0 ? (
                       commentsList.map((comment) => (
-                        <motion.div 
+                        <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          key={comment._id} 
+                          key={comment._id}
                           className="flex gap-3 group"
                         >
                           <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 mt-0.5">
-                            <img 
-                              src={comment.authorId.avatar ? `${ASSET_URL}${comment.authorId.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorId.firstName}`} 
-                              className="w-full h-full object-cover" 
+                            <img
+                              src={comment.authorId.avatar ? `${ASSET_URL}${comment.authorId.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorId.firstName}`}
+                              className="w-full h-full object-cover"
                             />
                           </div>
                           <div className="flex-1">
@@ -464,7 +464,7 @@ export function PostCard({
 
                               {/* Delete Comment - Restricted visibility */}
                               {(comment.authorId._id === user?._id || isAuthor) && (
-                                <button 
+                                <button
                                   onClick={() => handleDeleteComment(comment._id)}
                                   className="absolute -right-2 -top-2 p-1.5 bg-white text-rose-500 rounded-lg shadow-sm border border-rose-100 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white"
                                 >
@@ -519,19 +519,19 @@ export function PostCard({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between ml-1">
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1a1a3b] opacity-60">Media Attachment</Label>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => fileInputRef.current?.click()}
                         className="h-7 text-[9px] font-black uppercase tracking-widest text-primary hover:bg-primary/5 rounded-lg"
                       >
                         <ImageIcon className="w-3 h-3 mr-1.5" />
                         {editMediaPreview ? "Change Media" : "Add Media"}
                       </Button>
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
@@ -543,11 +543,11 @@ export function PostCard({
                         }}
                       />
                     </div>
-                    
+
                     {editMediaPreview ? (
                       <div className="w-full h-40 rounded-2xl overflow-hidden border border-gray-100 group relative bg-gray-50/50 flex items-center justify-center">
                         <img src={editMediaPreview} className="max-w-full max-h-full object-contain" />
-                        <button 
+                        <button
                           onClick={() => {
                             setEditMedia(null);
                             setEditMediaPreview(null);
@@ -559,7 +559,7 @@ export function PostCard({
                         </button>
                       </div>
                     ) : (
-                      <div 
+                      <div
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full h-40 rounded-2xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50/50 transition-all group"
                       >
@@ -591,7 +591,7 @@ export function PostCard({
                       } else if (mediaRemoved) {
                         formData.append("media", ""); // Signal removal
                       }
-                      
+
                       const res = await dispatch(updateFeed({ id, feedData: formData as any }));
                       if (updateFeed.fulfilled.match(res)) {
                         toast.success("Post updated successfully!");
