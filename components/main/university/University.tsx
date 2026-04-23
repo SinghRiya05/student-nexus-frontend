@@ -87,7 +87,7 @@ export default function University() {
                         {featuredUniData && (
                             <section className="relative h-[400px] rounded-2xl overflow-hidden border-2 border-primary/10 shadow-2xl group cursor-pointer">
                                 <img
-                                    src={"http://localhost:5000/" + featuredUniData.image || "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80"}
+                                    src={featuredUniData.image}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     alt="Featured University"
                                 />

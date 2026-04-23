@@ -27,6 +27,48 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+const ProfessorProfileSkeleton = () => (
+  <div className="mx-auto w-full max-w-[1300px] space-y-8 pt-2 px-4 sm:px-6 animate-pulse">
+    {/* Hero Skeleton */}
+    <div className="h-64 md:h-80 bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
+      <div className="h-24 md:h-36 bg-gray-100/50" />
+      <div className="px-6 md:px-8 pb-8">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+          <div className="h-32 w-32 md:h-40 md:w-40 rounded-3xl bg-gray-100/80 -mt-12 md:-mt-20 border-[6px] border-white shadow-lg shrink-0" />
+          <div className="flex-1 pt-4 space-y-4 w-full">
+            <div className="h-8 w-48 md:w-64 bg-gray-100/60 rounded-xl mx-auto md:mx-0" />
+            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+              <div className="h-4 w-32 bg-gray-100/40 rounded-lg" />
+              <div className="h-4 w-40 bg-gray-100/40 rounded-lg" />
+              <div className="h-4 w-24 bg-gray-100/40 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      {/* Main Content Skeleton */}
+      <div className="lg:col-span-8 space-y-8">
+        <Card className="h-48 bg-white border-blue-50/50 rounded-xl" />
+        <Card className="h-40 bg-white border-blue-50/50 rounded-xl" />
+        <div className="space-y-6">
+          <div className="h-6 w-48 bg-gray-100/60 rounded-lg" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="h-32 bg-white border-gray-50 rounded-xl" />
+            <Card className="h-32 bg-white border-gray-50 rounded-xl" />
+          </div>
+        </div>
+      </div>
+      {/* Sidebar Skeleton */}
+      <div className="lg:col-span-4 space-y-8">
+        <Card className="h-40 bg-white border-blue-50/50 rounded-xl" />
+        <Card className="h-64 bg-white border-blue-50/50 rounded-xl" />
+      </div>
+    </div>
+  </div>
+);
+
 export default function ProfessorProfileMain() {
   const { id } = useParams();
   const dispatch = useAppDispatch();
@@ -42,12 +84,7 @@ export default function ProfessorProfileMain() {
   }, [id, dispatch]);
 
   if (loading) {
-    return (
-      <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
-        <div className="h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-        <p className="font-black text-indigo-600 animate-pulse uppercase tracking-[0.2em] text-[10px]">Syncing Nexus Profile...</p>
-      </div>
-    );
+    return <ProfessorProfileSkeleton />;
   }
 
   if (error || !teacher) {

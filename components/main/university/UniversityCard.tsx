@@ -105,22 +105,12 @@ const UniversityCard = ({ variant = "grid", university }: UniversityCardProps) =
         >
             <Card className="glass-card border-none rounded-sm overflow-hidden hover:shadow-2xl transition-all duration-300 p-0">
                 <CardContent className="p-0">
-                    <div className={cn("h-52 relative overflow-hidden bg-slate-100", university.color || "bg-slate-100")}>
+                    <div className={cn("h-52 relative overflow-hidden bg-slate-100")}>
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
-                        <img src={
-                            university.image
-                                ? `http://localhost:5000/${university.image}`
-                                : "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80"
-                        } className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                        <img src={university.image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                             <div className="w-20 h-20 rounded-full bg-white shadow-xl flex items-center justify-center p-4 border-4 border-white">
-                                {university.logo && <img
-                                    src={
-                                        `http://localhost:5000/${university.logo}`
-                                    }
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    alt="University Logo"
-                                />}
+                                {university.logo && <img src={university.logo} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="University Logo" />}
                                 {!university.logo && <Building2 className="w-10 h-10 text-primary/20" />}
 
                             </div>

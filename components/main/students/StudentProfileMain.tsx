@@ -197,7 +197,7 @@ export default function StudentProfileMain({ id }: { id: string }) {
                 <div className="h-24 md:h-36 relative overflow-hidden bg-background border-b border-border">
                     {student.coverImage ? (
                         <img
-                            src={`${ASSET_URL}${student.coverImage}`}
+                            src={`${student.coverImage}`}
                             className="w-full h-full object-cover"
                             alt="Cover"
                         />
@@ -214,7 +214,7 @@ export default function StudentProfileMain({ id }: { id: string }) {
                             <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-background overflow-hidden bg-primary/5 ring-2 ring-primary/50 flex items-center justify-center font-black text-4xl md:text-5xl text-primary">
                                 {student.avatar ? (
                                     <img
-                                        src={`${ASSET_URL}${student.avatar}`}
+                                        src={`${student.avatar}`}
                                         className="w-full h-full object-cover"
                                         alt="Profile"
                                     />

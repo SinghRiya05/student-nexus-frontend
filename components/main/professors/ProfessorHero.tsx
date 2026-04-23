@@ -32,7 +32,7 @@ export default function ProfessorHero({
       <div className="h-24 md:h-36 relative overflow-hidden bg-slate-50 border-b border-gray-100">
         {member?.coverImage ? (
           <img
-            src={member.coverImage.startsWith('http') ? member.coverImage : `${ASSET_URL}${member.coverImage}`}
+            src={member.coverImage}
             className="w-full h-full object-cover"
             alt="Cover"
           />
@@ -50,9 +50,7 @@ export default function ProfessorHero({
             <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-white ring-2 ring-primary/50 flex items-center justify-center font-black text-3xl  text-primary">
               {member?.avatar ? (
                 <img
-                  src={member.avatar.startsWith('http')
-                    ? member.avatar
-                    : `${ASSET_URL}${member.avatar}`}
+                  src={member.avatar}
                   className="w-full h-full object-cover"
                   alt="Profile"
                 />

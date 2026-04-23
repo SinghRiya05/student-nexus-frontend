@@ -21,8 +21,8 @@ export const UniversityProfile: React.FC<UniversityProfileProps> = ({ data }) =>
       <UniversityHeader
         name={data?.name?.toUpperCase()}
         location={`${data?.country?.name}, ${data?.state?.name}, ${data?.city?.name}`}
-        bannerImage={data?.image ? `http://localhost:5000/${data?.image}` : ""}
-        logoImage={data?.logo ? `http://localhost:5000/${data?.logo}` : ""}
+        bannerImage={data?.image}
+        logoImage={data?.logo}
       />
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">

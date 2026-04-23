@@ -60,6 +60,45 @@ const ExperienceItem = ({ title, role, date, description }: any) => (
     </div>
 );
 
+const AlumniProfileSkeleton = () => (
+    <div className="space-y-6 animate-pulse">
+        {/* Hero Skeleton */}
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
+            <div className="h-24 md:h-36 bg-gray-100/50" />
+            <div className="px-6 md:px-8 py-6">
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] bg-gray-100/80 -mt-12 md:-mt-20 border-[6px] border-white shadow-lg shrink-0" />
+                    <div className="flex-1 space-y-4 w-full">
+                        <div className="flex flex-col md:flex-row items-center gap-3">
+                            <div className="h-8 w-48 md:w-64 bg-gray-100 rounded-xl" />
+                            <div className="h-5 w-24 bg-emerald-50 rounded-lg" />
+                        </div>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                            <div className="h-4 w-32 bg-gray-100/60 rounded-lg" />
+                            <div className="h-4 w-40 bg-gray-100/60 rounded-lg" />
+                            <div className="h-4 w-28 bg-gray-100/60 rounded-lg" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            <div className="lg:col-span-7 space-y-6">
+                <Card className="h-40 bg-white border-gray-100 rounded-2xl" />
+                <Card className="h-64 bg-white border-gray-100 rounded-2xl" />
+                <Card className="h-64 bg-white border-gray-100 rounded-2xl" />
+            </div>
+            <div className="lg:col-span-3 space-y-6">
+                <Card className="h-48 bg-white border-gray-100 rounded-2xl" />
+                <Card className="h-56 bg-white border-gray-100 rounded-2xl" />
+                <Card className="h-48 bg-primary/5 border-primary/10 rounded-[2rem]" />
+            </div>
+        </div>
+    </div>
+);
+
 // ─── Main Component ───────────────────────────────────────────────────────
 
 export default function AlumniProfileMain({ id }: { id: string }) {
@@ -119,12 +158,7 @@ export default function AlumniProfileMain({ id }: { id: string }) {
     };
 
     if (loading) {
-        return (
-            <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
-                <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                <p className="font-black text-blue-600 animate-pulse uppercase tracking-widest text-xs">Loading Alumni Profile...</p>
-            </div>
-        );
+        return <AlumniProfileSkeleton />;
     }
 
     if (error) {
@@ -165,7 +199,7 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                         {/* Avatar */}
                         <div className="relative group shrink-0">
                             <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-primary/5 ring-2 ring-primary/50 flex items-center justify-center font-black text-4xl md:text-5xl text-primary">
-                                {profile?.avatar ? <img src={profile.avatar.startsWith('http') ? profile.avatar : `${ASSET_URL}${profile.avatar}`} alt="" /> : <span>{alumni.firstName.charAt(0).toUpperCase()}</span>}
+                                {alumni?.avatar ? <img src={alumni?.avatar} alt="" /> : <span>{alumni.firstName.charAt(0).toUpperCase()}</span>}
                             </div>
                         </div>
 

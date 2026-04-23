@@ -64,9 +64,9 @@ export default function AlumniCard({ member }: AlumniCardProps) {
             {/* Profile Picture */}
             <div className="relative">
                 <div className="w-20 h-20 rounded-full overflow-hidden bg-indigo-50 border-2 border-indigo-100 flex items-center justify-center text-indigo-600 font-bold shadow-sm">
-                    {member.profilePicture ? (
+                    {member.avatar ? (
                         <img
-                            src={member.profilePicture}
+                            src={member.avatar}
                             alt={member.firstName}
                             className="w-full h-full object-cover"
                         />

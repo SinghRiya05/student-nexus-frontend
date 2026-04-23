@@ -275,7 +275,7 @@ export default function ProfileSection() {
                     <div className="absolute inset-0 bg-primary/20" />
                     {user?.coverImage ? (
                         <img
-                            src={`${ASSET_URL}${user.coverImage}`}
+                            src={user.coverImage}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             alt="Cover"
                         />
@@ -291,7 +291,7 @@ export default function ProfileSection() {
                         <div className="h-32 w-32 rounded-[2rem] border-4 border-card overflow-hidden shadow-2xl bg-secondary/5 ring-2 ring-secondary/10 flex items-center justify-center font-black text-4xl text-secondary">
                             {user?.avatar ? (
                                 <img
-                                    src={`${ASSET_URL}${user.avatar}`}
+                                    src={user.avatar}
                                     className="w-full h-full object-cover"
                                     alt="Profile"
                                 />

@@ -125,7 +125,7 @@ export function CreatePost() {
               <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-secondary p-0.5 shadow-md group cursor-pointer overflow-hidden">
                 <div className="h-full w-full rounded-full bg-card p-0.5 overflow-hidden">
                   <img
-                    src={user?.avatar ? `${ASSET_URL}${user.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`}
+                    src={user?.avatar && typeof user.avatar === 'string' ? (user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`}
                     alt="User Avatar"
                     className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform"
                   />

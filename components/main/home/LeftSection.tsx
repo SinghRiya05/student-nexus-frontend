@@ -61,7 +61,7 @@ export default function LeftSection() {
                 <div className="h-16 relative overflow-hidden bg-linear-to-br from-primary via-primary/80 to-[#7387ff]">
                     {me?.coverImage ? (
                         <img
-                            src={`${ASSET_URL}${me.coverImage}`}
+                            src={me.coverImage}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             alt="Banner"
                         />
@@ -89,7 +89,7 @@ export default function LeftSection() {
                                 {me?.avatar ? (
                                     <img
                                         className="w-full h-full object-cover rounded-xl"
-                                        src={`${ASSET_URL}${me.avatar}`}
+                                        src={me.avatar}
                                         alt={me.firstName || "User"}
                                     />
                                 ) : (
@@ -109,7 +109,7 @@ export default function LeftSection() {
                                 <School className="w-3 h-3 text-primary" />
                                 {me?.universityId?.name?.toUpperCase() || "University"}
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+                            <div className="flex items-center gap-2 text-xs text-on-surface-    variant font-medium">
                                 <MapPin className="w-3 h-3 text-primary" />
                                 {me?.universityId?.state?.name && me?.universityId?.city?.name
                                     ? `${me?.universityId?.state?.name?.toUpperCase()}, ${me?.universityId?.city?.name?.toUpperCase()}`

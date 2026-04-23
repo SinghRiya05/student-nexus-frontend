@@ -7,6 +7,7 @@ import { useAppSelector, useAppDispatch } from "@/utils/hook";
 import { logoutUser } from '@/features/auth/authThunk';
 import { ASSET_URL } from "@/services/apiEndpoints";
 import { getFollowing, getPendingFollowRequests, getSentRequests, getFollowers, acceptFollowRequest, rejectFollowRequest } from "@/features/follow/followThunk";
+import { getMe } from "@/features/users/userThunk";
 import {
   GraduationCap,
   Search,
@@ -70,6 +71,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   const dispatch = useAppDispatch();
   const { user: authUser } = useAppSelector((state) => state.auth);
+  const { me } = useAppSelector((state) => state.user);
   const { pendingRequests } = useAppSelector((state) => state.follow);
 
   const closeAll = () => {
@@ -80,6 +82,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   useEffect(() => {
     if (authUser?._id) {
+      dispatch(getMe());
       dispatch(getFollowing());
       dispatch(getPendingFollowRequests());
       dispatch(getSentRequests());
@@ -191,7 +194,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                             <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
                           </div>
                           <div className="flex gap-2 shrink-0">
-                            <button 
+                            <button
                               onClick={async () => {
                                 try {
                                   await dispatch(acceptFollowRequest(req._id)).unwrap();
@@ -199,12 +202,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
                                 } catch (err: any) {
                                   toast.error(err || "Failed to accept");
                                 }
-                              }} 
+                              }}
                               className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition"
                             >
                               Accept
                             </button>
-                            <button 
+                            <button
                               onClick={async () => {
                                 try {
                                   await dispatch(rejectFollowRequest(req._id)).unwrap();
@@ -212,7 +215,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                                 } catch (err: any) {
                                   toast.error(err || "Failed to decline");
                                 }
-                              }} 
+                              }}
                               className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition"
                             >
                               Decline
@@ -278,11 +281,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); setRequestsOpen(false); }}
                 className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-2.5 py-1.5 transition hover:border-indigo-200 hover:bg-indigo-50"
               >
-                {authUser?.avatar ? (
-                  <img src={`${ASSET_URL}${authUser.avatar}`} className="h-7 w-7 rounded-lg object-cover" alt="Profile" />
+                {me?.avatar || authUser?.avatar ? (
+                  <img src={me?.avatar || authUser?.avatar} className="h-7 w-7 rounded-lg object-cover" alt="Profile" />
                 ) : (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-violet-600 text-[0.7rem] font-bold text-white uppercase">
-                    {authUser?.firstName?.[0] || "?"}
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary/60 to-primary/30 text-[0.7rem] font-bold text-white uppercase">
+                    {me?.firstName?.[0] || authUser?.firstName?.[0] || "?"}
                   </div>
                 )}
                 <span className="hidden text-[0.78rem] font-semibold text-gray-800 sm:block">
@@ -300,16 +303,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   {/* User info */}
                   <div className="border-b border-gray-100 p-4">
                     <div className="flex items-center gap-3">
-                      {authUser?.avatar ? (
-                        <img src={`${ASSET_URL}${authUser.avatar}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl object-cover" alt="Profile" />
+                      {me?.avatar || authUser?.avatar ? (
+                        <img src={me?.avatar || authUser?.avatar} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl object-cover" alt="Profile" />
                       ) : (
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-secondary/10 to-secondary/10 text-lg font-bold text-white uppercase">
-                          {authUser?.firstName?.[0] || "?"}
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/60 to-primary/30 text-lg font-bold text-white uppercase">
+                          {me?.firstName?.[0] || authUser?.firstName?.[0] || "?"}
                         </div>
                       )}
                       <div className="overflow-hidden">
-                        <p className="text-[0.82rem] font-bold text-gray-900 truncate">{authUser?.firstName} {authUser?.lastName}</p>
-                        <p className="text-[0.68rem] text-gray-400 truncate capitalize">{authUser?.roleId?.name?.toLowerCase() || "Student"} • {authUser?.universityId?.name || "University"}</p>
+                        <p className="text-[0.82rem] font-bold text-gray-900 truncate">{me?.firstName || authUser?.firstName} {me?.lastName || authUser?.lastName}</p>
+                        <p className="text-[0.68rem] text-gray-400 truncate capitalize">{me?.roleId?.name?.toLowerCase() || authUser?.roleId?.name?.toLowerCase() || "Student"} • {me?.universityId?.name || authUser?.universityId?.name || "University"}</p>
                       </div>
                     </div>
                   </div>

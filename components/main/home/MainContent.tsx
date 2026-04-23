@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Button } from "@/components/ui/button"
-import { Plus, MoveRight, Building2, Terminal, Globe, Landmark, Home, Send } from "lucide-react"
+import { Plus, MoveRight, Building2, Terminal, Globe, Landmark, Home, Send, LogOut } from "lucide-react"
 import { UserCard } from "./UserCard"
 import { cn } from "@/lib/utils"
 import { useRouter } from 'next/navigation'
@@ -11,6 +11,16 @@ import { getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedSemest
 import { useEffect, useState } from "react"
 import { getTeachersFromSameUniversity } from '@/features/teacher/teacherThunk'
 import { fetchAlumniByMyUniversity } from '@/features/alumni/alumniThunk'
+import { sendFollowRequest, unfollow, getFollowing, getSentRequests } from '@/features/follow/followThunk'
+import toast from 'react-hot-toast'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 // --- Skeleton Components ---
 const UserCardSkeletonPrimary = () => (
@@ -68,6 +78,7 @@ export default function MainContent() {
     const { classmates, batchmates } = useAppSelector((state) => state.student);
     const { sameUniversityTeachers } = useAppSelector((state) => state.teacher);
     const { universityAlumni: alumni } = useAppSelector((state) => state.alumni);
+    const { following, sentRequests } = useAppSelector((state) => state.follow);
 
     const [fetching, setFetching] = useState({
         classmates: classmates.length === 0,
@@ -75,6 +86,10 @@ export default function MainContent() {
         teachers: sameUniversityTeachers.length === 0,
         alumni: alumni.length === 0
     });
+
+    const [isUnfollowDialogOpen, setIsUnfollowDialogOpen] = useState(false);
+    const [userToUnfollow, setUserToUnfollow] = useState<{ id: string; name: string } | null>(null);
+    const [isUnfollowing, setIsUnfollowing] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -103,12 +118,31 @@ export default function MainContent() {
                 await dispatch(fetchAlumniByMyUniversity());
             }
             if (mounted) setFetching(prev => ({ ...prev, alumni: false }));
+
+            // Follow States
+            await dispatch(getFollowing());
+            await dispatch(getSentRequests());
         };
 
         fetchData();
 
         return () => { mounted = false; };
     }, [dispatch]);
+
+    const handleUnfollow = async () => {
+        if (!userToUnfollow) return;
+        setIsUnfollowing(true);
+        try {
+            await dispatch(unfollow(userToUnfollow.id)).unwrap();
+            toast.success(`Unfollowed ${userToUnfollow.name}`);
+            setIsUnfollowDialogOpen(false);
+            setUserToUnfollow(null);
+        } catch (err: any) {
+            toast.error(err || "Failed to unfollow");
+        } finally {
+            setIsUnfollowing(false);
+        }
+    };
 
 
 
@@ -144,7 +178,7 @@ export default function MainContent() {
                                     userId={user._id}
                                     name={`${user.firstName} ${user.lastName}`}
                                     role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
-                                    image={user.avatar || user.profilePicture || undefined}
+                                    image={user.avatar}
                                     variant="primary"
                                 />
                             ))}
@@ -173,7 +207,7 @@ export default function MainContent() {
                                     userId={user._id}
                                     name={`${user.firstName} ${user.lastName}`}
                                     role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
-                                    image={user.avatar || user.profilePicture || undefined}
+                                    image={user.avatar}
                                     variant="secondary"
                                 />
                             ))}
@@ -191,12 +225,12 @@ export default function MainContent() {
                     <h2 className="text-xl font-bold">BBD University - Professors</h2>
                     <button onClick={() => router.push("/professors")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
                 </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-2">
+                <div className="grid grid-rows-2 grid-flow-col gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-2">
                     {fetching.teachers ? (
                         [1, 2, 3, 4].map((i) => <ProfessorSkeleton key={i} />)
                     ) : (
                         <>
-                            {sameUniversityTeachers.slice(0, 5).map((prof, idx) => (
+                            {sameUniversityTeachers.slice(0, 10).map((prof, idx) => (
                                 <div key={idx} onClick={() => router.push(`/professors/${prof._id}`)} className="min-w-[362px] bg-white p-5 rounded-2xl shadow-sm border border-border/10 flex gap-4 snap-start mb-1 hover:shadow-md transition-shadow">
                                     {prof.avatar ? (
                                         <img className="w-20 h-20 rounded-xl object-cover" src={prof.avatar} alt={`${prof.firstName} ${prof.lastName}`} />
@@ -273,27 +307,63 @@ export default function MainContent() {
                         [1, 2, 3, 4, 5].map((i) => <AlumniSkeleton key={i} />)
                     ) : (
                         <>
-                            {alumni.slice(0, 5).map((member, idx) => (
-                                <div key={idx} onClick={() => router.push(`/alumni/${member._id}`)} className="min-w-[240px] bg-white border border-border/10 p-5 rounded-3xl flex flex-col gap-4 cursor-pointer">
-                                    <div className="flex items-center gap-4">
-                                        {member.avatar ? (
-                                            <img className="w-12 h-12 rounded-full object-cover" src={member.avatar} alt={member.firstName} />
-                                        ) : (
-                                            <div className="w-20 h-20 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary font-bold text-2xl border border-secondary/20 uppercase flex-shrink-0">
-                                                {member.firstName?.[0]}
+                            {alumni.slice(0, 5).map((member, idx) => {
+                                const isFollowing = following.some(f => (f.following?._id || f.following) === member._id);
+                                const isRequested = sentRequests.some(r => (r.following?._id || r.following) === member._id);
+
+                                return (
+                                    <div key={idx} onClick={() => router.push(`/alumni/${member._id}`)} className="min-w-[240px] bg-white border border-border/10 p-5 rounded-3xl flex flex-col gap-4 cursor-pointer">
+                                        <div className="flex items-center gap-4">
+                                            {member.avatar ? (
+                                                <img className="w-12 h-12 rounded-full object-cover" src={member.avatar} alt={member.firstName} />
+                                            ) : (
+                                                <div className="w-20 h-20 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary font-bold text-2xl border border-secondary/20 uppercase flex-shrink-0">
+                                                    {member.firstName?.[0]}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h4 className="font-bold text-sm text-black">{member.firstName} {member.lastName}</h4>
+                                                <p className="text-[10px] text-black/70">{member.aluminiProfile?.jobTitle} • {member.aluminiProfile?.currentCompany}</p>
                                             </div>
-                                        )}
-                                        <div>
-                                            <h4 className="font-bold text-sm text-black">{member.firstName} {member.lastName}</h4>
-                                            <p className="text-[10px] text-black/70">{member.aluminiProfile?.jobTitle} • {member.aluminiProfile?.currentCompany}</p>
                                         </div>
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (isFollowing) {
+                                                    setUserToUnfollow({ id: member._id, name: `${member.firstName} ${member.lastName}` });
+                                                    setIsUnfollowDialogOpen(true);
+                                                    return;
+                                                }
+                                                if (isRequested) return;
+                                                try {
+                                                    await dispatch(sendFollowRequest(member._id)).unwrap();
+                                                    toast.success("Follow request sent!");
+                                                } catch (err: any) {
+                                                    toast.error(err || "Failed to follow");
+                                                }
+                                            }}
+                                            disabled={isRequested}
+                                            className={cn(
+                                                "w-full py-2 cursor-pointer rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2",
+                                                isFollowing ? "bg-green-100 text-green-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 border border-transparent" :
+                                                    isRequested ? "bg-blue-50 text-blue-500" :
+                                                        "bg-secondary/10 text-black hover:bg-secondary/30"
+                                            )}
+                                        >
+                                            {isFollowing ? (
+                                                <>Following</>
+                                            ) : isRequested ? (
+                                                <>Requested</>
+                                            ) : (
+                                                <>
+                                                    <Send className="w-3 h-3" />
+                                                    Send Request
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
-                                    <button className="w-full py-2 cursor-pointer bg-secondary/10 text-black rounded-xl text-xs font-bold hover:bg-secondary/30 transition-colors flex items-center justify-center gap-2">
-                                        <Send className="w-3 h-3" />
-                                        Send Request
-                                    </button>
-                                </div>
-                            ))}
+                                )
+                            })}
                             {alumni.length === 0 && (
                                 <p className="text-sm px-3 text-black/50 italic py-5">No alumni discovered yet.</p>
                             )}
@@ -301,6 +371,40 @@ export default function MainContent() {
                     )}
                 </div>
             </section>
+
+            {/* Unfollow Confirmation Dialog */}
+            <Dialog open={isUnfollowDialogOpen} onOpenChange={setIsUnfollowDialogOpen}>
+                <DialogContent className="sm:max-w-[400px] rounded-3xl p-8 border-none shadow-2xl">
+                    <DialogHeader className="space-y-4">
+                        <div className="mx-auto w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 mb-2">
+                            <LogOut className="w-8 h-8" />
+                        </div>
+                        <DialogTitle className="text-2xl font-black text-center text-slate-900">
+                            Unfollow {userToUnfollow?.name.split(' ')[0]}?
+                        </DialogTitle>
+                        <DialogDescription className="text-center text-slate-500 font-bold leading-relaxed">
+                            Are you sure you want to disconnect? You'll stop seeing their updates in your feed.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsUnfollowDialogOpen(false)}
+                            className="flex-1 rounded-2xl h-12 font-black border-slate-200 hover:bg-slate-50 text-slate-600"
+                        >
+                            Keep Following
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleUnfollow}
+                            disabled={isUnfollowing}
+                            className="flex-1 rounded-2xl h-12 font-black bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-200"
+                        >
+                            {isUnfollowing ? "Unfollowing..." : "Yes, Unfollow"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

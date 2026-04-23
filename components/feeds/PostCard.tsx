@@ -168,7 +168,7 @@ export function PostCard({
               <div className="relative group cursor-pointer">
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 transition-all duration-300 group-hover:border-primary/50">
                   <img
-                    src={author.avatar ? `${ASSET_URL}${author.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${author.firstName}`}
+                    src={author.avatar && typeof author.avatar === 'string' ? (author.avatar.startsWith('http') ? author.avatar : `${ASSET_URL}${author.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${author.firstName}`}
                     alt={`${author.firstName} ${author.lastName}`}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -282,11 +282,11 @@ export function PostCard({
           {media && (
             <div className="px-6 mb-5">
               <div
-                onClick={() => setSelectedImg(`${ASSET_URL}${media}`)}
+                onClick={() => setSelectedImg(typeof media === 'string' && media.startsWith('http') ? media : `${ASSET_URL}${media}`)}
                 className=" max-w-full rounded-xl overflow-hidden border border-gray-100 bg-gray-50/50 flex items-center justify-center cursor-zoom-in group/container relative hover:shadow-inner transition-all duration-500"
               >
                 <img
-                  src={`${ASSET_URL}${media}`}
+                  src={typeof media === 'string' && media.startsWith('http') ? media : `${ASSET_URL}${media}`}
                   alt="Post media"
                   className=" w-auto object-contain transition-transform duration-1000 group-hover/container:scale-105"
                 />
@@ -340,11 +340,11 @@ export function PostCard({
                   onClick={async () => {
                     if (isLiking) return;
                     setIsLiking(true);
-                    
+
                     try {
                       // We toggle local state for immediate feedback
                       setIsLiked(!isLiked);
-                      
+
                       const res = await dispatch(toggleLike(id));
                       if (toggleLike.fulfilled.match(res)) {
                         // Backend returns the definitive state
@@ -435,7 +435,7 @@ export function PostCard({
                   <div className="flex gap-3 mb-8">
                     <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 ring-2 ring-primary/10">
                       <img
-                        src={user?.avatar ? `${ASSET_URL}${user.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`}
+                        src={user?.avatar && typeof user.avatar === 'string' ? (user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName}`}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -474,14 +474,18 @@ export function PostCard({
                         >
                           <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 mt-0.5">
                             <img
-                              src={comment.authorId.avatar ? `${ASSET_URL}${comment.authorId.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorId.firstName}`}
+                              src={comment.authorId && typeof comment.authorId === 'object' && comment.authorId.avatar && typeof comment.authorId.avatar === 'string' 
+                                ? (comment.authorId.avatar.startsWith('http') ? comment.authorId.avatar : `${ASSET_URL}${comment.authorId.avatar}`) 
+                                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorId && typeof comment.authorId === 'object' ? comment.authorId.firstName : 'User'}`}
                               className="w-full h-full object-cover"
                             />
                           </div>
                           <div className="flex-1">
                             <div className="bg-gray-50/80 p-3 rounded-2xl rounded-tl-none relative border border-gray-100/50">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-[11px] font-bold text-[#1a1a3b]">{comment.authorId.firstName} {comment.authorId.lastName}</span>
+                                <span className="text-[11px] font-bold text-[#1a1a3b]">
+                                  {comment.authorId && typeof comment.authorId === 'object' ? `${comment.authorId.firstName} ${comment.authorId.lastName}` : "User"}
+                                </span>
                                 <span className="text-[9px] text-muted-foreground/60 font-medium">
                                   {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                                 </span>
@@ -489,14 +493,14 @@ export function PostCard({
                               <p className="text-[12px] text-[#1a1a3b]/80 leading-relaxed font-medium">{comment.content}</p>
 
                               {/* Delete Comment - Restricted visibility */}
-                              {(comment.authorId._id === user?._id || isAuthor) && (
+                              {/* {((comment.authorId && typeof comment.authorId === 'object' && comment.authorId._id === user?._id) || isAuthor) && (
                                 <button
                                   onClick={() => handleDeleteComment(comment._id)}
                                   className="absolute -right-2 -top-2 p-1.5 bg-white text-rose-500 rounded-lg shadow-sm border border-rose-100 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
-                              )}
+                              )} */}
                             </div>
                           </div>
                         </motion.div>

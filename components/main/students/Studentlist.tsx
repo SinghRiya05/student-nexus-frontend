@@ -255,7 +255,7 @@ export default function Studentlist() {
                                         userId={student._id}
                                         name={`${student.firstName} ${student.lastName}`}
                                         role={student.courseIds?.length > 0 ? student.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
-                                        image={student.avatar || student.profilePicture || undefined}
+                                        image={student.avatar || undefined}
                                         variant="primary"
                                         className="h-full w-full"
                                     />
