@@ -29,7 +29,7 @@ export default function ProfessorHero({
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
       {/* Cover Photo */}
-      <div className="h-32 md:h-48 relative overflow-hidden bg-slate-50 border-b border-gray-100">
+      <div className="h-24 md:h-36 relative overflow-hidden bg-slate-50 border-b border-gray-100">
         {member?.coverImage ? (
           <img
             src={member.coverImage.startsWith('http') ? member.coverImage : `${ASSET_URL}${member.coverImage}`}
@@ -37,7 +37,7 @@ export default function ProfessorHero({
             alt="Cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-blue-600" />
+          <div className="absolute inset-0 bg-primary/10" />
         )}
         <div className="absolute inset-0 bg-black/5" />
       </div>
@@ -47,12 +47,12 @@ export default function ProfessorHero({
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-20">
           {/* Avatar */}
           <div className="relative group shrink-0 -mt-20 md:-mt-24">
-            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-white ring-2 ring-indigo-100 flex items-center justify-center font-black text-3xl  text-indigo-500">
-              {member?.avatar || member?.profilePicture ? (
+            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-white ring-2 ring-primary/50 flex items-center justify-center font-black text-3xl  text-primary">
+              {member?.avatar ? (
                 <img
-                  src={(member.avatar || member.profilePicture || '').startsWith('http') 
-                    ? (member.avatar || member.profilePicture) 
-                    : `${ASSET_URL}${member.avatar || member.profilePicture}`}
+                  src={member.avatar.startsWith('http')
+                    ? member.avatar
+                    : `${ASSET_URL}${member.avatar}`}
                   className="w-full h-full object-cover"
                   alt="Profile"
                 />
@@ -82,12 +82,12 @@ export default function ProfessorHero({
                 </div>
                 <div className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full" />
                 <div className="flex items-start gap-2">
-                  <Briefcase className="w-4 h-4 text-blue-500" />
+                  <Briefcase className="w-4 h-4 text-primary" />
                   <span>{designation} • {department}</span>
                 </div>
                 <div className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full" />
                 <div className="flex items-start gap-2">
-                  <GraduationCap className="w-4 h-4 text-indigo-500" />
+                  <GraduationCap className="w-4 h-4 text-primary" />
                   <span>{course}</span>
                 </div>
               </div>
@@ -95,18 +95,12 @@ export default function ProfessorHero({
 
             <div className="flex items-center gap-3 shrink-0">
               <Button
-                className="h-12 px-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm flex gap-2 shadow-lg shadow-blue-200 transition-all hover:scale-105 active:scale-95"
+                className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/80 text-white font-black text-sm flex gap-2 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
               >
                 <UserPlus className="w-4 h-4" />
                 Connect
               </Button>
-              <Button
-                variant="outline"
-                className="h-12 px-6 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-2 transition-all hover:scale-105 active:scale-95"
-              >
-                <Send className="w-4 h-4 text-indigo-600" />
-                Message
-              </Button>
+
             </div>
           </div>
         </div>

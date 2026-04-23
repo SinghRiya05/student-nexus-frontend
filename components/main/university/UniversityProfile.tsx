@@ -8,14 +8,10 @@ import { UniversityDescription } from './UniversityDescription'
 import { UniversityStats } from './UniversityStats'
 import { UniversityCourses } from './UniversityCourses'
 import { UniversityResources } from './UniversityResources'
+import { IUniversity } from '@/features/university/universityModel'
 
 interface UniversityProfileProps {
-  data: {
-    name: string
-    location: string
-    description: string
-    bannerImage?: string
-  }
+  data: IUniversity
 }
 
 export const UniversityProfile: React.FC<UniversityProfileProps> = ({ data }) => {
@@ -23,19 +19,20 @@ export const UniversityProfile: React.FC<UniversityProfileProps> = ({ data }) =>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 space-y-8 min-h-screen">
       {/* 1. Header Section */}
       <UniversityHeader
-        name={data.name}
-        location={data.location}
-        bannerImage={data.bannerImage}
+        name={data?.name?.toUpperCase()}
+        location={`${data?.country?.name}, ${data?.state?.name}, ${data?.city?.name}`}
+        bannerImage={data?.image ? `http://localhost:5000/${data?.image}` : ""}
+        logoImage={data?.logo ? `http://localhost:5000/${data?.logo}` : ""}
       />
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* 3. Main Content Section */}
         <div className="flex-1 w-full space-y-8 pb-20">
-          <UniversityDescription description={data.description} />
+          <UniversityDescription description={data?.description || ""} />
 
-          <UniversityStats />
+          <UniversityStats userCount={data?.userCount || 0} courseCount={data?.courseCount || 0} teacherCount={data?.teacherCount || 0} />
 
-          <UniversityCourses />
+          <UniversityCourses courses={data?.courses || []} />
 
           <UniversityResources />
         </div>

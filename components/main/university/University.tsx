@@ -38,9 +38,10 @@ export default function University() {
     const mapUniversityToCard = (uni: any) => {
         if (!uni) return null;
         return {
+            id: uni._id,
             name: uni.name || "Unknown University",
             location: `${uni.city?.name || uni.city || 'Unknown City'}, ${uni.state?.name || uni.state || 'Unknown State'}`.trim(),
-            students: "15,000+", // Mock data
+            students: uni.userCount || 0,
             type: uni.universityType || "Verified",
             image: uni.image,
             logo: uni.logo,
@@ -102,7 +103,7 @@ export default function University() {
                                                     </div>
                                                     <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
                                                         <Users className="w-4 h-4 text-orange-400" />
-                                                        15,000+ Students
+                                                        {featuredUniData.userCount || 0} Students
                                                     </div>
                                                 </div>
                                             </div>
@@ -134,7 +135,7 @@ export default function University() {
                         <section className="space-y-8">
                             <h2 className="text-[30px] font-black text-black">Explore Universities</h2>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {remainingUniversities.map((uni: any, idx: number) => (
                                     <motion.div
                                         key={uni._id || idx}

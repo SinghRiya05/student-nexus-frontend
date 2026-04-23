@@ -50,12 +50,12 @@ export default function StudyResources({ resources }: StudyResourcesProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
             <h3 className="text-xs font-black uppercase tracking-widest text-[#302e56]/60">
               ACADEMIC REPOSITORY
             </h3>
           </div>
-          <span className="text-[10px] font-bold text-indigo-600/60 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+          <span className="text-[10px] font-bold text-primary/60 bg-primary/50 px-2 py-0.5 rounded-full uppercase tracking-tighter">
             {resources.length} Total items
           </span>
         </div>
@@ -94,7 +94,7 @@ export default function StudyResources({ resources }: StudyResourcesProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-10 rounded-xl text-indigo-600 font-black text-xs hover:bg-indigo-50 transition-all border border-transparent hover:border-indigo-100 px-4"
+                  className="h-10 rounded-xl text-primary font-black text-xs hover:bg-primary/50 transition-all border border-transparent hover:border-primary/50 px-4"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDownload(`${ASSET_URL}${resource.fileUrl}`, resource.title);

@@ -84,7 +84,7 @@ export default function ProfessorProfileMain() {
           {/* Bio Section */}
           <Card className="bg-white p-5 md:p-10 rounded-xl border border-blue-100 shadow-xl shadow-gray-200/20 relative overflow-hidden group">
             <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-black">
                 <User size={24} />
               </div>
               <h3 className="text-xl font-black text-[#1a1a3b]">Professional Bio</h3>
@@ -131,7 +131,7 @@ export default function ProfessorProfileMain() {
           <div className="mt-12 flex items-center justify-center gap-3 px-4 py-8 border-t border-gray-50">
             <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-gray-100 bg-white"><ChevronLeft size={18} /></Button>
             {[1, 2, 3].map((page) => (
-              <Button key={page} variant={page === 1 ? "default" : "outline"} className={`h-12 w-12 rounded-2xl font-black text-sm transition-all ${page === 1 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100" : "bg-white border-gray-100"}`}>{page}</Button>
+              <Button key={page} variant={page === 1 ? "default" : "outline"} className={`h-12 w-12 rounded-2xl font-black text-sm transition-all ${page === 1 ? "bg-primary text-white shadow-lg shadow-primary/10" : "bg-white border-gray-100"}`}>{page}</Button>
             ))}
             <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-gray-100 bg-white"><ChevronRight size={18} /></Button>
           </div>
@@ -143,22 +143,22 @@ export default function ProfessorProfileMain() {
             {/* Network Stats */}
             <Card className="bg-white p-5 rounded-xl border border-blue-100 shadow-xl shadow-gray-200/20">
               <h3 className="font-black text-[#1a1a3b] text-base flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-indigo-600" />
+                <TrendingUp className="w-4 h-4 text-primary" />
                 Network Statistics
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-2 rounded-xl bg-indigo-50/50 border border-indigo-100/50 text-center group hover:bg-indigo-100/50 transition-colors">
-                  <p className="text-2xl font-black text-indigo-600 ">{teacher?.followersCount || 0}</p>
+                  <p className="text-2xl font-black text-primary ">{teacher?.followersCount || 0}</p>
                   <div className="flex items-center justify-center gap-1.5 opacity-60">
-                    <Users size={10} className="text-indigo-600" />
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Followers</p>
+                    <Users size={10} className="text-primary" />
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">Followers</p>
                   </div>
                 </div>
                 <div className="p-2 rounded-xl bg-emerald-50/50 border border-emerald-100/50 text-center group hover:bg-emerald-100/50 transition-colors">
-                  <p className="text-2xl font-black text-emerald-600 ">{teacher?.followingCount || 0}</p>
+                  <p className="text-2xl font-black text-primary ">{teacher?.followingCount || 0}</p>
                   <div className="flex items-center justify-center gap-1.5 opacity-60">
-                    <UserPlus size={10} className="text-emerald-600" />
-                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none">Following</p>
+                    <UserPlus size={10} className="text-primary" />
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">Following</p>
                   </div>
                 </div>
               </div>

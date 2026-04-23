@@ -3,8 +3,13 @@
 import React from 'react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
-import { Star, Mail } from "lucide-react"
+import { Star, Mail, UserPlus, CheckCircle, MessageSquare } from "lucide-react"
 import Link from 'next/link'
+import { useAppDispatch, useAppSelector } from "@/utils/hook"
+import { sendFollowRequest, unfollow } from "@/features/follow/followThunk"
+import toast from "react-hot-toast"
+import { cn } from "@/lib/utils"
+import { useState } from 'react'
 
 interface ProfessorCardProps {
     id: string | number
@@ -26,11 +31,53 @@ export default function ProfessorCard({
     department,
     universityName,
     tags,
-    rating,
     isOnline = false,
     image
 }: ProfessorCardProps) {
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const [isHoveringFollow, setIsHoveringFollow] = useState(false);
+
+    const { following, followers, sentRequests, loading: followLoading } = useAppSelector(state => state.follow);
+    const { user: authUser } = useAppSelector(state => state.auth);
+
+    const isFollowingObj = following.find((f: any) =>
+        (typeof f.following === 'string' ? f.following === id : f.following?._id === id)
+    );
+    const isFollowing = !!isFollowingObj;
+
+    const isRequestedObj = sentRequests.find((r: any) =>
+        (typeof r.following === 'string' ? r.following === id : r.following?._id === id)
+    );
+    const isRequested = !!isRequestedObj;
+
+    const isFollowerObj = followers.find((f: any) =>
+        (typeof f.follower === 'string' ? f.follower === id : f.follower?._id === id)
+    );
+    const isFollower = !!isFollowerObj;
+
+    const isMutual = isFollowing && isFollower;
+
+    const handleFollowAction = async () => {
+        if (!id) return;
+        try {
+            if (isFollowing) {
+                await dispatch(unfollow(String(id))).unwrap();
+                toast.success("Unfollowed successfully");
+            } else if (!isRequested) {
+                await dispatch(sendFollowRequest(String(id))).unwrap();
+                toast.success("Follow request sent");
+            }
+        } catch (error: any) {
+            toast.error(error || "Action failed");
+        }
+    };
+
+    const handleMessageAction = () => {
+        // Implement message navigation logic here
+        // For now, let's just toast
+        toast.success("Opening chat...");
+    };
     return (
         <div className="bg-white border rounded-3xl p-6  hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-center text-center">
             <div className="relative mb-4">
@@ -73,9 +120,43 @@ export default function ProfessorCard({
                         Profile
                     </Button>
                 </Link>
-                <button className="py-2 px-4 text-white rounded-xl bg-primary  text-xs font-bold shadow-md shadow-primary/10 hover:bg-primary-dim transition-all">
-                    Message
-                </button>
+
+                {authUser?._id !== String(id) && (
+                    <>
+                        {isMutual ? (
+                            <button
+                                onClick={handleMessageAction}
+                                className="py-2 px-4 bg-secondary text-white rounded-xl cursor-pointer text-xs font-bold shadow-md shadow-secondary/10 hover:bg-secondary/80 transition-all flex items-center justify-center gap-2"
+                            >
+                                <MessageSquare className="w-4 h-4" />
+                                Message
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleFollowAction}
+                                onMouseEnter={() => setIsHoveringFollow(true)}
+                                onMouseLeave={() => setIsHoveringFollow(false)}
+                                disabled={(isRequested && !isFollowing) || followLoading}
+                                className={cn(
+                                    "py-2 px-4 rounded-xl cursor-pointer text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2",
+                                    isFollowing
+                                        ? (isHoveringFollow ? "bg-destructive text-destructive-foreground shadow-destructive/10" : "bg-accent/10 text-accent border border-accent/20")
+                                        : isRequested
+                                            ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none"
+                                            : "bg-primary text-white shadow-primary/10 hover:bg-primary/80"
+                                )}
+                            >
+                                {isFollowing ? (
+                                    isHoveringFollow ? "Unfollow" : <><CheckCircle className="w-4 h-4" /> Following</>
+                                ) : isRequested ? (
+                                    "Requested"
+                                ) : (
+                                    <><UserPlus className="w-4 h-4" /> Follow</>
+                                )}
+                            </button>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     )

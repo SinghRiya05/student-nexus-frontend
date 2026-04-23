@@ -17,8 +17,8 @@ export const UniversityDescription = ({ description }: { description: string }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden group hover:shadow-md hover:border-primary/20 transition-all duration-500">
-        <CardHeader className="flex flex-row items-center gap-3 border-b border-border/40 bg-primary/5 py-4 px-6">
+      <Card className="rounded-3xl border border-border/40 bg-white shadow-sm overflow-hidden group hover:shadow-md hover:border-primary/20 transition-all duration-500">
+        <CardHeader className="flex flex-row items-center gap-3 border-b border-border/40 bg-primary/20 py-4 px-6">
           <motion.div
             whileHover={{ rotate: 15, scale: 1.1 }}
             transition={{ type: 'spring', stiffness: 300 }}

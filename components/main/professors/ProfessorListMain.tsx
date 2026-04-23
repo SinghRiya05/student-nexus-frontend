@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getTeacherFromOtherUniversity, getTeachersFromSameUniversity } from "@/features/teacher/teacherThunk";
 import { ITeacher } from "@/features/teacher/teacherModel";
+import { getFollowers, getFollowing, getSentRequests } from "@/features/follow/followThunk";
+
 
 export default function ProfessorListMain() {
   const dispatch = useAppDispatch();
@@ -18,21 +20,42 @@ export default function ProfessorListMain() {
       try {
         await Promise.all([
           dispatch(getTeachersFromSameUniversity()).unwrap(),
-          dispatch(getTeacherFromOtherUniversity()).unwrap()
+          dispatch(getTeacherFromOtherUniversity()).unwrap(),
+          dispatch(getFollowers()),
+          dispatch(getFollowing()),
+          dispatch(getSentRequests())
         ]);
       } catch (err) {
-        console.error("Failed to fetch teachers:", err);
+        console.error("Failed to fetch data:", err);
       }
     };
     fetchTeachers();
   }, [dispatch]);
 
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [tempSearchQuery, setTempSearchQuery] = React.useState("");
   const itemsPerPage = 6;
 
   const allTeachers = [...sameUniversityTeachers, ...otherUniversityTeachers];
-  const totalPages = Math.ceil(allTeachers.length / itemsPerPage);
-  const currentTeachers = allTeachers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const filteredTeachers = allTeachers.filter((prof) => {
+    const searchLower = searchQuery.toLowerCase();
+    const fullName = `${prof.firstName} ${prof.lastName}`.toLowerCase();
+    const department = prof.teacherProfile?.department?.toLowerCase() || "";
+    const designation = prof.teacherProfile?.designation?.toLowerCase() || "";
+    const courses = prof.courseIds?.map(c => c.courseName.toLowerCase()) || [];
+    const courseShorts = prof.courseIds?.map(c => c.course_short_name.toLowerCase()) || [];
+
+    return fullName.includes(searchLower) ||
+      department.includes(searchLower) ||
+      designation.includes(searchLower) ||
+      courses.some(c => c.includes(searchLower)) ||
+      courseShorts.some(c => c.includes(searchLower));
+  });
+
+  const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
+  const currentTeachers = filteredTeachers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -49,8 +72,13 @@ export default function ProfessorListMain() {
     rating: prof.trustScore !== undefined ? (prof.trustScore / 20).toFixed(1) : "4.5",
     reviews: prof.followersCount || 0,
     isOnline: prof.verificationStatus,
-    image: prof.avatar || prof.profilePicture,
+    image: prof.avatar!,
   });
+
+  const handleSearch = () => {
+    setSearchQuery(tempSearchQuery);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 pb-20 animate-fade-in-up">
@@ -58,16 +86,20 @@ export default function ProfessorListMain() {
       <div className="flex-1 min-w-0 space-y-5">
         {/* Page Header */}
         <section className="space-y-2">
-          <h1 className="text-2xl font-bold text-on-surface tracking-tight">
+          <h1 className="text-3xl text-primary font-bold tracking-tight">
             Academic Directory
           </h1>
-          <p className=" text-gray-700 text-base max-w-2xl font-medium leading-relaxed">
+          <p className=" text-gray-600 text-base max-w-2xl font-medium leading-relaxed italic">
             Find and connect with mentors, researchers, and faculty members driving the future of innovation.
           </p>
         </section>
 
         {/* Search & Filters */}
-        <ProfessorSearch />
+        <ProfessorSearch
+          searchQuery={tempSearchQuery}
+          onSearchChange={setTempSearchQuery}
+          onSearch={handleSearch}
+        />
 
         {loading && sameUniversityTeachers.length === 0 && (
           <div className="py-20 flex flex-col items-center justify-center gap-4 text-primary">
@@ -81,8 +113,8 @@ export default function ProfessorListMain() {
         <section id="faculty-directory" className="space-y-8 pt-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-on-surface">Browse All Faculty</h2>
-            <div className="flex gap-2 text-on-surface-variant text-sm font-medium">
-              <span>Showing {currentTeachers.length} of {allTeachers.length} results</span>
+            <div className="flex gap-2 mr-5 text-on-surface-variant text-sm font-medium">
+              <span>Showing {currentTeachers.length} of {filteredTeachers.length} results</span>
             </div>
           </div>
 

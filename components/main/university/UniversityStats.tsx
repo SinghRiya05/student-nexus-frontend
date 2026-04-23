@@ -6,18 +6,23 @@ import { GraduationCap, Trophy, Users, BookOpen, Layers, BarChart2 } from 'lucid
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-const stats = [
-  { label: 'Courses', value: '1,254', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50', border: 'hover:border-blue-200', glow: 'shadow-blue-500/10' },
-  { label: 'Rank', value: '#12', icon: Trophy, color: 'text-amber-600', bg: 'bg-amber-50', border: 'hover:border-amber-200', glow: 'shadow-amber-500/10' },
-  { label: 'Students', value: '1.2M', icon: Users, color: 'text-rose-600', bg: 'bg-rose-50', border: 'hover:border-rose-200', glow: 'shadow-rose-500/10' },
-  { label: 'Faculties', value: '250', icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'hover:border-emerald-200', glow: 'shadow-emerald-500/10' },
-  { label: 'Departments', value: '85', icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'hover:border-indigo-200', glow: 'shadow-indigo-500/10' },
-]
+interface UniversityStatsProps {
+  userCount: number
+  courseCount: number
+  teacherCount: number
+}
 
-export const UniversityStats = () => {
+export const UniversityStats = ({ userCount, courseCount, teacherCount }: UniversityStatsProps) => {
+  const stats = [
+    { label: 'Courses', value: courseCount.toLocaleString(), icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50', border: 'hover:border-blue-200', glow: 'shadow-blue-500/10' },
+    { label: 'Rank', value: '#12', icon: Trophy, color: 'text-amber-600', bg: 'bg-amber-50', border: 'hover:border-amber-200', glow: 'shadow-amber-500/10' },
+    { label: 'Students', value: userCount.toLocaleString(), icon: Users, color: 'text-rose-600', bg: 'bg-rose-50', border: 'hover:border-rose-200', glow: 'shadow-rose-500/10' },
+    { label: 'Faculties', value: teacherCount.toLocaleString(), icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'hover:border-emerald-200', glow: 'shadow-emerald-500/10' },
+    { label: 'Departments', value: '85', icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'hover:border-indigo-200', glow: 'shadow-indigo-500/10' },
+  ]
   return (
-    <Card className="rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden mb-10">
-      <CardHeader className="flex flex-row items-center gap-3 border-b border-border/40 bg-primary/5 py-4 px-6">
+    <Card className="rounded-3xl border border-border/40 bg-white shadow-sm overflow-hidden mb-10">
+      <CardHeader className="flex flex-row items-center gap-3 border-b border-border/40 bg-primary/20 py-4 px-6">
         <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
           <BarChart2 className="w-4 h-4" />
         </div>

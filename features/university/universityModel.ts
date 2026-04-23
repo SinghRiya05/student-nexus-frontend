@@ -22,6 +22,10 @@ export interface IUniversity {
     isVerified: boolean;
     createdAt: string;
     updatedAt: string;
+    userCount?: number;
+    teacherCount?: number;
+    courseCount?: number;
+    courses?: string[];
 }
 
 export interface IUniversityCreate {

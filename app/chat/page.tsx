@@ -74,6 +74,10 @@ export default function ChatPage() {
   }, [selectedChatId, messages, me, chats]);
 
   const activeConversation = mappedConversations.find(c => c.id === selectedChatId) || null;
+  const isMutual = useMemo(() => {
+    if (!activeConversation || !mutualFollowers) return false;
+    return mutualFollowers.some(f => f._id === activeConversation.participant.id);
+  }, [activeConversation, mutualFollowers]);
 
 
   useEffect(() => {
@@ -91,6 +95,7 @@ export default function ChatPage() {
       dispatch(getMe());
     }
     dispatch(fetchChats());
+    dispatch(getMutualFollowers());
   }, [dispatch, me]);
 
   // --- SOCKET SUBSCRIPTIONS ---
@@ -174,7 +179,7 @@ export default function ChatPage() {
 
   const handleSendMessage = async (text: string, files?: File[]) => {
     if (!selectedChatId || !me?._id) return;
-    
+
     if (files && files.length > 0) {
       // Use REST for file uploads
       dispatch(sendMessageThunk({
@@ -283,6 +288,7 @@ export default function ChatPage() {
             currentUserId={me?._id || ''}
             onSendMessage={handleSendMessage}
             onBack={handleBackToMobileList}
+            isMutual={isMutual}
           />
         </motion.div>
       </AnimatePresence>

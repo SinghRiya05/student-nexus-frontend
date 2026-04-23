@@ -29,7 +29,9 @@ import {
   UserRound,
   Bookmark,
   User2Icon,
+  Check,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", icon: Home },
@@ -189,8 +191,32 @@ export default function Header({ onMenuClick }: HeaderProps) {
                             <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
                           </div>
                           <div className="flex gap-2 shrink-0">
-                            <button onClick={() => dispatch(acceptFollowRequest(req.follower._id))} className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition">Accept</button>
-                            <button onClick={() => dispatch(rejectFollowRequest(req.follower._id))} className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Decline</button>
+                            <button 
+                              onClick={async () => {
+                                try {
+                                  await dispatch(acceptFollowRequest(req._id)).unwrap();
+                                  toast.success("Request accepted");
+                                } catch (err: any) {
+                                  toast.error(err || "Failed to accept");
+                                }
+                              }} 
+                              className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition"
+                            >
+                              Accept
+                            </button>
+                            <button 
+                              onClick={async () => {
+                                try {
+                                  await dispatch(rejectFollowRequest(req._id)).unwrap();
+                                  toast.success("Request declined");
+                                } catch (err: any) {
+                                  toast.error(err || "Failed to decline");
+                                }
+                              }} 
+                              className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition"
+                            >
+                              Decline
+                            </button>
                           </div>
                         </div>
                       ))

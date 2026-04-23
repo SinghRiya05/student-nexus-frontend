@@ -33,19 +33,19 @@ export const UniversityResources = () => {
   }
 
   return (
-    <Card className="rounded-3xl border border-emerald-100 bg-card shadow-sm overflow-hidden">
-      <CardHeader className="flex flex-row items-center gap-3 border-b border-emerald-100 bg-emerald-50/60 py-4 px-6">
+    <Card className="rounded-3xl border border-primary/5 bg-white shadow-sm overflow-hidden">
+      <CardHeader className="flex flex-row items-center gap-3 border-b border-primary/5 bg-primary/20 py-4 px-6">
         <motion.div
           whileHover={{ rotate: 15, scale: 1.1 }}
           transition={{ type: 'spring', stiffness: 300 }}
-          className="p-1.5 bg-emerald-100 rounded-lg text-emerald-600"
+          className="p-1.5 bg-primary/10 rounded-lg text-primary"
         >
           <Library className="w-4 h-4" />
         </motion.div>
-        <CardTitle className="text-base font-black text-emerald-700 tracking-tight">
+        <CardTitle className="text-base font-black text-primary tracking-tight">
           Resources & Downloads
         </CardTitle>
-        <span className="ml-auto text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+        <span className="ml-auto text-[10px] font-black text-primary uppercase tracking-widest">
           {data.length} files
         </span>
       </CardHeader>
@@ -73,14 +73,14 @@ export const UniversityResources = () => {
                   backgroundColor: isHovered ? 'rgb(240 253 244)' : 'rgb(250 254 252)',
                   borderColor: isHovered ? 'rgb(110 231 183)' : 'rgb(209 250 229)',
                 }}
-                className="relative flex items-center gap-4 p-4 rounded-2xl border border-emerald-100 overflow-hidden"
+                className="relative flex items-center gap-4 p-4 rounded-2xl border border-primary/5 overflow-hidden"
                 style={{ boxShadow: isHovered ? '0 8px 28px rgba(16,185,129,0.14)' : 'none' }}
               >
                 {/* Icon badge */}
                 <motion.div
                   animate={{ rotate: isHovered ? 8 : 0, scale: isHovered ? 1.12 : 1 }}
                   transition={{ type: 'spring', stiffness: 300 }}
-                  className="shrink-0 p-3 rounded-xl bg-emerald-100 text-emerald-600"
+                  className="shrink-0 p-3 rounded-xl bg-primary/10 text-primary"
                 >
                   <Icon className="w-5 h-5" />
                 </motion.div>
@@ -89,10 +89,10 @@ export const UniversityResources = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-slate-800 truncate">{resource.name}</p>
                   <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider">{resource.date}</span>
-                    <span className="text-[10px] font-black text-emerald-300">•</span>
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider">{resource.size}</span>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-wider">{resource.date}</span>
+                    <span className="text-[10px] font-black text-primary">•</span>
+                    <span className="text-[10px] font-black text-primary uppercase tracking-wider">{resource.size}</span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                       {resource.type}
                     </span>
                   </div>
@@ -106,7 +106,7 @@ export const UniversityResources = () => {
                     "shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all duration-300",
                     isDone
                       ? "bg-green-100 text-green-600 cursor-default"
-                      : "bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40"
+                      : "bg-primary/10 text-primary hover:bg-primary/20 shadow-md shadow-primary/25 hover:shadow-primary/40"
                   )}
                   disabled={isDone}
                 >

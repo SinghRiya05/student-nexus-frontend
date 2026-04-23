@@ -41,6 +41,7 @@ interface ChatWindowProps {
   currentUserId: string;
   onSendMessage: (text: string, files?: File[]) => void;
   onBack?: () => void;
+  isMutual?: boolean;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -48,7 +49,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
   currentUserId,
   onSendMessage,
-  onBack
+  onBack,
+  isMutual = true
 }) => {
   const [inputText, setInputText] = useState('');
   const [isCallOverlayOpen, setIsCallOverlayOpen] = useState(false);
@@ -203,25 +205,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </button>
           )}
 
-          <div className="relative">
-            <img
-              src={participant.avatar}
-              alt={participant.name}
-              className="w-12 h-12 rounded-xl object-cover shadow-sm border border-border/50"
-            />
-            {participant.status === 'online' && (
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-card rounded-full" />
-            )}
-          </div>
-          <div>
-            <h2 className="text-lg font-black tracking-tight text-foreground">{participant.name}</h2>
-            <p className="text-xs font-bold text-muted-foreground">
-              {participant.status === 'online' ? (
-                <span className="text-green-500">Active Now</span>
-              ) : (
-                `Role: ${participant.role}`
+          <div 
+            onClick={handleViewProfile}
+            className="flex items-center gap-4 cursor-pointer group/header transition-opacity hover:opacity-80"
+          >
+            <div className="relative">
+              <img
+                src={participant.avatar}
+                alt={participant.name}
+                className="w-12 h-12 rounded-xl object-cover shadow-sm border border-border/50 group-hover/header:ring-2 group-hover/header:ring-primary/20 transition-all"
+              />
+              {participant.status === 'online' && (
+                <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-card rounded-full" />
               )}
-            </p>
+            </div>
+            <div>
+              <h2 className="text-lg font-black tracking-tight text-foreground group-hover/header:text-primary transition-colors">{participant.name}</h2>
+              <p className="text-xs font-bold text-muted-foreground">
+                {participant.status === 'online' ? (
+                  <span className="text-green-500">Active Now</span>
+                ) : (
+                  `Role: ${participant.role}`
+                )}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -426,100 +433,114 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Input Area */}
       <div className="p-4 md:p-6 bg-card border-t border-border/40 z-10 shrink-0">
-        {/* File Previews */}
-        <AnimatePresence>
-          {filePreviews.length > 0 && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="flex gap-3 mb-4 overflow-x-auto py-2 scrollbar-hide"
-            >
-              {filePreviews.map((preview, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="relative group shrink-0"
-                >
-                  <div className="w-20 h-20 rounded-xl overflow-hidden border border-border/50 bg-primary/5 flex items-center justify-center">
-                    {preview.url ? (
-                      <img src={preview.url} alt="preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-1 p-2">
-                        <FileIcon className="w-8 h-8 text-primary/40" />
-                        <span className="text-[10px] font-bold text-muted-foreground truncate w-full text-center">
-                          {preview.name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeFile(idx)}
-                    className="absolute -top-2 -right-2 p-1 bg-rose-500 text-white rounded-full shadow-lg hover:bg-rose-600 transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <form
-          onSubmit={handleSend}
-          className="flex items-end gap-2 max-w-4xl mx-auto"
-        >
-          <div className="flex-1 flex items-end gap-2 bg-primary/5 border border-primary/10 rounded-[2rem] p-2 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-card transition-all">
-            <button type="button" className="p-3 text-muted-foreground hover:text-primary transition-colors shrink-0">
-              <Smile className="w-5 h-5" />
-            </button>
-            <textarea
-              value={inputText}
-              onChange={handleInputChange}
-              placeholder="Type a message..."
-              rows={1}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend(e);
-                }
-              }}
-              className="flex-1 bg-transparent border-none py-3 px-2 text-sm focus:outline-none resize-none max-h-32 min-h-[44px] font-semibold text-foreground placeholder:text-muted-foreground/70"
-            />
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              multiple
-              className="hidden"
-            />
-            <button 
-              type="button" 
-              onClick={() => fileInputRef.current?.click()}
-              className={cn(
-                "p-3 transition-colors shrink-0",
-                selectedFiles.length > 0 ? "text-primary" : "text-muted-foreground hover:text-primary"
-              )}
-            >
-              <Paperclip className="w-5 h-5" />
-            </button>
+        {!isMutual ? (
+          <div className="flex flex-col items-center justify-center py-4 bg-primary/5 rounded-2xl border border-primary/10 border-dashed animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <ShieldAlert className="w-5 h-5 text-primary" />
+            </div>
+            <p className="text-sm font-black text-primary uppercase tracking-widest">Mutual Connection Required</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 px-8 text-center">
+              You can only send messages to users you follow and who follow you back.
+            </p>
           </div>
+        ) : (
+          <>
+            {/* File Previews */}
+            <AnimatePresence>
+              {filePreviews.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="flex gap-3 mb-4 overflow-x-auto py-2 scrollbar-hide"
+                >
+                  {filePreviews.map((preview, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="relative group shrink-0"
+                    >
+                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-border/50 bg-primary/5 flex items-center justify-center">
+                        {preview.url ? (
+                          <img src={preview.url} alt="preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-1 p-2">
+                            <FileIcon className="w-8 h-8 text-primary/40" />
+                            <span className="text-[10px] font-bold text-muted-foreground truncate w-full text-center">
+                              {preview.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="absolute -top-2 -right-2 p-1 bg-rose-500 text-white rounded-full shadow-lg hover:bg-rose-600 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          <button
-            type="submit"
-            disabled={!inputText.trim() && selectedFiles.length === 0}
-            className={cn(
-              "p-4 rounded-full flex items-center justify-center transition-all duration-300 shrink-0",
-              (inputText.trim() || selectedFiles.length > 0)
-                ? "bg-primary text-white shadow-lg shadow-primary/30 hover:scale-105 active:scale-95"
-                : "bg-primary/10 text-primary/40 cursor-not-allowed"
-            )}
-          >
-            <Send className="w-5 h-5 ml-0.5" />
-          </button>
-        </form>
+            <form
+              onSubmit={handleSend}
+              className="flex items-end gap-2 max-w-4xl mx-auto"
+            >
+              <div className="flex-1 flex items-end gap-2 bg-primary/5 border border-primary/10 rounded-[2rem] p-2 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-card transition-all">
+                <button type="button" className="p-3 text-muted-foreground hover:text-primary transition-colors shrink-0">
+                  <Smile className="w-5 h-5" />
+                </button>
+                <textarea
+                  value={inputText}
+                  onChange={handleInputChange}
+                  placeholder="Type a message..."
+                  rows={1}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend(e);
+                    }
+                  }}
+                  className="flex-1 bg-transparent border-none py-3 px-2 text-sm focus:outline-none resize-none max-h-32 min-h-[44px] font-semibold text-foreground placeholder:text-muted-foreground/70"
+                />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  multiple
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    "p-3 transition-colors shrink-0",
+                    selectedFiles.length > 0 ? "text-primary" : "text-muted-foreground hover:text-primary"
+                  )}
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!inputText.trim() && selectedFiles.length === 0}
+                className={cn(
+                  "p-4 rounded-full flex items-center justify-center transition-all duration-300 shrink-0",
+                  (inputText.trim() || selectedFiles.length > 0)
+                    ? "bg-primary text-white shadow-lg shadow-primary/30 hover:scale-105 active:scale-95"
+                    : "bg-primary/10 text-primary/40 cursor-not-allowed"
+                )}
+              >
+                <Send className="w-5 h-5 ml-0.5" />
+              </button>
+            </form>
+          </>
+        )}
       </div>
 
       <CallOverlay

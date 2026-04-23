@@ -11,6 +11,8 @@ import { sendFollowRequest, unfollow } from "@/features/follow/followThunk"
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'react-hot-toast'
+import { accessChat } from '@/features/chat/chatThunk'
+import { setSelectedChatId } from '@/features/chat/chatSlice'
 
 interface UserCardProps {
     userId?: string;
@@ -55,7 +57,18 @@ export const UserCard = ({
         if (!userId) return;
 
         if (isMutual) {
-            router.push('/chat');
+            try {
+                setLocalLoading(true)
+                const result = await dispatch(accessChat({ userId })).unwrap()
+                if (result.data?._id) {
+                    dispatch(setSelectedChatId(result.data._id))
+                    router.push('/chat')
+                }
+            } catch (err: any) {
+                toast.error(err?.message || "Failed to start conversation")
+            } finally {
+                setLocalLoading(false)
+            }
             return;
         }
 

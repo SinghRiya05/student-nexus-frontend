@@ -18,16 +18,21 @@ import {
     Mail,
     Send,
     Building2,
-    Award
+    Award,
+    CheckCircle
 } from "lucide-react";
 import { motion } from "motion/react";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { fetchAlumniById } from "@/features/alumni/alumniThunk";
-import { sendFollowRequest, unfollow } from "@/features/follow/followThunk";
+import { getFollowers, getFollowing, getSentRequests, sendFollowRequest, unfollow } from "@/features/follow/followThunk";
+import { accessChat } from "@/features/chat/chatThunk";
+import { setSelectedChatId } from "@/features/chat/chatSlice";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 // ─── Sub-Components ────────────────────────────────────────────────────────
 
@@ -62,26 +67,54 @@ export default function AlumniProfileMain({ id }: { id: string }) {
     const router = useRouter();
 
     const { singleAlumni: alumni, loading, error } = useAppSelector((state) => state.alumni);
-    const { following, sentRequests, loading: followLoading } = useAppSelector(state => state.follow);
+    const { following, followers, sentRequests, loading: followLoading } = useAppSelector(state => state.follow);
     const { user: authUser } = useAppSelector(state => state.auth);
+
+    const [isHoveringFollow, setIsHoveringFollow] = useState(false);
 
     useEffect(() => {
         if (id) {
             dispatch(fetchAlumniById(id));
+            dispatch(getFollowers());
+            dispatch(getFollowing());
+            dispatch(getSentRequests());
         }
     }, [dispatch, id]);
 
-    const isFollowingObj = following.find((f: any) => f.following?._id === id || f.following === id);
+    const isFollowingObj = following.find((f: any) => (f.following?._id || f.following) === id);
     const isFollowing = !!isFollowingObj;
-    const isRequestedObj = sentRequests.find((r: any) => r.following?._id === id || r.following === id);
+    const isRequestedObj = sentRequests.find((r: any) => (r.following?._id || r.following) === id);
     const isRequested = !!isRequestedObj;
+    const isFollowerObj = followers.find((f: any) => (f.follower?._id || f.follower) === id);
+    const isFollower = !!isFollowerObj;
 
-    const handleFollowAction = () => {
+    const isMutual = isFollowing && isFollower;
+
+    const handleFollowAction = async () => {
         if (!id) return;
-        if (isFollowing) {
-            dispatch(unfollow(isFollowingObj._id));
-        } else if (!isRequested) {
-            dispatch(sendFollowRequest(id));
+        try {
+            if (isFollowing) {
+                await dispatch(unfollow(id)).unwrap();
+                toast.success("Unfollowed successfully");
+            } else if (!isRequested) {
+                await dispatch(sendFollowRequest(id)).unwrap();
+                toast.success("Follow request sent");
+            }
+        } catch (error: any) {
+            toast.error(error || "Action failed");
+        }
+    };
+
+    const handleMessageAction = async () => {
+        if (!id) return;
+        try {
+            const result = await dispatch(accessChat({ userId: id })).unwrap();
+            if (result.data?._id) {
+                dispatch(setSelectedChatId(result.data._id));
+                router.push("/chat");
+            }
+        } catch (error: any) {
+            toast.error(error?.message || "Failed to start conversation");
         }
     };
 
@@ -121,8 +154,8 @@ export default function AlumniProfileMain({ id }: { id: string }) {
             {/* 1. Hero Header */}
             <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/40">
                 {/* Cover Photo */}
-                <div className="h-32 md:h-48 relative overflow-hidden bg-slate-50 border-b border-gray-100">
-                    {alumni.coverImage ? <img src={alumni.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover" /> : <div className="absolute inset-0 bg-blue-700" />}
+                <div className="h-24 md:h-36 relative overflow-hidden bg-slate-50 border-b border-gray-100">
+                    {alumni.coverImage ? <img src={alumni.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover" /> : <div className="absolute inset-0 bg-primary/20" />}
 
                 </div>
 
@@ -131,10 +164,9 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-20">
                         {/* Avatar */}
                         <div className="relative group shrink-0">
-                            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-blue-50 ring-2 ring-blue-100 flex items-center justify-center font-black text-4xl md:text-5xl text-blue-500">
-                                {alumni.firstName.charAt(0).toUpperCase()}
+                            <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-primary/5 ring-2 ring-primary/50 flex items-center justify-center font-black text-4xl md:text-5xl text-primary">
+                                {profile?.avatar ? <img src={profile.avatar.startsWith('http') ? profile.avatar : `${ASSET_URL}${profile.avatar}`} alt="" /> : <span>{alumni.firstName.charAt(0).toUpperCase()}</span>}
                             </div>
-                            <div className="absolute bottom-2 right-2 h-6 w-6 bg-blue-500 border-4 border-white rounded-full"></div>
                         </div>
 
                         {/* Text Info + Action Buttons (Right Side) */}
@@ -150,7 +182,7 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                                 </div>
                                 <div className="flex flex-wrap justify-start md:justify-start items-center gap-4 text-gray-500 font-bold text-sm">
                                     <div className="flex items-center gap-2">
-                                        <Briefcase className="w-4 h-4 text-blue-500" />
+                                        <Briefcase className="w-4 h-4 text-primary" />
                                         {profile?.jobTitle || "Professional"} at {profile?.currentCompany || "Company"}
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -158,7 +190,7 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                                         {alumni.universityId?.name || "University"}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <GraduationCap className="w-4 h-4 text-indigo-500" />
+                                        <GraduationCap className="w-4 h-4 text-primary" />
                                         {alumni.courseIds?.[0]?.courseName || "Course"}
                                     </div>
                                 </div>
@@ -167,25 +199,39 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                             <div className="flex items-center gap-3 shrink-0">
                                 {authUser?._id !== id && (
                                     <>
-                                        <Button
-                                            onClick={handleFollowAction}
-                                            disabled={isRequested || followLoading}
-                                            className={cn(
-                                                "h-11 px-6 md:px-8 rounded-2xl font-black text-sm flex gap-2 transition-all",
-                                                isFollowing ? "bg-rose-50 text-rose-600 hover:bg-rose-100 "
-                                                    : isRequested ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                        : "bg-blue-600 hover:bg-blue-700 text-white "
-                                            )}
-                                        >
-                                            {isFollowing ? "Unfollow" : isRequested ? "Requested" : <><UserPlus className="w-4 h-4" /> Follow</>}
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            className="h-11 px-5 rounded-2xl border-2 border-gray-100 font-black text-sm text-[#1a1a3b] hover:bg-gray-50 flex gap-2"
-                                        >
-                                            <Send className="w-4 h-4 text-blue-600" />
-                                            Message
-                                        </Button>
+                                        {isMutual ? (
+                                            <Button
+                                                variant="outline"
+                                                className="h-11 px-5 rounded-2xl border-2 border-border font-black text-sm text-primary hover:bg-gray-50 flex gap-2"
+                                                onClick={handleMessageAction}
+                                            >
+                                                <Send className="w-4 h-4 text-primary" />
+                                                Message
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                onClick={handleFollowAction}
+                                                onMouseEnter={() => setIsHoveringFollow(true)}
+                                                onMouseLeave={() => setIsHoveringFollow(false)}
+                                                disabled={(isRequested && !isFollowing) || followLoading}
+                                                className={cn(
+                                                    "h-11 px-6 md:px-8 rounded-2xl font-black text-sm flex gap-2 transition-all",
+                                                    isFollowing
+                                                        ? (isHoveringFollow ? "bg-rose-500 text-white" : "bg-primary text-white")
+                                                        : isRequested
+                                                            ? "bg-background text-primary/20 cursor-not-allowed border border-border"
+                                                            : "bg-white text-primary hover:bg-primary/10 border border-primary/20 shadow-sm"
+                                                )}
+                                            >
+                                                {isFollowing ? (
+                                                    isHoveringFollow ? "Unfollow" : <><CheckCircle className="w-4 h-4" /> Connected</>
+                                                ) : isRequested ? (
+                                                    "Requested"
+                                                ) : (
+                                                    <><UserPlus className="w-4 h-4" /> Follow</>
+                                                )}
+                                            </Button>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -213,14 +259,14 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Card className="bg-white overflow-hidden rounded-2xl border-gray-100 shadow-sm group hover:shadow-md transition-all duration-300">
+                        <Card className="bg-white overflow-hidden rounded-2xl border-primary shadow-sm group hover:shadow-md transition-all duration-300">
                             <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <Award size={120} />
                             </div>
                             <CardContent className="p-5 relative z-10">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner group-hover:scale-110 transition-transform">
+                                        <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-inner group-hover:scale-110 transition-transform">
                                             <Target size={24} />
                                         </div>
                                         <div>
@@ -229,8 +275,8 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Sparkles className="text-emerald-400 animate-pulse" size={18} />
-                                        <span className="text-[10px] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg uppercase">Working</span>
+                                        <Sparkles className="text-foreground animate-pulse" size={18} />
+                                        <span className="text-[10px] font-black bg-primary/20 text-foreground px-2 py-1 rounded-lg uppercase">Working</span>
                                     </div>
                                 </div>
 
@@ -242,12 +288,12 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                                             </div>
                                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Job Title</p>
                                         </div>
-                                        <p className="text-lg font-black px-10 text-[#1a1a3b] leading-tight group-hover/item:text-blue-700  transition-colors">
+                                        <p className="text-lg font-black px-10 text-[#1a1a3b] leading-tight group-hover/item:text-primary  transition-colors">
                                             {profile?.jobTitle || "Not specified"}
                                         </p>
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group/item">
+                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-indigo-100 hover:bg-cyan-50/30 transition-all group/item">
                                         <div className="flex items-center gap-3 mb-2">
                                             <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center text-gray-400 group-hover/item:text-indigo-500 shadow-sm transition-colors">
                                                 <Building2 size={16} />
@@ -290,7 +336,7 @@ export default function AlumniProfileMain({ id }: { id: string }) {
 
                     {/* Projects & Achievements Section */}
                     <Card className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <SectionTitle icon={Award} title="Professional Achievements" colorClass="bg-blue-50 text-blue-600" />
+                        <SectionTitle icon={Award} title="Professional Achievements" colorClass="bg-primary/20 text-primary" />
                         <div className="space-y-6 mt-6">
                             {profile?.projects?.length ? (
                                 profile.projects.map((project: any, i) => (
@@ -320,14 +366,14 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                         <h3 className="font-black text-[#1a1a3b] text-base mb-6">Network Stats</h3>
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 text-center animate-in fade-in zoom-in duration-500">
-                                <p className="text-2xl font-black text-blue-600 mb-1">{alumni.followersCount || 0}</p>
-                                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Followers</p>
+                                <p className="text-2xl font-black text-primary mb-1">{alumni.followersCount || 0}</p>
+                                <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Followers</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 text-center animate-in fade-in zoom-in duration-700">
-                                <p className="text-2xl font-black text-emerald-600 mb-1">{alumni.followingCount || 0}</p>
-                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Following</p>
+                                <p className="text-2xl font-black text-primary mb-1">{alumni.followingCount || 0}</p>
+                                <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Following</p>
                             </div>
-                            <div className="col-span-2 p-4 rounded-2xl bg-blue-600 text-white flex items-center justify-between shadow-lg shadow-blue-200">
+                            <div className="col-span-2 p-4 rounded-2xl bg-primary/70 text-white flex items-center justify-between shadow-lg shadow-blue-200">
                                 <div className="flex items-center gap-2 font-bold text-sm">
                                     <ShieldCheck size={18} /> Mentor Score
                                 </div>
@@ -353,18 +399,32 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                     </Card>
 
                     {/* Quick Connect */}
-                    <Card className="bg-blue-600 p-6 rounded-3xl shadow-xl shadow-blue-100 text-white relative overflow-hidden">
+                    <Card className="bg-primary/20 p-6 rounded-3xl shadow-xl shadow-primary-50 text-black relative overflow-hidden border border-primary/20">
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                         <h3 className="font-black text-lg mb-2 relative z-10">Nexus Network</h3>
-                        <p className="text-blue-100 text-[11px] font-bold leading-relaxed mb-6 relative z-10">
+                        <p className="text-black text-[11px] font-bold leading-relaxed mb-6 relative z-10">
                             Connect with {alumni.firstName} for mentorship, industry insights, and professional networking.
                         </p>
                         <Button
                             variant="secondary"
                             onClick={handleFollowAction}
-                            className="w-full bg-white text-blue-600 hover:bg-blue-50 font-black rounded-xl h-11"
+                            onMouseEnter={() => setIsHoveringFollow(true)}
+                            onMouseLeave={() => setIsHoveringFollow(false)}
+                            disabled={(isRequested && !isFollowing) || followLoading}
+                            className={cn(
+                                "w-full font-black rounded-xl h-11 transition-all",
+                                isFollowing
+                                    ? (isHoveringFollow ? "bg-rose-500 text-white" : "bg-primary text-white")
+                                    : "bg-white text-primary hover:bg-primary/80 hover:text-white"
+                            )}
                         >
-                            {isFollowing ? "Connected" : isRequested ? "Request Sent" : "Request Connection"}
+                            {isFollowing ? (
+                                isHoveringFollow ? "Unfollow" : "Connected"
+                            ) : isRequested ? (
+                                "Request Sent"
+                            ) : (
+                                "Request Connection"
+                            )}
                         </Button>
                     </Card>
                 </div>
