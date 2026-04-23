@@ -39,7 +39,8 @@ export interface ICreateChat {
 
 export interface SendMessage {
     chatId: string;
-    content: string;
+    content?: string;
+    attachments?: File[];
 }
 
 

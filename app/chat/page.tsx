@@ -67,7 +67,8 @@ export default function ChatPage() {
         timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isOwn,
         isRead: msg.readBy.includes(chats.find(c => c._id === selectedChatId)?.users.find(u => u._id !== me?._id)?._id || ''),
-        readByMe: msg.readBy.includes(me?._id || '')
+        readByMe: msg.readBy.includes(me?._id || ''),
+        attachments: msg.attachments
       };
     });
   }, [selectedChatId, messages, me, chats]);
@@ -171,12 +172,23 @@ export default function ChatPage() {
     }
   }, [selectedChatId, dispatch, messages]);
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string, files?: File[]) => {
     if (!selectedChatId || !me?._id) return;
-    sendMessageViaSocket({
-      chatId: selectedChatId,
-      content: text
-    });
+    
+    if (files && files.length > 0) {
+      // Use REST for file uploads
+      dispatch(sendMessageThunk({
+        chatId: selectedChatId,
+        content: text,
+        attachments: files
+      }));
+    } else {
+      // Use socket for text-only messages
+      sendMessageViaSocket({
+        chatId: selectedChatId,
+        content: text
+      });
+    }
   };
 
   const handleSelectConversation = (id: string) => {

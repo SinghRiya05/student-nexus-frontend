@@ -1,3 +1,9 @@
+export interface Attachment {
+  url: string;
+  fileType: string;
+  size: number;
+}
+
 export interface Message {
   id: string;
   senderId: string;
@@ -6,6 +12,7 @@ export interface Message {
   isOwn: boolean;
   isRead?: boolean;
   readByMe?: boolean;
+  attachments?: Attachment[];
 }
 
 export interface User {

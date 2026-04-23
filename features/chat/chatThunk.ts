@@ -32,7 +32,19 @@ export const sendMessage = createAsyncThunk<SendMessageResponse, SendMessage>(
     "chat/sendMessage",
     async (data, { rejectWithValue }) => {
         try {
-            const response = await apiClient.post<SendMessageResponse>(API_ENDPOINTS.CHAT.SEND_MESSAGE, data);
+            let payload: any = data;
+            
+            if (data.attachments && data.attachments.length > 0) {
+                const formData = new FormData();
+                formData.append("chatId", data.chatId);
+                if (data.content) formData.append("content", data.content);
+                data.attachments.forEach((file) => {
+                    formData.append("attachments", file); // Field name must match backend (which is any, but I used attachments in manual check)
+                });
+                payload = formData;
+            }
+
+            const response = await apiClient.post<SendMessageResponse>(API_ENDPOINTS.CHAT.SEND_MESSAGE, payload);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || "Failed to send message");

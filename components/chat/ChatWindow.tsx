@@ -18,7 +18,10 @@ import {
   ShieldAlert,
   FileText,
   Eraser,
-  ArrowLeft
+  ArrowLeft,
+  X,
+  FileIcon,
+  Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/utils/hook';
@@ -36,7 +39,7 @@ interface ChatWindowProps {
   conversation: Conversation | null;
   messages: Message[];
   currentUserId: string;
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string, files?: File[]) => void;
   onBack?: () => void;
 }
 
@@ -54,6 +57,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirm, setShowConfirm] = useState<'clear' | 'delete' | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<{ url: string, name: string, type: string }[]>([]);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -126,11 +133,43 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + selectedFiles.length > 5) {
+      toast.error('Maximum 5 files allowed');
+      return;
+    }
+
+    const newFiles = [...selectedFiles, ...files];
+    setSelectedFiles(newFiles);
+
+    const newPreviews = files.map(file => ({
+      url: file.type.startsWith('image/') ? URL.createObjectURL(file) : '',
+      name: file.name,
+      type: file.type
+    }));
+    setFilePreviews([...filePreviews, ...newPreviews]);
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = [...selectedFiles];
+    newFiles.splice(index, 1);
+    setSelectedFiles(newFiles);
+
+    const newPreviews = [...filePreviews];
+    if (newPreviews[index].url) URL.revokeObjectURL(newPreviews[index].url);
+    newPreviews.splice(index, 1);
+    setFilePreviews(newPreviews);
+  };
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
-    onSendMessage(inputText);
+    if (!inputText.trim() && selectedFiles.length === 0) return;
+    onSendMessage(inputText, selectedFiles);
     setInputText('');
+    setSelectedFiles([]);
+    filePreviews.forEach(p => p.url && URL.revokeObjectURL(p.url));
+    setFilePreviews([]);
   };
 
   if (!conversation) {
@@ -343,6 +382,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 ? (me?.avatar ? `${ASSET_URL}${me.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${me?.firstName || 'Me'}`)
                 : participant.avatar
               }
+              attachments={msg.attachments}
             />
           ))}
 
@@ -386,6 +426,47 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Input Area */}
       <div className="p-4 md:p-6 bg-card border-t border-border/40 z-10 shrink-0">
+        {/* File Previews */}
+        <AnimatePresence>
+          {filePreviews.length > 0 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="flex gap-3 mb-4 overflow-x-auto py-2 scrollbar-hide"
+            >
+              {filePreviews.map((preview, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="relative group shrink-0"
+                >
+                  <div className="w-20 h-20 rounded-xl overflow-hidden border border-border/50 bg-primary/5 flex items-center justify-center">
+                    {preview.url ? (
+                      <img src={preview.url} alt="preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 p-2">
+                        <FileIcon className="w-8 h-8 text-primary/40" />
+                        <span className="text-[10px] font-bold text-muted-foreground truncate w-full text-center">
+                          {preview.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(idx)}
+                    className="absolute -top-2 -right-2 p-1 bg-rose-500 text-white rounded-full shadow-lg hover:bg-rose-600 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <form
           onSubmit={handleSend}
           className="flex items-end gap-2 max-w-4xl mx-auto"
@@ -407,17 +488,31 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               }}
               className="flex-1 bg-transparent border-none py-3 px-2 text-sm focus:outline-none resize-none max-h-32 min-h-[44px] font-semibold text-foreground placeholder:text-muted-foreground/70"
             />
-            <button type="button" className="p-3 text-muted-foreground hover:text-primary transition-colors shrink-0">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              multiple
+              className="hidden"
+            />
+            <button 
+              type="button" 
+              onClick={() => fileInputRef.current?.click()}
+              className={cn(
+                "p-3 transition-colors shrink-0",
+                selectedFiles.length > 0 ? "text-primary" : "text-muted-foreground hover:text-primary"
+              )}
+            >
               <Paperclip className="w-5 h-5" />
             </button>
           </div>
 
           <button
             type="submit"
-            disabled={!inputText.trim()}
+            disabled={!inputText.trim() && selectedFiles.length === 0}
             className={cn(
               "p-4 rounded-full flex items-center justify-center transition-all duration-300 shrink-0",
-              inputText.trim()
+              (inputText.trim() || selectedFiles.length > 0)
                 ? "bg-primary text-white shadow-lg shadow-primary/30 hover:scale-105 active:scale-95"
                 : "bg-primary/10 text-primary/40 cursor-not-allowed"
             )}
