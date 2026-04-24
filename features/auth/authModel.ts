@@ -8,7 +8,7 @@ export interface IUser {
     password: string;
     avatar?: string;
     coverImage?: string;
-    courseIds?: string[];
+    courseIds?: any[];
     universityId?: {
         _id: string;
         name: string;
@@ -28,6 +28,13 @@ export interface IUser {
     isDeleted: boolean;
     trustScore: number;
     createdAt: string;
+    bio?: string;
+    startYear?: number;
+    endYear?: number;
+    studentProfile?: any;
+    aluminiProfile?: any;
+    teacherProfile?: any;
+    Profile?: any;
     updatedAt: string;
 }
 

@@ -207,11 +207,17 @@ export default function EditProfileSection() {
             dispatch(getCoursesByUniversityId(watchedUniversityId))
                 .unwrap()
                 .then((data) => {
-                    console.log("Fetched courses:", data);
-                    setCourses(data);
+                    console.log("Fetched courses raw:", data);
+                    // Extract the actual course objects from the UniversityCourse relationship
+                    const extractedCourses = data.map((uc: any) => uc.courseId).filter(Boolean);
+                    setCourses(extractedCourses);
                     // Only reset dependent fields if it's a manual change (after hydration)
                     // If the university ID in the form is different from the one in the user object
-                    if (isHydrated && singleUser?.universityId?._id !== watchedUniversityId) {
+                    const initialUniId = typeof singleUser?.universityId === 'object' 
+                        ? singleUser.universityId?._id 
+                        : singleUser?.universityId || "";
+
+                    if (isHydrated && initialUniId !== watchedUniversityId) {
                         form.setValue("courseId", "");
                         form.setValue("courseIds", []);
                         form.setValue("semesterId", "");
@@ -244,47 +250,81 @@ export default function EditProfileSection() {
     // Hydrate form with user data
     useEffect(() => {
         if (singleUser && !isHydrated) {
-            const profile = singleUser.Profile;
+            // Extract IDs with fallbacks
+            const getId = (val: any) => (typeof val === 'object' && val !== null ? val._id : val) || "";
 
-            // Simple IDs for display
-            const initialCourseId = singleUser.courseIds?.[0]?._id || "";
-            const initialCourseIds = singleUser.courseIds?.map((c: any) => c._id) || [];
-            const initialSemesterId = (profile?.semesterId as any)?._id || profile?.semesterId || "";
+            const uniId = getId(singleUser.universityId) || getId(user?.universityId);
+            
+            const firstCourse = Array.isArray(singleUser.courseIds) ? singleUser.courseIds[0] : null;
+            const authFirstCourse = Array.isArray(user?.courseIds) ? user?.courseIds[0] : null;
+            const initialCourseId = getId(firstCourse) || getId(authFirstCourse);
+            
+            let initialSemId = getId(singleUser.studentProfile?.semesterId) || 
+                               getId(singleUser.Profile?.semesterId) || 
+                               getId(user?.studentProfile?.semesterId) || "";
+
+            const initialCourseIds = (Array.isArray(singleUser.courseIds) ? singleUser.courseIds : (Array.isArray(user?.courseIds) ? user?.courseIds : []))
+                .map((c: any) => getId(c))
+                .filter(Boolean);
+
+            console.log("Hydration context:", { uniId, initialCourseId, initialSemId, initialCourseIds });
 
             form.reset({
-                firstName: singleUser.firstName || "",
-                lastName: singleUser.lastName || "",
-                email: singleUser.email || "",
-                phone: singleUser.phone || "",
-                bio: singleUser.bio || (singleUser.teacherProfile as any)?.bio || "",
-                universityId: singleUser.universityId?._id || "",
+                firstName: singleUser.firstName || user?.firstName || "",
+                lastName: singleUser.lastName || user?.lastName || "",
+                email: singleUser.email || user?.email || "",
+                phone: singleUser.phone || user?.phone || "",
+                bio: singleUser.bio || singleUser.Profile?.bio || user?.bio || "",
+                universityId: uniId,
                 courseId: initialCourseId,
                 courseIds: initialCourseIds,
-                semesterId: initialSemesterId,
-                hobby_badge: (profile as any)?.hobby_badge || "",
-                startYear: singleUser.startYear?.toString() || "",
-                endYear: singleUser.endYear?.toString() || "",
-                skills: (profile as any)?.skills?.length > 0
-                    ? (profile as any).skills.map((s: string) => ({ name: s }))
+                semesterId: initialSemId,
+                currentCompany: singleUser.aluminiProfile?.currentCompany || singleUser.Profile?.currentCompany || "",
+                jobTitle: singleUser.aluminiProfile?.jobTitle || singleUser.Profile?.jobTitle || "",
+                designation: singleUser.teacherProfile?.designation || singleUser.Profile?.designation || "",
+                department: singleUser.teacherProfile?.department || singleUser.Profile?.department || "",
+                experienceYears: String(singleUser.teacherProfile?.experienceYears || singleUser.aluminiProfile?.experienceYears || singleUser.Profile?.experienceYears || ""),
+                startYear: String(singleUser.startYear || ""),
+                endYear: String(singleUser.endYear || ""),
+                skills: Array.isArray(singleUser.Profile?.skills) 
+                    ? singleUser.Profile.skills.map((s: string) => ({ name: s })) 
                     : [],
-                projects: (profile as any)?.projects?.length > 0
-                    ? (profile as any).projects.map((p: any) => ({ title: p.title || p }))
+                projects: Array.isArray(singleUser.Profile?.projects) 
+                    ? singleUser.Profile.projects.map((p: any) => ({ title: typeof p === 'string' ? p : p.title })) 
                     : [],
-                designation: (singleUser.teacherProfile as any)?.designation || (profile as any)?.designation || "",
-                department: (singleUser.teacherProfile as any)?.department || (profile as any)?.department || "",
-                currentCompany: (singleUser.aluminiProfile as any)?.currentCompany || (profile as any)?.currentCompany || "",
-                jobTitle: (singleUser.aluminiProfile as any)?.jobTitle || (profile as any)?.jobTitle || "",
-                experienceYears: (singleUser.teacherProfile as any)?.experienceYears?.toString() ||
-                    (singleUser.aluminiProfile as any)?.experienceYears?.toString() ||
-                    (profile as any)?.experienceYears?.toString() || "",
+                hobby_badge: singleUser.Profile?.hobby_badge || "",
             });
+            
+            if (uniId) {
+                dispatch(getCoursesByUniversityId(uniId))
+                    .unwrap()
+                    .then((data) => {
+                        const extractedCourses = data.map((uc: any) => uc.courseId).filter(Boolean);
+                        setCourses(extractedCourses);
+                    });
+            }
+            
+            if (initialCourseId) {
+                dispatch(getSemestersByCourseId(initialCourseId))
+                    .unwrap()
+                    .then((data) => setSemesters(data));
+            }
 
-            if (singleUser.avatar) setAvatarUrl(`${ASSET_URL}${singleUser.avatar}`);
-            if (singleUser.coverImage) setCoverUrl(`${ASSET_URL}${singleUser.coverImage}`);
+            const formatUrl = (path: any) => {
+                if (!path) return null;
+                if (path.startsWith('http') || path.startsWith('blob:')) return path;
+                return `${ASSET_URL}${path}`;
+            };
+
+            const initialAvatar = formatUrl(singleUser.avatar) || formatUrl(user?.avatar);
+            const initialCover = formatUrl(singleUser.coverImage) || formatUrl(user?.coverImage);
+
+            if (initialAvatar) setAvatarUrl(initialAvatar);
+            if (initialCover) setCoverUrl(initialCover);
 
             setIsHydrated(true);
         }
-    }, [singleUser, form, isHydrated]);
+    }, [singleUser, form, isHydrated, dispatch]);
 
     const onSubmit: SubmitHandler<ProfileValues> = async (values) => {
         setIsSubmitting(true);
@@ -463,9 +503,13 @@ export default function EditProfileSection() {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-[0.78rem] font-semibold text-gray-700">University</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <Select 
+                                                key={universities.length}
+                                                onValueChange={field.onChange} 
+                                                value={field.value || ""}
+                                            >
                                                 <FormControl>
-                                                    <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
+                                                    <SelectTrigger className="w-full h-11 rounded-xl border-gray-200 bg-white px-3 text-[0.85rem] shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
                                                         <SelectValue placeholder="Select University" />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -488,9 +532,9 @@ export default function EditProfileSection() {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-[0.78rem] font-semibold text-gray-700">Course</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchedUniversityId}>
+                                            <Select onValueChange={field.onChange} value={field.value || ""}>
                                                 <FormControl>
-                                                    <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
+                                                    <SelectTrigger className="w-full h-11 rounded-xl border-gray-200 bg-white px-3 text-[0.85rem] shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
                                                         <SelectValue placeholder={watchedUniversityId ? "Select Course" : "Select University first"} />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -513,9 +557,9 @@ export default function EditProfileSection() {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-[0.78rem] font-semibold text-gray-700">Semester</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchedCourseId}>
+                                            <Select onValueChange={field.onChange} value={field.value || ""}>
                                                 <FormControl>
-                                                    <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
+                                                    <SelectTrigger className="w-full h-11 rounded-xl border-gray-200 bg-white px-3 text-[0.85rem] shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
                                                         <SelectValue placeholder={watchedCourseId ? "Select Semester" : "Select Course first"} />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -547,9 +591,13 @@ export default function EditProfileSection() {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-[0.78rem] font-semibold text-gray-700">University</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <Select 
+                                                key={universities.length}
+                                                onValueChange={field.onChange} 
+                                                value={field.value || ""}
+                                            >
                                                 <FormControl>
-                                                    <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
+                                                    <SelectTrigger className="w-full h-11 rounded-xl border-gray-200 bg-white px-3 text-[0.85rem] shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
                                                         <SelectValue placeholder="Select University" />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -582,13 +630,18 @@ export default function EditProfileSection() {
                                             <div className="flex flex-wrap gap-2 mb-3">
                                                 {(field.value || []).map((courseId: string) => {
                                                     const course = courses.find(c => c._id === courseId);
+                                                    const courseName = course?.courseName || 
+                                                        (singleUser?.courseIds?.find((c: any) => (c._id || c) === courseId)?.courseName) || 
+                                                        "Loading...";
+                                                    
                                                     return (
                                                         <div key={courseId} className="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-100 text-xs font-bold">
-                                                            {course?.courseName || "Loading..."}
+                                                            {courseName}
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    const newValue = field.value.filter((id: string) => id !== courseId);
+                                                                    const current = field.value || [];
+                                                                    const newValue = current.filter((id: string) => id !== courseId);
                                                                     field.onChange(newValue);
                                                                 }}
                                                                 className="hover:text-red-500 transition-colors"
@@ -601,6 +654,7 @@ export default function EditProfileSection() {
                                             </div>
                                             <FormControl>
                                                 <Select
+                                                    value=""
                                                     onValueChange={(val) => {
                                                         const current = field.value || [];
                                                         if (!current.includes(val)) {
@@ -609,7 +663,7 @@ export default function EditProfileSection() {
                                                     }}
                                                     disabled={!watchedUniversityId}
                                                 >
-                                                    <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
+                                                    <SelectTrigger className="w-full h-11 rounded-xl border-gray-200 bg-white px-3 text-[0.85rem] shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
                                                         <SelectValue placeholder={watchedUniversityId ? "Add a course..." : "Select University first"} />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-xl border-gray-100 shadow-xl max-h-[300px]">
@@ -642,9 +696,13 @@ export default function EditProfileSection() {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-[0.78rem] font-semibold text-gray-700">Alma Mater (University)</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <Select 
+                                                key={universities.length}
+                                                onValueChange={field.onChange} 
+                                                value={field.value || ""}
+                                            >
                                                 <FormControl>
-                                                    <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
+                                                    <SelectTrigger className="w-full h-11 rounded-xl border-gray-200 bg-white px-3 text-[0.85rem] shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
                                                         <SelectValue placeholder="Select University" />
                                                     </SelectTrigger>
                                                 </FormControl>
