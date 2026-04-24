@@ -80,11 +80,13 @@ export default function MainContent() {
     const { universityAlumni: alumni } = useAppSelector((state) => state.alumni);
     const { following, sentRequests } = useAppSelector((state) => state.follow);
 
+    const { user } = useAppSelector((state) => state.auth);
+
     const [fetching, setFetching] = useState({
         classmates: classmates.length === 0,
         batchmates: batchmates.length === 0,
         teachers: sameUniversityTeachers.length === 0,
-        alumni: alumni.length === 0
+        alumni: alumni.length === 0,
     });
 
     const [isUnfollowDialogOpen, setIsUnfollowDialogOpen] = useState(false);
@@ -129,6 +131,8 @@ export default function MainContent() {
         return () => { mounted = false; };
     }, [dispatch]);
 
+
+
     const handleUnfollow = async () => {
         if (!userToUnfollow) return;
         setIsUnfollowing(true);
@@ -162,9 +166,9 @@ export default function MainContent() {
             </div>
 
             {/* Class Mates */}
-            <section>
+            {user?.roleId?.name === "STUDENT" && <section>
                 <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-bold">BBD University - Class Mates</h2>
+                    <h2 className="text-xl font-bold">{user?.universityId?.short_name} University - Class Mates</h2>
                     <button onClick={() => router.push("/students")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
@@ -188,12 +192,42 @@ export default function MainContent() {
                         </>
                     )}
                 </div>
-            </section>
+            </section>}
+
+            {user?.roleId?.name === "TEACHER" && <section>
+                <div className="flex items-center justify-between mb-4 px-2">
+                    <h2 className="text-xl font-bold">Your Student - Community</h2>
+                    <button onClick={() => router.push("/students")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+                    {fetching.batchmates ? (
+                        [1, 2, 3, 4, 5].map((i) => <UserCardSkeletonPrimary key={i} />)
+                    ) : (
+                        <>
+                            {batchmates.slice(0, 5).map((user: any, idx: number) => (
+                                <UserCard
+                                    key={idx}
+                                    userId={user._id}
+                                    name={`${user.firstName} ${user.lastName}`}
+                                    role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                                    image={user.avatar}
+                                    variant="primary"
+                                />
+                            ))}
+                            {batchmates.length === 0 && (
+                                <p className="text-sm px-3 text-gray-400 italic py-5">No teacher students discovered yet.</p>
+                            )}
+                        </>
+                    )}
+                </div>
+            </section>}
+
+
 
             {/* Batch Mates */}
-            <section>
+            {user?.roleId.name === "STUDENT" && <section>
                 <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-bold">BBD University - Batch Mates</h2>
+                    <h2 className="text-xl font-bold">{user?.universityId?.short_name} University - Batch Mates</h2>
                     <button onClick={() => router.push("/students")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
@@ -217,12 +251,12 @@ export default function MainContent() {
                         </>
                     )}
                 </div>
-            </section>
+            </section>}
 
             {/* Professors */}
             <section>
                 <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-bold">BBD University - Professors</h2>
+                    <h2 className="text-xl font-bold">{user?.universityId?.short_name} University - Professors</h2>
                     <button onClick={() => router.push("/professors")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="grid grid-rows-2 grid-flow-col gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-2">
@@ -275,7 +309,7 @@ export default function MainContent() {
             {/* Departments */}
             <section>
                 <div className="mb-4 px-2">
-                    <h2 className="text-xl font-bold">BBD University - Departments</h2>
+                    <h2 className="text-xl font-bold">{user?.universityId?.short_name} University - Departments</h2>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {departments.map((dept, idx) => (
@@ -299,7 +333,7 @@ export default function MainContent() {
             {/* Alumni */}
             <section>
                 <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-bold">BBD University - Alumni</h2>
+                    <h2 className="text-xl font-bold">{user?.universityId?.short_name} University - Alumni</h2>
                     <button onClick={() => router.push("/alumni")} className="text-black text-sm font-semibold hover:underline">Career Network</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">

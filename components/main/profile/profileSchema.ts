@@ -11,6 +11,7 @@ export const profileSchema = z.object({
     // Academic
     universityId: z.string().optional(),
     courseId: z.string().optional(),
+    courseIds: z.array(z.string()).optional(),
     semesterId: z.string().optional(),
     startYear: z.string().optional(),
     endYear: z.string().optional(),
