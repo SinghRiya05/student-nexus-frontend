@@ -248,7 +248,7 @@ export default function ProfileSection() {
             isFollowing,
             isRequested
         }
-    }).filter(Boolean);
+    }).filter((u): u is NonNullable<typeof u> => u !== null);
 
     const mappedFollowing = following
         .filter((f: any) => f.status === 'ACCEPTED') // Filter only accepted following
@@ -262,7 +262,7 @@ export default function ProfileSection() {
                 avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
                 isFollowing: true
             }
-        }).filter(Boolean);
+        }).filter((u): u is NonNullable<typeof u> => u !== null);
 
     if (userLoading || !user) return <ProfileSkeleton />;
 
@@ -488,7 +488,7 @@ export default function ProfileSection() {
 
 
                     {/* Experience & Projects */}
-                    {(user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI") && <Card className="bg-white p-5 rounded-2xl border-border shadow-sm">
+                    {(user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMINI") && <Card className="bg-white p-5 rounded-2xl border-border shadow-sm">
                         <div className="flex items-center justify-between ">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
@@ -624,7 +624,7 @@ export default function ProfileSection() {
                     )}
 
                     {/* Skills */}
-                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
+                    {(user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMINI") && <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
                                 <Users size={20} />
@@ -681,7 +681,7 @@ export default function ProfileSection() {
                     </Card>
 
                     {/* Classmates & Friends */}
-                    {user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMNI" && (
+                    {(user?.roleId?.name === "STUDENT" || user?.roleId?.name === "ALUMINI") && (
                         <Card className="bg-card p-5 rounded-2xl border-border shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-black text-primary text-base">Classmates & Friends</h3>

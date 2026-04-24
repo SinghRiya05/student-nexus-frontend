@@ -1,10 +1,14 @@
 "use client";
 
-import { Settings, X, Users, Loader2 } from "lucide-react";
+import { Settings, X, Users, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/utils/hook";
+import { accessChat } from "@/features/chat/chatThunk";
+import toast from "react-hot-toast";
 
 export interface NetworkUser {
   id: string;
@@ -25,7 +29,11 @@ interface NetworkPopupProps {
 
 export default function NetworkPopup({ isOpen, onClose, title, users, onAction }: NetworkPopupProps) {
   const [rowLoading, setRowLoading] = useState<Record<string, boolean>>({});
+  const [messageLoading, setMessageLoading] = useState<Record<string, boolean>>({});
   const [isMounted, setIsMounted] = useState(false);
+
+  const router = useRouter();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     setIsMounted(true);
@@ -43,6 +51,23 @@ export default function NetworkPopup({ isOpen, onClose, title, users, onAction }
       await onAction(user.id, !!user.isFollowing);
     } finally {
       setRowLoading(prev => ({ ...prev, [user.id]: false }));
+    }
+  };
+
+  const handleMessage = async (e: React.MouseEvent, user: NetworkUser) => {
+    e.stopPropagation();
+    setMessageLoading(prev => ({ ...prev, [user.id]: true }));
+    try {
+      const resultAction = await dispatch(accessChat({ userId: user.id }));
+      if (accessChat.fulfilled.match(resultAction)) {
+        router.push("/chat");
+      } else {
+        toast.error("Failed to initiate chat");
+      }
+    } catch (error) {
+      toast.error("An error occurred while starting chat");
+    } finally {
+      setMessageLoading(prev => ({ ...prev, [user.id]: false }));
     }
   };
 
@@ -64,7 +89,7 @@ export default function NetworkPopup({ isOpen, onClose, title, users, onAction }
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative bg-white flex flex-col rounded-3xl shadow-[0_20px_70px_-10px_rgba(0,0,0,0.3)] w-full max-w-sm sm:max-w-[500px] max-h-[85vh] border border-gray-100 overflow-hidden"
+          className="relative bg-white flex flex-col rounded-3xl shadow-[0_20px_70px_-10px_rgba(0,0,0,0.3)] w-full max-w-sm sm:max-w-[600px] max-h-[85vh] border border-gray-100 overflow-hidden"
         >
           {/* Header */}
           <div className="bg-white z-10 px-8 py-6 border-b border-gray-50 flex items-center justify-between shrink-0">
@@ -107,7 +132,21 @@ export default function NetworkPopup({ isOpen, onClose, title, users, onAction }
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">{user.role}</p>
                       </div>
                     </div>
-                    <div className="shrink-0 ml-3">
+                    <div className="shrink-0 ml-3 flex items-center gap-2">
+                      <Button
+                        onClick={(e) => handleMessage(e, user)}
+                        disabled={messageLoading[user.id]}
+                        variant="outline"
+                        size="sm"
+                        className="h-9 w-9 p-0 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-transparent transition-all"
+                        title="Message"
+                      >
+                        {messageLoading[user.id] ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <MessageSquare size={16} />
+                        )}
+                      </Button>
                       {user.isFollowing ? (
                         <Button
                           onClick={(e) => handleAction(e, user)}
