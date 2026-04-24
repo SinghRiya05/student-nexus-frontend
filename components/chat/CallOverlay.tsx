@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PhoneOff, 
@@ -9,62 +9,273 @@ import {
   Video, 
   VideoOff, 
   Monitor, 
-  Maximize2, 
+  Maximize2,
+  Users,
+  Settings,
   MoreHorizontal,
-  User as UserIcon,
   Volume2,
-  Users
+  User as UserIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { User as ParticipantType } from './types';
+import { 
+  getSocket, 
+  emitCallUser, 
+  emitAnswerCall, 
+  emitIceCandidate, 
+  emitEndCall, 
+  emitScreenShareToggle, 
+  onCallAccepted, 
+  onReceiveIceCandidate, 
+  onCallEnded, 
+  onScreenShareStatus 
+} from '@/services/socket';
+import { toast } from 'react-hot-toast';
 
 interface CallOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   participants: ParticipantType[];
   initialType: 'audio' | 'video';
+  incomingSignal?: any;
+  callerId?: string;
+  isIncoming?: boolean;
 }
+
+const ICE_SERVERS = {
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+};
 
 export const CallOverlay: React.FC<CallOverlayProps> = ({ 
   isOpen, 
-  onClose, 
-  participants: initialParticipants,
-  initialType 
+  onClose,
+  incomingSignal,
+  callerId,
+  isIncoming = false,
+  participants,
+  initialType
 }) => {
   const [callType, setCallType] = useState<'audio' | 'video' | 'screen-share'>(initialType);
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(initialType === 'audio');
   const [duration, setDuration] = useState(0);
   const [activeSpeakerIndex, setActiveSpeakerIndex] = useState(0);
+  const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'answering' | 'connected'>('idle');
 
-  // Participant mocks for demonstration (if only one is provided)
-  const [allParticipants, setAllParticipants] = useState<ParticipantType[]>(initialParticipants);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+
+  const [allParticipants, setAllParticipants] = useState<ParticipantType[]>(participants);
+
+  const targetUserId = participants[0]?.id;
+  const socket = getSocket();
+
+  // --- INITIALIZE CALL ---
+  useEffect(() => {
+    if (isOpen) {
+      if (isIncoming && incomingSignal && callerId) {
+        handleAnswerCall();
+      } else {
+        handleStartCall();
+      }
+    }
+    return () => {
+      cleanup();
+    };
+  }, [isOpen]);
+
+  const cleanup = () => {
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(t => t.stop());
+      localStreamRef.current = null;
+    }
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(t => t.stop());
+      screenStreamRef.current = null;
+    }
+    setDuration(0);
+    setCallStatus('idle');
+  };
+
+  const setupPeerConnection = (stream: MediaStream, targetId: string) => {
+    const pc = new RTCPeerConnection(ICE_SERVERS);
+    peerConnectionRef.current = pc;
+
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+    pc.ontrack = (event) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      }
+      setCallStatus('connected');
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        emitIceCandidate({ to: targetId, candidate: event.candidate });
+      }
+    };
+
+    return pc;
+  };
+
+  const handleStartCall = async () => {
+    try {
+      setCallStatus('calling');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: initialType === 'video', 
+        audio: true 
+      });
+      localStreamRef.current = stream;
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+
+      const pc = setupPeerConnection(stream, targetUserId);
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      emitCallUser({
+        userToCall: targetUserId,
+        signalData: offer,
+        from: socket?.id || '',
+        name: 'Me', // Should get from auth state if needed
+        type: initialType
+      });
+
+      // Listen for acceptance
+      onCallAccepted(async (signal) => {
+        await pc.setRemoteDescription(new RTCSessionDescription(signal));
+        setCallStatus('connected');
+      });
+
+      setupSignalListeners(pc);
+
+    } catch (err) {
+      console.error("Error starting call:", err);
+      toast.error("Could not access camera/microphone");
+      onClose();
+    }
+  };
+
+  const handleAnswerCall = async () => {
+    try {
+      setCallStatus('answering');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: initialType === 'video', 
+        audio: true 
+      });
+      localStreamRef.current = stream;
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+
+      const pc = setupPeerConnection(stream, callerId!);
+
+      await pc.setRemoteDescription(new RTCSessionDescription(incomingSignal));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      emitAnswerCall({ to: callerId!, signal: answer });
+      setCallStatus('connected');
+
+      setupSignalListeners(pc);
+
+    } catch (err) {
+      console.error("Error answering call:", err);
+      onClose();
+    }
+  };
+
+  const setupSignalListeners = (pc: RTCPeerConnection) => {
+    onReceiveIceCandidate(async (candidate) => {
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (e) {}
+    });
+
+    onCallEnded(() => {
+      toast("Call ended");
+      onClose();
+    });
+
+    onScreenShareStatus(({ isSharing }) => {
+      // Remote user screen share status
+      if (isSharing) setCallType('screen-share');
+      else setCallType(initialType);
+    });
+  };
+
+  const handleEndCall = () => {
+    emitEndCall({ to: isIncoming ? callerId! : targetUserId });
+    onClose();
+  };
+
+  const toggleMute = () => {
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+      }
+    }
+  };
+
+  const toggleCamera = () => {
+    if (localStreamRef.current) {
+      const videoTrack = localStreamRef.current.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsCameraOff(!videoTrack.enabled);
+      }
+    }
+  };
+
+  const handleScreenShare = async () => {
+    if (callType === 'screen-share') {
+      // Stop sharing
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(t => t.stop());
+        screenStreamRef.current = null;
+      }
+      if (localStreamRef.current && peerConnectionRef.current) {
+        const videoTrack = localStreamRef.current.getVideoTracks()[0];
+        const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
+        if (sender && videoTrack) sender.replaceTrack(videoTrack);
+      }
+      setCallType(initialType);
+      emitScreenShareToggle({ to: isIncoming ? callerId! : targetUserId, isSharing: false });
+    } else {
+      // Start sharing
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        screenStreamRef.current = stream;
+        const screenTrack = stream.getVideoTracks()[0];
+
+        if (peerConnectionRef.current) {
+          const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
+          if (sender) sender.replaceTrack(screenTrack);
+        }
+
+        setCallType('screen-share');
+        emitScreenShareToggle({ to: isIncoming ? callerId! : targetUserId, isSharing: true });
+
+        screenTrack.onended = () => {
+          handleScreenShare(); // Toggle back
+        };
+      } catch (err) {
+        console.error("Screen share error:", err);
+      }
+    }
+  };
 
   useEffect(() => {
-    if (initialParticipants.length === 1 && isOpen) {
-        // Add some mock participants to show the group feature
-        const mocks: ParticipantType[] = [
-            ...initialParticipants,
-            {
-                id: 'm1',
-                name: 'Alex Rivera',
-                avatar: 'C:\\Users\\theco\\.gemini\\antigravity\\brain\\e6d0742e-6746-46c1-8cb9-d4c3d034c5fd\\group_participant_1_1775638456922.png',
-                status: 'online',
-                role: 'Designer'
-            },
-            {
-                id: 'm2',
-                name: 'Sarah Chen',
-                avatar: 'C:\\Users\\theco\\.gemini\\antigravity\\brain\\e6d0742e-6746-46c1-8cb9-d4c3d034c5fd\\group_participant_2_1775638631444.png',
-                status: 'online',
-                role: 'Developer'
-            }
-        ];
-        setAllParticipants(mocks);
-    } else {
-        setAllParticipants(initialParticipants);
-    }
-  }, [initialParticipants, isOpen]);
+    setAllParticipants(participants);
+  }, [participants, isOpen]);
 
   // Timer logic
   useEffect(() => {
@@ -133,10 +344,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
             {/* Background (Video Mock or Screen Share Mock) */}
             <div className="absolute inset-0">
                {callType === 'audio' ? (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-6">
+                <div className="w-full h-full flex flex-col items-center justify-center gap-6 bg-zinc-900">
                     <div className="relative">
                         <AnimatePresence>
-                            {activeSpeakerIndex === idx && (
+                            {(callStatus === 'connected' && activeSpeakerIndex === idx) && (
                                 <motion.div 
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     animate={{ scale: 1.5, opacity: 1 }}
@@ -153,15 +364,28 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                     <div className="text-center">
                         <h4 className="text-white font-bold text-lg">{p.name}</h4>
                         <p className="text-white/40 text-xs tracking-wider uppercase">{p.role}</p>
+                        <p className="text-primary/60 text-[10px] font-black mt-2">
+                          {callStatus === 'calling' ? 'DIALING...' : callStatus === 'connected' ? 'CONNECTED' : 'WAITING...'}
+                        </p>
                     </div>
                 </div>
                ) : (
-                <div className="w-full h-full relative">
-                    <img 
-                      src={idx === 0 ? "C:\\Users\\theco\\.gemini\\antigravity\\brain\\e6d0742e-6746-46c1-8cb9-d4c3d034c5fd\\video_call_participant_1775638161037.png" : p.avatar} 
+                <div className="w-full h-full relative bg-black">
+                    <video 
+                      ref={idx === 0 ? null : remoteVideoRef} 
+                      autoPlay 
+                      playsInline 
                       className="w-full h-full object-cover"
-                      alt={p.name}
                     />
+                    {idx === 0 && (
+                      <video 
+                        ref={localVideoRef} 
+                        autoPlay 
+                        muted 
+                        playsInline 
+                        className="w-full h-full object-cover opacity-30" 
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 </div>
                )}
@@ -232,15 +456,19 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
             {isCameraOff ? (
               <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800">
                 <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-2">
-                  <UserIcon className="w-6 h-6 text-white/30" />
+                   <img src={participants[0]?.avatar} className="w-full h-full object-cover rounded-full" alt="me" />
                 </div>
                 <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">You (Paused)</span>
               </div>
             ) : (
                 <div className="w-full h-full bg-zinc-800 relative">
-                     <div className="absolute inset-0 flex items-center justify-center">
-                         <Video className="w-8 h-8 text-white/10 animate-pulse" />
-                     </div>
+                     <video 
+                        ref={localVideoRef} 
+                        autoPlay 
+                        muted 
+                        playsInline 
+                        className="w-full h-full object-cover" 
+                      />
                      <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/40 rounded text-[8px] font-black text-white backdrop-blur-sm tracking-tighter">PREVIEW</div>
                 </div>
             )}
@@ -256,7 +484,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       >
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={toggleMute}
             className={cn(
                 "w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center transition-all duration-300",
                 isMuted ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "bg-white/5 hover:bg-white/10 text-white hover:scale-105"
@@ -271,7 +499,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                     setCallType('video');
                     setIsCameraOff(false);
                 } else {
-                    setIsCameraOff(!isCameraOff);
+                    toggleCamera();
                 }
              }}
              className={cn(
@@ -283,7 +511,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           </button>
 
           <button 
-            onClick={() => setCallType(callType === 'screen-share' ? 'video' : 'screen-share')}
+            onClick={handleScreenShare}
             className={cn(
                 "w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center transition-all duration-300",
                 callType === 'screen-share' ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20" : "bg-white/5 hover:bg-white/10 text-white hover:scale-105"
@@ -301,7 +529,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           </button>
           
           <button 
-            onClick={onClose}
+            onClick={handleEndCall}
             className="w-12 h-12 md:w-14 md:h-14 bg-red-500 hover:bg-red-600 rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-red-500/30 text-white hover:scale-110 active:scale-95 duration-300 group"
           >
             <PhoneOff className="w-5 h-5 md:w-6 md:h-6 rotate-[135deg] group-hover:rotate-0 transition-transform duration-500" />

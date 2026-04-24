@@ -29,11 +29,18 @@ import { clearChatMessages, deleteChatConversation } from '@/features/chat/chatT
 import { useRouter } from 'next/navigation';
 import { ASSET_URL } from '@/services/apiEndpoints';
 import { toast } from 'react-hot-toast';
-import { emitTyping, emitStopTyping, emitMessageSeen } from '@/services/socket';
+import { 
+  emitTyping, 
+  emitStopTyping, 
+  emitMessageSeen, 
+  onIncomingCall, 
+  offCallEvents 
+} from '@/services/socket';
 import { Conversation, Message } from './types';
 import { MessageBubble } from './MessageBubble';
 import { CallOverlay } from './CallOverlay';
 import { Button } from '../ui/button';
+import EmojiPicker, { Theme } from 'emoji-picker-react';
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -61,6 +68,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [showConfirm, setShowConfirm] = useState<'clear' | 'delete' | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filePreviews, setFilePreviews] = useState<{ url: string, name: string, type: string }[]>([]);
+  const [incomingCall, setIncomingCall] = useState<{ signal: any; from: string; name: string; type: 'audio' | 'video' } | null>(null);
+  const [isIncomingCall, setIsIncomingCall] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -123,6 +133,34 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [messages, conversation, me?._id]);
 
+  // --- INCOMING CALL LISTENER ---
+  useEffect(() => {
+    onIncomingCall((data) => {
+      setIncomingCall(data);
+      setIsIncomingCall(true);
+      setActiveCallType(data.type);
+      setIsCallOverlayOpen(true);
+      toast((t) => (
+        <span className="flex items-center gap-3">
+          <b>{data.name}</b> is calling you...
+          <button 
+            onClick={() => {
+              toast.dismiss(t.id);
+              setIsCallOverlayOpen(true);
+            }}
+            className="bg-primary text-white px-3 py-1 rounded-lg text-xs"
+          >
+            Answer
+          </button>
+        </span>
+      ), { duration: 10000, position: 'top-center' });
+    });
+
+    return () => {
+      offCallEvents();
+    };
+  }, []);
+
   // --- TYPING EMITTER ---
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
@@ -172,6 +210,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     setSelectedFiles([]);
     filePreviews.forEach(p => p.url && URL.revokeObjectURL(p.url));
     setFilePreviews([]);
+    setShowEmojiPicker(false);
+  };
+
+  const onEmojiClick = (emojiData: any) => {
+    setInputText(prev => prev + emojiData.emoji);
   };
 
   if (!conversation) {
@@ -490,15 +533,47 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               onSubmit={handleSend}
               className="flex items-end gap-2 max-w-4xl mx-auto"
             >
-              <div className="flex-1 flex items-end gap-2 bg-primary/5 border border-primary/10 rounded-[2rem] p-2 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-card transition-all">
-                <button type="button" className="p-3 text-muted-foreground hover:text-primary transition-colors shrink-0">
-                  <Smile className="w-5 h-5" />
-                </button>
+              <div className="flex-1 flex items-end gap-2 bg-primary/5 border border-primary/10 rounded-[2rem] p-2 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-card transition-all relative">
+                <div className="relative shrink-0">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className={cn(
+                      "p-3 transition-colors",
+                      showEmojiPicker ? "text-primary" : "text-muted-foreground hover:text-primary"
+                    )}
+                  >
+                    <Smile className="w-5 h-5" />
+                  </button>
+
+                  <AnimatePresence>
+                    {showEmojiPicker && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute bottom-16 left-0 z-[60]"
+                      >
+                        <div className="fixed inset-0 z-[-1]" onClick={() => setShowEmojiPicker(false)} />
+                        <EmojiPicker
+                          onEmojiClick={onEmojiClick}
+                          theme={Theme.AUTO}
+                          lazyLoadEmojis={true}
+                          searchDisabled={false}
+                          skinTonesDisabled={true}
+                          width={320}
+                          height={400}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
                 <textarea
                   value={inputText}
                   onChange={handleInputChange}
                   placeholder="Type a message..."
                   rows={1}
+                  onFocus={() => setShowEmojiPicker(false)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -545,9 +620,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       <CallOverlay
         isOpen={isCallOverlayOpen}
-        onClose={() => setIsCallOverlayOpen(false)}
+        onClose={() => {
+          setIsCallOverlayOpen(false);
+          setIsIncomingCall(false);
+          setIncomingCall(null);
+        }}
         participants={participant ? [participant] : []}
         initialType={activeCallType}
+        isIncoming={isIncomingCall}
+        incomingSignal={incomingCall?.signal}
+        callerId={incomingCall?.from}
       />
     </div>
   );
