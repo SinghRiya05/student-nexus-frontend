@@ -25,7 +25,7 @@ export interface IUniversity {
     userCount?: number;
     teacherCount?: number;
     courseCount?: number;
-    courses?: string[];
+    courses?: ICourse[];
 }
 
 export interface IUniversityCreate {

@@ -4,8 +4,11 @@ import React from 'react'
 import MainContent from './MainContent'
 import RightSection from './RightSection'
 import { motion } from "motion/react"
+import { useAppSelector } from '@/utils/hook'
 
 const Home = () => {
+  const user = useAppSelector((state) => state.auth.user);
+  console.log(user);
   return (
     <div className="flex flex-col xl:flex-row gap-8">
       {/* Main Content Area */}

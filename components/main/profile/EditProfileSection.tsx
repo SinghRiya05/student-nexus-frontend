@@ -41,6 +41,7 @@ import { updateProfile, getUserById } from "@/features/users/userThunk";
 import { getAllUniversities, getCoursesByUniversityId } from "@/features/university/universityThunk";
 import { getSemestersByCourseId } from "@/features/semester/semesterThunk";
 import { BASE_URL, ASSET_URL } from "@/services/apiEndpoints";
+import toast from "react-hot-toast";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 function SectionCard({
@@ -140,9 +141,10 @@ export default function EditProfileSection() {
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [coverUrl, setCoverUrl] = useState<string | null>(null);
     const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [isHydrated, setIsHydrated] = useState(false);
-    
+
     // Master Data States
     const [universities, setUniversities] = useState<any[]>([]);
     const [courses, setCourses] = useState<any[]>([]);
@@ -158,6 +160,7 @@ export default function EditProfileSection() {
             bio: "",
             universityId: "",
             courseId: "",
+            courseIds: [],
             semesterId: "",
             hobby_badge: "",
             skills: [],
@@ -179,7 +182,7 @@ export default function EditProfileSection() {
         control: form.control,
         name: "skills",
     });
-    
+
     const watchedUniversityId = form.watch("universityId");
     const watchedCourseId = form.watch("courseId");
 
@@ -200,20 +203,25 @@ export default function EditProfileSection() {
     // Dependent Fetch: Courses by University
     useEffect(() => {
         if (watchedUniversityId) {
+            console.log("Fetching courses for university:", watchedUniversityId);
             dispatch(getCoursesByUniversityId(watchedUniversityId))
                 .unwrap()
                 .then((data) => {
+                    console.log("Fetched courses:", data);
                     setCourses(data);
-                    // Only reset dependent fields if it's a user-initiated change (after hydration)
+                    // Only reset dependent fields if it's a manual change (after hydration)
+                    // If the university ID in the form is different from the one in the user object
                     if (isHydrated && singleUser?.universityId?._id !== watchedUniversityId) {
                         form.setValue("courseId", "");
+                        form.setValue("courseIds", []);
                         form.setValue("semesterId", "");
                     }
-                });
+                })
+                .catch(err => console.error("Error fetching courses:", err));
         } else {
             setCourses([]);
         }
-    }, [watchedUniversityId, dispatch, isHydrated, singleUser?.universityId?._id, form]);
+    }, [watchedUniversityId, dispatch, isHydrated, singleUser?.universityId?._id]);
 
     // Dependent Fetch: Semesters by Course
     useEffect(() => {
@@ -240,6 +248,7 @@ export default function EditProfileSection() {
 
             // Simple IDs for display
             const initialCourseId = singleUser.courseIds?.[0]?._id || "";
+            const initialCourseIds = singleUser.courseIds?.map((c: any) => c._id) || [];
             const initialSemesterId = (profile?.semesterId as any)?._id || profile?.semesterId || "";
 
             form.reset({
@@ -250,6 +259,7 @@ export default function EditProfileSection() {
                 bio: singleUser.bio || (singleUser.teacherProfile as any)?.bio || "",
                 universityId: singleUser.universityId?._id || "",
                 courseId: initialCourseId,
+                courseIds: initialCourseIds,
                 semesterId: initialSemesterId,
                 hobby_badge: (profile as any)?.hobby_badge || "",
                 startYear: singleUser.startYear?.toString() || "",
@@ -264,9 +274,9 @@ export default function EditProfileSection() {
                 department: (singleUser.teacherProfile as any)?.department || (profile as any)?.department || "",
                 currentCompany: (singleUser.aluminiProfile as any)?.currentCompany || (profile as any)?.currentCompany || "",
                 jobTitle: (singleUser.aluminiProfile as any)?.jobTitle || (profile as any)?.jobTitle || "",
-                experienceYears: (singleUser.teacherProfile as any)?.experienceYears?.toString() || 
-                                 (singleUser.aluminiProfile as any)?.experienceYears?.toString() || 
-                                 (profile as any)?.experienceYears?.toString() || "",
+                experienceYears: (singleUser.teacherProfile as any)?.experienceYears?.toString() ||
+                    (singleUser.aluminiProfile as any)?.experienceYears?.toString() ||
+                    (profile as any)?.experienceYears?.toString() || "",
             });
 
             if (singleUser.avatar) setAvatarUrl(`${ASSET_URL}${singleUser.avatar}`);
@@ -277,15 +287,16 @@ export default function EditProfileSection() {
     }, [singleUser, form, isHydrated]);
 
     const onSubmit: SubmitHandler<ProfileValues> = async (values) => {
+        setIsSubmitting(true);
         console.log("Submitting values:", values);
         const formData = new FormData();
-        
+
         // General top-level user fields
         formData.append("firstName", values.firstName || "");
         formData.append("lastName", values.lastName || "");
         formData.append("phone", values.phone || "");
         if (values.bio) formData.append("bio", values.bio);
-        
+
         // Role-specific fields
         if (values.hobby_badge) formData.append("hobby_badge", values.hobby_badge);
         if (values.designation) formData.append("designation", values.designation);
@@ -296,7 +307,14 @@ export default function EditProfileSection() {
 
         // Academic & Career
         if (values.universityId) formData.append("universityId", values.universityId);
-        if (values.courseId) formData.append("courseIds", values.courseId);
+
+        // Handle Course IDs (Multiple for Teacher, Single for others)
+        if (user?.roleId?.name === "TEACHER" && values.courseIds && values.courseIds.length > 0) {
+            values.courseIds.forEach((id) => formData.append("courseIds", id));
+        } else if (values.courseId) {
+            formData.append("courseIds", values.courseId);
+        }
+
         if (values.semesterId) formData.append("semesterId", values.semesterId);
         if (values.startYear) formData.append("startYear", values.startYear);
         if (values.endYear) formData.append("endYear", values.endYear);
@@ -315,16 +333,21 @@ export default function EditProfileSection() {
         try {
             const res = await dispatch(updateProfile(formData as any));
             if (updateProfile.fulfilled.match(res)) {
+                toast.success("Profile updated successfully!");
                 setSaved(true);
                 setTimeout(() => {
                     setSaved(false);
                     router.push("/profile");
                 }, 1500);
             } else {
+                toast.error(typeof res.payload === 'string' ? res.payload : "Update failed");
                 console.error("Update failed:", res.payload);
             }
         } catch (err) {
+            toast.error("An error occurred while updating your profile");
             console.error("Submission error:", err);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -547,6 +570,66 @@ export default function EditProfileSection() {
                                 <StyledField control={form.control} name="experienceYears" label="Total Experience (Years)" placeholder="e.g. 5" type="number" />
                                 <StyledField control={form.control} name="startYear" label="Joined Year" placeholder="2020" />
                             </FieldGrid>
+
+                            {/* Multi-Course Selection for Teachers */}
+                            <div className="mt-6 space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="courseIds"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                            <FormLabel className="text-[0.78rem] font-semibold text-gray-700">Courses You Teach</FormLabel>
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                {(field.value || []).map((courseId: string) => {
+                                                    const course = courses.find(c => c._id === courseId);
+                                                    return (
+                                                        <div key={courseId} className="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-100 text-xs font-bold">
+                                                            {course?.courseName || "Loading..."}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newValue = field.value.filter((id: string) => id !== courseId);
+                                                                    field.onChange(newValue);
+                                                                }}
+                                                                className="hover:text-red-500 transition-colors"
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            <FormControl>
+                                                <Select
+                                                    onValueChange={(val) => {
+                                                        const current = field.value || [];
+                                                        if (!current.includes(val)) {
+                                                            field.onChange([...current, val]);
+                                                        }
+                                                    }}
+                                                    disabled={!watchedUniversityId}
+                                                >
+                                                    <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white shadow-sm transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10">
+                                                        <SelectValue placeholder={watchedUniversityId ? "Add a course..." : "Select University first"} />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl border-gray-100 shadow-xl max-h-[300px]">
+                                                        {courses.length > 0 ? (
+                                                            courses.map((course) => (
+                                                                <SelectItem key={course._id} value={course._id} className="text-sm font-medium">
+                                                                    {course.courseName}
+                                                                </SelectItem>
+                                                            ))
+                                                        ) : (
+                                                            <div className="p-4 text-center text-xs text-gray-400">No courses found</div>
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </SectionCard>
                     )}
 
@@ -586,52 +669,63 @@ export default function EditProfileSection() {
                     )}
 
 
-                    <SectionCard title="Portfolio & Skills" icon={LayoutGrid} accent="indigo">
-                        <div className="space-y-10">
-                            <div>
-                                <FormLabel className="text-[0.78rem] font-black uppercase tracking-widest text-indigo-400 mb-4 block">Core Skills</FormLabel>
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {skillFields.map((field, index) => (
-                                        <div key={field.id} className="relative group">
-                                            <FormField
-                                                control={form.control}
-                                                name={`skills.${index}.name`}
-                                                render={({ field }) => (
-                                                    <div className="flex items-center gap-1 bg-white ring-1 ring-gray-100 rounded-xl px-3 py-1.5 focus-within:ring-2 focus-within:ring-indigo-200 transition-all">
-                                                        <Input {...field} className="border-none bg-transparent shadow-none h-auto py-0 px-0 w-24 text-sm font-bold focus-visible:ring-0" placeholder="Skill name" />
-                                                        <button type="button" onClick={() => removeSkill(index)} className="text-gray-300 hover:text-red-500"><X size={14} /></button>
-                                                    </div>
-                                                )}
-                                            />
-                                        </div>
-                                    ))}
-                                    <Button type="button" variant="outline" size="sm" onClick={() => appendSkill({ name: "" })} className="rounded-xl border-dashed h-[38px] px-4 font-black text-xs text-indigo-600 border-indigo-200 hover:bg-indigo-50">
-                                        <Plus size={14} className="mr-1" /> Add Skill
-                                    </Button>
+                    {user?.roleId?.name !== "TEACHER" && (
+                        <SectionCard title="Portfolio & Skills" icon={LayoutGrid} accent="indigo">
+                            <div className="space-y-10">
+                                <div>
+                                    <FormLabel className="text-[0.78rem] font-black uppercase tracking-widest text-indigo-400 mb-4 block">Core Skills</FormLabel>
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {skillFields.map((field, index) => (
+                                            <div key={field.id} className="relative group">
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`skills.${index}.name`}
+                                                    render={({ field }) => (
+                                                        <div className="flex items-center gap-1 bg-white ring-1 ring-gray-100 rounded-xl px-3 py-1.5 focus-within:ring-2 focus-within:ring-indigo-200 transition-all">
+                                                            <Input {...field} className="border-none bg-transparent shadow-none h-auto py-0 px-0 w-24 text-sm font-bold focus-visible:ring-0" placeholder="Skill name" />
+                                                            <button type="button" onClick={() => removeSkill(index)} className="text-gray-300 hover:text-red-500"><X size={14} /></button>
+                                                        </div>
+                                                    )}
+                                                />
+                                            </div>
+                                        ))}
+                                        <Button type="button" variant="outline" size="sm" onClick={() => appendSkill({ name: "" })} className="rounded-xl border-dashed h-[38px] px-4 font-black text-xs text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                                            <Plus size={14} className="mr-1" /> Add Skill
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div>
-                                <FormLabel className="text-[0.78rem] font-black uppercase tracking-widest text-indigo-400 mb-4 block">Major Projects</FormLabel>
-                                <div className="space-y-4">
-                                    {projectFields.map((field, index) => (
-                                        <div key={field.id} className="flex gap-4 items-center bg-white p-4 rounded-xl border border-gray-100 shadow-sm relative group">
-                                            <StyledField control={form.control} name={`projects.${index}.title`} label="Project Title" placeholder="e.g. Nexus AI" />
-                                            <button type="button" onClick={() => removeProject(index)} className="mt-6 p-2 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors"><Trash2 size={18} /></button>
-                                        </div>
-                                    ))}
-                                    <Button type="button" variant="outline" onClick={() => appendProject({ title: "" })} className="w-full h-14 rounded-2xl border-dashed border-2 font-black text-indigo-600 hover:bg-indigo-50 border-indigo-100">
-                                        <Plus size={18} className="mr-2" /> Append New Project
-                                    </Button>
+                                <div>
+                                    <FormLabel className="text-[0.78rem] font-black uppercase tracking-widest text-indigo-400 mb-4 block">Major Projects</FormLabel>
+                                    <div className="space-y-4">
+                                        {projectFields.map((field, index) => (
+                                            <div key={field.id} className="flex gap-4 items-center bg-white p-4 rounded-xl border border-gray-100 shadow-sm relative group">
+                                                <StyledField control={form.control} name={`projects.${index}.title`} label="Project Title" placeholder="e.g. Nexus AI" />
+                                                <button type="button" onClick={() => removeProject(index)} className="mt-6 p-2 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors"><Trash2 size={18} /></button>
+                                            </div>
+                                        ))}
+                                        <Button type="button" variant="outline" onClick={() => appendProject({ title: "" })} className="w-full h-14 rounded-2xl border-dashed border-2 font-black text-indigo-600 hover:bg-indigo-50 border-indigo-100">
+                                            <Plus size={18} className="mr-2" /> Append New Project
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </SectionCard>
+                        </SectionCard>
+                    )}
 
                     <div className="flex justify-end gap-5 pt-4">
                         <Button type="button" variant="outline" onClick={() => form.reset()} className="rounded-2xl h-14 px-10 font-black text-gray-400 border-2 border-gray-100 hover:bg-gray-50">Discard Changes</Button>
-                        <Button type="submit" className="rounded-2xl h-14 px-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-500/30 flex gap-3 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                            {saved ? <><Check className="w-5 h-5" /> All Saved!</> : <><ChevronRight className="w-5 h-5" /> Update My Profile</>}
+                        <Button type="submit" disabled={isSubmitting} className="rounded-2xl h-14 px-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-500/30 flex gap-3 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                            {isSubmitting ? (
+                                <>
+                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                    Updating...
+                                </>
+                            ) : saved ? (
+                                <><Check className="w-5 h-5" /> All Saved!</>
+                            ) : (
+                                <><ChevronRight className="w-5 h-5" /> Update My Profile</>
+                            )}
                         </Button>
                     </div>
                 </form>
