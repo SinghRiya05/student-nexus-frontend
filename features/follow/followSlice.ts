@@ -54,8 +54,9 @@ const followSlice = createSlice({
             })
             .addCase(rejectFollowRequest.fulfilled, (state, action) => {
                 state.loading = false;
+                const requestId = action.meta.arg;
                 state.pendingRequests = state.pendingRequests.filter(
-                    (request) => request._id !== action.payload.data._id
+                    (request) => request._id !== requestId
                 );
             })
             .addCase(rejectFollowRequest.rejected, (state, action) => {
