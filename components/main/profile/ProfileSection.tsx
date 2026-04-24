@@ -240,11 +240,15 @@ export default function ProfileSection() {
             (req.following?._id === u._id || req.following === u._id)
         );
 
+        const avatarUrl = u.avatar 
+            ? (u.avatar.startsWith('http') ? u.avatar : `${ASSET_URL}${u.avatar}`) 
+            : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`;
+
         return {
             id: u._id,
             name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User',
             role: "Member",
-            avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
+            avatar: avatarUrl,
             isFollowing,
             isRequested
         }
@@ -255,11 +259,15 @@ export default function ProfileSection() {
         .map((f: any) => {
             const u = f.following;
             if (!u || typeof u === 'string') return null;
+            const avatarUrl = u.avatar 
+                ? (u.avatar.startsWith('http') ? u.avatar : `${ASSET_URL}${u.avatar}`) 
+                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`;
+
             return {
                 id: u._id,
                 name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User',
                 role: "Member",
-                avatar: u.avatar ? `${ASSET_URL}${u.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`,
+                avatar: avatarUrl,
                 isFollowing: true
             }
         }).filter((u): u is NonNullable<typeof u> => u !== null);
@@ -275,7 +283,7 @@ export default function ProfileSection() {
                     <div className="absolute inset-0 bg-primary/20" />
                     {user?.coverImage ? (
                         <img
-                            src={user.coverImage}
+                            src={user.coverImage.startsWith('http') ? user.coverImage : `${ASSET_URL}${user.coverImage}`}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             alt="Cover"
                         />
@@ -291,7 +299,7 @@ export default function ProfileSection() {
                         <div className="h-32 w-32 rounded-[2rem] border-4 border-card overflow-hidden shadow-2xl bg-secondary/5 ring-2 ring-secondary/10 flex items-center justify-center font-black text-4xl text-secondary">
                             {user?.avatar ? (
                                 <img
-                                    src={user.avatar}
+                                    src={user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`}
                                     className="w-full h-full object-cover"
                                     alt="Profile"
                                 />

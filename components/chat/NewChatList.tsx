@@ -63,7 +63,9 @@ export const NewChatList: React.FC<NewChatListProps> = ({ followers, onSelect, o
             >
               <div className="relative shrink-0">
                 <img
-                  src={user.avatar ? `${ASSET_URL}${user.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.firstName}`}
+                  src={user.avatar 
+                    ? (user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`) 
+                    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.firstName}`}
                   alt={user.firstName}
                   className="w-12 h-12 object-cover rounded-xl shadow-sm border border-border/40 group-hover:border-primary/30 transition-all"
                 />

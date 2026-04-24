@@ -6,6 +6,10 @@ export interface IUser {
     lastName?: string;
     email: string;
     avatar?: string;
+    roleId?: {
+        _id: string;
+        name: string;
+    };
 }
 
 export interface IMessage {
