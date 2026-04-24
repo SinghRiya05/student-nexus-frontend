@@ -10,7 +10,7 @@ export const sendFollowRequest = createAsyncThunk<IFollowResponse, string>(
             const response = await apiClient.post<IFollowResponse>(API_ENDPOINTS.FOLLOW.SEND_FOLLOW_REQUEST(id));
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to send follow request");
+            return rejectWithValue(error.response?.data?.message || "Failed to send follow request");
         }
     }
 );
@@ -58,7 +58,7 @@ export const getFollowers = createAsyncThunk<IFollowListResponse, void>(
             const response = await apiClient.get<IFollowListResponse>(API_ENDPOINTS.FOLLOW.GET_FOLLOWERS);
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to get followers");
+            return rejectWithValue(error.response?.data?.message || "Failed to get followers");
         }
     }
 );
@@ -70,7 +70,7 @@ export const getFollowing = createAsyncThunk<IFollowListResponse, void>(
             const response = await apiClient.get<IFollowListResponse>(API_ENDPOINTS.FOLLOW.GET_FOLLOWING);
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to get following");
+            return rejectWithValue(error.response?.data?.message || "Failed to get following");
         }
     }
 );

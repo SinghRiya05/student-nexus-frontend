@@ -200,7 +200,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                                   await dispatch(acceptFollowRequest(req._id)).unwrap();
                                   toast.success("Request accepted");
                                 } catch (err: any) {
-                                  toast.error(err || "Failed to accept");
+                                  toast.error(err?.message || String(err) || "Failed to accept");
                                 }
                               }}
                               className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition"
@@ -213,7 +213,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                                   await dispatch(rejectFollowRequest(req._id)).unwrap();
                                   toast.success("Request declined");
                                 } catch (err: any) {
-                                  toast.error(err || "Failed to decline");
+                                  toast.error(err?.message || String(err) || "Failed to decline");
                                 }
                               }}
                               className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition"
