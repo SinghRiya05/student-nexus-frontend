@@ -118,13 +118,22 @@ enum SignupStep {
 
 // ─── Static constants (outside component to prevent re-creation on render) ───
 const AVAILABLE_SKILLS = [
-  "React", "Node.js", "Python", "AWS", "UI/UX", "Java", "C++",
-  "JavaScript", "HTML/CSS", "Machine Learning", "Data Science",
-  "Marketing", "Management", "Communication",
+  "HTML", "CSS", "Javascript", "Typescript", "React", "Next", "Redux", "Vite",
+  "Jquery", "Tailwind", "Material UI", "NodeJS", "ExpressJS", "NestJS",
+  "Kotlin", "Java", "SpringBoot", "Python", "Flask", "Django", "Pygame",
+  "PHP", "Laravel", "MySQL", "MongoDB", "SQLServer", "PostgreSQL", "C",
+  "C++", "C#", "Golang", "Rust", "SQL", "Git", "GitHub", "GitLab",
+  "Bitbucket", "Jira", "Confluence", "Trello", "Asana", "Adobe Photoshop",
+  "Adobe Illustrator", "Adobe XD", "Sketch", "Figma", "VS Code", "Webstorm",
+  "Intellij IDEA", "PyCharm", "Android Studio", "XCode", "VS Android",
+  "Linux", "Ubuntu", "Windows", "MacOS",
 ];
 const AVAILABLE_HOBBY_BADGES = [
-  "Avid Reader", "Coding Ninja", "Sports Star", "Music Lover",
-  "Artist", "Gamer", "Traveler", "Photographer",
+  "Cricket", "Football", "Basketball", "Tennis", "Volleyball", "Badminton",
+  "Swimming", "Gym", "Yoga", "Dancing", "Singing", "Playing Guitar",
+  "Painting", "Photography", "Web Development", "Travelling", "Reading",
+  "Writing", "Gaming", "Cooking", "Baking", "Gardening", "Crafting",
+  "Coding", "Hacking",
 ];
 
 export default function SignupPage() {
