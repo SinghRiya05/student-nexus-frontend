@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,10 +40,23 @@ interface SemesterFormProps {
   isEditing?: boolean;
 }
 
+// Semester name map for semesters 1–8
+const SEMESTER_NAMES: Record<number, string> = {
+  1: "Semester 1",
+  2: "Semester 2",
+  3: "Semester 3",
+  4: "Semester 4",
+  5: "Semester 5",
+  6: "Semester 6",
+  7: "Semester 7",
+  8: "Semester 8",
+};
+
 export default function SemesterForm({ initialData, isEditing }: SemesterFormProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [nameAutoFilled, setNameAutoFilled] = React.useState(false);
 
   const { courses } = useAppSelector((s) => s.course);
 
@@ -57,6 +70,7 @@ export default function SemesterForm({ initialData, isEditing }: SemesterFormPro
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -69,6 +83,18 @@ export default function SemesterForm({ initialData, isEditing }: SemesterFormPro
       status: (initialData?.status as "ACTIVE" | "INACTIVE") || "ACTIVE",
     },
   });
+
+  // Watch semester number and auto-fill name
+  const watchedNumber = useWatch({ control, name: "number" });
+  useEffect(() => {
+    const autoName = SEMESTER_NAMES[Number(watchedNumber)];
+    if (autoName) {
+      setValue("name", autoName);
+      setNameAutoFilled(true);
+    } else {
+      setNameAutoFilled(false);
+    }
+  }, [watchedNumber, setValue]);
 
   // Re-sync when initialData changes (edit page)
   useEffect(() => {
@@ -136,24 +162,42 @@ export default function SemesterForm({ initialData, isEditing }: SemesterFormPro
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Semester Number */}
+              {/* Semester Number — dropdown 1–8 */}
               <div className="space-y-2">
-                <Label htmlFor="number" className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                <Label className="text-sm font-semibold text-slate-700 flex items-center gap-1">
                   <Hash size={13} className="text-indigo-400" />
                   Semester No. <span className="text-rose-500">*</span>
                 </Label>
-                <Input
-                  id="number"
-                  type="number"
-                  min={1}
-                  max={12}
-                  placeholder="e.g. 1, 2, 3..."
-                  className="h-11 rounded-xl border-slate-200"
-                  {...register("number", {
-                    required: "Semester number is required",
-                    min: { value: 1, message: "Minimum semester number is 1" },
-                    max: { value: 12, message: "Maximum semester number is 12" },
-                  })}
+                <Controller
+                  control={control}
+                  name="number"
+                  rules={{ required: "Semester number is required" }}
+                  render={({ field }) => (
+                    <Select
+                      value={String(field.value)}
+                      onValueChange={(val) => field.onChange(Number(val))}
+                    >
+                      <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-white">
+                        <SelectValue placeholder="Select semester" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-slate-100 shadow-xl">
+                        {Object.entries(SEMESTER_NAMES).map(([num, label]) => (
+                          <SelectItem
+                            key={num}
+                            value={num}
+                            className="rounded-lg focus:bg-indigo-50 focus:text-indigo-600"
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-md bg-indigo-50 text-indigo-600 font-black text-[10px] flex items-center justify-center shrink-0">
+                                {num}
+                              </span>
+                              {label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.number && (
                   <p className="text-xs text-rose-500">{errors.number.message}</p>
@@ -197,18 +241,30 @@ export default function SemesterForm({ initialData, isEditing }: SemesterFormPro
                 )}
               </div>
 
-              {/* Semester Name */}
+              {/* Semester Name — auto-filled from number */}
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                <Label htmlFor="name" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                   <Layers size={13} className="text-indigo-400" />
                   Semester Name <span className="text-rose-500">*</span>
+                  {nameAutoFilled && (
+                    <span className="ml-auto text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+                      Auto-filled
+                    </span>
+                  )}
                 </Label>
                 <Input
                   id="name"
-                  placeholder="e.g. Semester 1, First Semester"
+                  placeholder="e.g. First Semester"
                   className="h-11 rounded-xl border-slate-200"
                   {...register("name", { required: "Semester name is required" })}
+                  onChange={(e) => {
+                    register("name").onChange(e);
+                    setNameAutoFilled(false); // user manually edited
+                  }}
                 />
+                <p className="text-[10px] text-slate-400 font-medium">
+                  Auto-filled when you pick a semester number. You can override it.
+                </p>
                 {errors.name && (
                   <p className="text-xs text-rose-500">{errors.name.message}</p>
                 )}

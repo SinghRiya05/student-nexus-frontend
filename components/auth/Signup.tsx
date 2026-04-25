@@ -107,8 +107,8 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 const inputCls =
   "h-11 w-full rounded-[10px] border border-gray-200 bg-gray-50 pl-10 pr-4 " +
   "text-[0.875rem] text-gray-900 shadow-none placeholder:text-gray-400 " +
-  "focus-visible:border-indigo-500 focus-visible:bg-white " +
-  "focus-visible:ring-2 focus-visible:ring-indigo-500/15 focus-visible:ring-offset-0";
+  "focus-visible:border-primary focus-visible:bg-white " +
+  "focus-visible:ring-2 focus-visible:ring-primary/15 focus-visible:ring-offset-0";
 
 enum SignupStep {
   REGISTER = 1,
@@ -484,11 +484,11 @@ export default function SignupPage() {
         <Card className="relative z-10 mx-auto w-full max-w-[440px] rounded-[24px] border-none ring-0 bg-transparent shadow-none animate-in fade-in slide-in-from-bottom-4 duration-500">
           <CardHeader className="pb-6">
             <div className="mb-4 flex items-center gap-2 lg:hidden">
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary/50 to-primary text-white">
                 <GraduationCap size={17} />
               </div>
               <span className="text-lg font-bold text-gray-900">
-                Student<span className="text-indigo-600">Nexus</span>
+                Student<span className="text-primary">Nexus</span>
               </span>
             </div>
 
@@ -517,7 +517,7 @@ export default function SignupPage() {
                   style={{
                     background:
                       step >= i
-                        ? "linear-gradient(90deg,#6366f1,#8b5cf6)"
+                        ? "linear-gradient(90deg,#454548,#241e4d)"
                         : "#e5e7eb",
                   }}
                 />
@@ -671,7 +671,7 @@ export default function SignupPage() {
                     <Button
                       type="button"
                       onClick={handleRegister}
-                      className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 rounded-[10px]"
+                      className="w-full h-11 bg-primary hover:bg-primary/80 rounded-[10px]"
                       disabled={loading}
                     >
                       {loading ? (
@@ -722,7 +722,7 @@ export default function SignupPage() {
                               onKeyDown={(e) => handleOtpKeyDown(e, idx)}
                               onPaste={handleOtpPaste}
                               className={`h-14 w-12 rounded-xl border-2 bg-white text-center text-xl font-bold shadow-sm transition-all focus:ring-2 focus:ring-indigo-500/20 outline-none
-                                ${otpError ? "border-red-500 bg-red-50 text-red-600" : digit ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-900"}`}
+                                ${otpError ? "border-red-500 bg-red-50 text-red-600" : digit ? "border-primary-500 bg-indigo-50 text-primary" : "border-gray-200 text-gray-900"}`}
                             />
                           ))}
                         </div>
@@ -737,7 +737,7 @@ export default function SignupPage() {
                                 type="button"
                                 onClick={() => resendSignupOtp()}
                                 disabled={isResending}
-                                className="text-[0.7rem] text-indigo-600 font-bold hover:underline disabled:opacity-50"
+                                className="text-[0.7rem] text-primary font-bold hover:underline disabled:opacity-50"
                               >
                                 {isResending
                                   ? "Resending..."
@@ -754,7 +754,7 @@ export default function SignupPage() {
                             disabled={
                               otpDigits.join("").length < 6 || isVerifyingOtp
                             }
-                            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95"
+                            className="w-full h-12 bg-primary hover:bg-primary/80 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95"
                           >
                             {isVerifyingOtp ? (
                               <RefreshCw className="h-4 w-4 animate-spin" />
@@ -768,7 +768,7 @@ export default function SignupPage() {
                               type="button"
                               onClick={() => resendSignupOtp()}
                               disabled={otpCooldown > 0 || isResending}
-                              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                              className="text-xs font-bold text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                             >
                               <RefreshCw
                                 size={12}
@@ -935,14 +935,14 @@ export default function SignupPage() {
                       ) : (
                         <div className="relative">
                           <div
-                            className={`${inputCls} min-h-11 h-auto flex flex-wrap gap-1 items-center py-2 cursor-pointer transition-colors hover:border-indigo-500 pl-4`}
+                            className={`${inputCls} min-h-11 h-auto flex flex-wrap gap-1 items-center py-2 cursor-pointer transition-colors hover:border-primary-500 pl-4`}
                             onClick={() => setIsCourseDropdownOpen(!isCourseDropdownOpen)}
                           >
                             {selectedCourseIds.length > 0 ? (
                               courses
                                 .filter((c) => selectedCourseIds.includes(c._id))
                                 .map((c) => (
-                                  <span key={c._id} className="bg-indigo-100 text-indigo-700 text-[0.7rem] px-2 py-0.5 rounded-full flex items-center gap-1">
+                                  <span key={c._id} className="bg-primary/10 text-primary text-[0.7rem] px-2 py-0.5 rounded-full flex items-center gap-1">
                                     {c.courseName}
                                   </span>
                                 ))
@@ -1081,7 +1081,7 @@ export default function SignupPage() {
                                           onMouseDown={(e) => e.preventDefault()}
                                           onClick={() => toggleSkill(skill)}
                                         >
-                                          <span className={`flex-shrink-0 mr-2 h-4 w-4 rounded-[4px] border transition-colors ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300'} flex items-center justify-center`}>
+                                          <span className={`flex-shrink-0 mr-2 h-4 w-4 rounded-[4px] border transition-colors ${isChecked ? 'bg-primary border-primary' : 'border-gray-300'} flex items-center justify-center`}>
                                             {isChecked && (
                                               <svg viewBox="0 0 10 8" className="h-2.5 w-2.5 fill-none stroke-white" strokeWidth="1.8">
                                                 <polyline points="1,4 3.5,6.5 9,1" />
@@ -1198,12 +1198,12 @@ export default function SignupPage() {
                           <label className="text-[0.74rem] font-semibold text-gray-700">Skills</label>
                           <div className="relative">
                             <div
-                              className={`${inputCls} min-h-11 h-auto flex flex-wrap gap-1 items-center py-2 cursor-pointer transition-colors hover:border-indigo-500 pl-4`}
+                              className={`${inputCls} min-h-11 h-auto flex flex-wrap gap-1 items-center py-2 cursor-pointer transition-colors hover:border-primary-500 pl-4`}
                               onClick={() => setIsSkillDropdownOpen(!isSkillDropdownOpen)}
                             >
                               {selectedSkillsArr.length > 0 ? (
                                 selectedSkillsArr.filter(Boolean).map((skill) => (
-                                  <span key={skill} className="bg-indigo-100 text-indigo-700 text-[0.7rem] px-2 py-0.5 rounded-full">
+                                  <span key={skill} className="bg-primary/10 text-primary text-[0.7rem] px-2 py-0.5 rounded-full">
                                     {skill}
                                   </span>
                                 ))
@@ -1224,7 +1224,7 @@ export default function SignupPage() {
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => toggleSkill(skill)}
                                       >
-                                        <span className={`flex-shrink-0 mr-2 h-4 w-4 rounded-[4px] border transition-colors ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300'} flex items-center justify-center`}>
+                                        <span className={`flex-shrink-0 mr-2 h-4 w-4 rounded-[4px] border transition-colors ${isChecked ? 'bg-primary border-primary' : 'border-gray-300'} flex items-center justify-center`}>
                                           {isChecked && (
                                             <svg viewBox="0 0 10 8" className="h-2.5 w-2.5 fill-none stroke-white" strokeWidth="1.8">
                                               <polyline points="1,4 3.5,6.5 9,1" />
@@ -1245,7 +1245,7 @@ export default function SignupPage() {
 
                     <Button
                       type="submit"
-                      className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 rounded-[10px]"
+                      className="w-full h-11 bg-primary hover:bg-primary rounded-[10px]"
                       disabled={loading}
                     >
                       {loading ? (
@@ -1266,7 +1266,7 @@ export default function SignupPage() {
                 Already have an account?{" "}
                 <Link
                   href="/?mode=login"
-                  className="font-bold text-indigo-600 hover:opacity-75"
+                  className="font-bold text-primary hover:opacity-75"
                 >
                   LogIn instead →
                 </Link>

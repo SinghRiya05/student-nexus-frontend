@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/utils/hook'
 import {
     Rss,
@@ -28,8 +28,12 @@ export default function LeftSection() {
 
     const dispatch = useAppDispatch();
 
-    const handleLogout = () => {
-        dispatch(logoutUser());
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await dispatch(logoutUser());
+        localStorage.removeItem("persist:root");
+        router.push("/?mode=login");
     };
 
     const user = useAppSelector((state) => state.auth.user)

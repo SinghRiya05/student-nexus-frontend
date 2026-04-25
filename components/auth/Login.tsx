@@ -67,9 +67,15 @@ export default function LoginPage() {
     setIsLoading(true);
     console.log(values)
     try {
-      await dispatch(loginUser(values)).unwrap();
+      const result = await dispatch(loginUser(values)).unwrap();
       toast.success("Login successful");
-      router.push("/");
+      // Role-based redirect: ADMIN → /dashboard, everyone else → /
+      const role = result?.data?.user?.roleId?.name;
+      if (role === "ADMIN") {
+        router.push("/dashboard");
+      } else {
+        router.push("/");
+      }
     } catch (error: any) {
       const errorMsg = error?.toString() || "";
       if (errorMsg.includes("verify your email")) {
@@ -102,16 +108,16 @@ export default function LoginPage() {
           <Card className="relative z-10 mx-auto w-full max-w-[430px] rounded-[24px] border-none ring-0 bg-transparent shadow-none animate-in fade-in slide-in-from-bottom-4 duration-500">
             <CardHeader className="pb-6">
               <div className="mb-2 flex items-center gap-2 lg:hidden">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary text-white">
                   <GraduationCap size={17} />
                 </div>
                 <span className="text-lg font-bold text-gray-900">
-                  Student<span className="text-indigo-600">Nexus</span>
+                  Student<span className="text-primary">Nexus</span>
                 </span>
               </div>
 
-              <div className="mb-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[0.67rem] font-semibold uppercase tracking-[0.1em] text-indigo-600">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
+              <div className="mb-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[0.67rem] font-semibold uppercase tracking-[0.1em] text-primary">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
                 Verified Student Access
               </div>
               <CardTitle className="text-[1.85rem] font-bold leading-[1.15] -tracking-[0.03em] text-gray-900">
@@ -141,7 +147,7 @@ export default function LoginPage() {
                             type="email"
                             placeholder="you@university.edu"
                             autoComplete="email"
-                            className="h-11 w-full rounded-[10px] border border-gray-200 bg-gray-50 px-3.5 text-[0.875rem] text-gray-900 shadow-none placeholder:text-gray-400 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 focus-visible:ring-offset-0"
+                            className="h-11 w-full rounded-[10px] border border-gray-200 bg-gray-50 px-3.5 text-[0.875rem] text-gray-900 shadow-none placeholder:text-gray-400 focus-visible:border-primary focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/15 focus-visible:ring-offset-0"
                             {...field}
                           />
                         </FormControl>
@@ -164,7 +170,7 @@ export default function LoginPage() {
                               type={showPw ? "text" : "password"}
                               placeholder="••••••••••"
                               autoComplete="current-password"
-                              className="h-11 w-full rounded-[10px] border border-gray-200 bg-gray-50 pl-3.5 pr-11 text-[0.875rem] text-gray-900 shadow-none placeholder:text-gray-400 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/15 focus-visible:ring-offset-0"
+                              className="h-11 w-full rounded-[10px] border border-gray-200 bg-gray-50 pl-3.5 pr-11 text-[0.875rem] text-gray-900 shadow-none placeholder:text-gray-400 focus-visible:border-primary focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/15 focus-visible:ring-offset-0"
                               {...field}
                             />
                             <button
@@ -192,7 +198,7 @@ export default function LoginPage() {
                             <Checkbox
                               checked={field.value}
                               onCheckedChange={field.onChange}
-                              className="h-4 w-4 rounded-[4px] border-gray-300 data-[state=checked]:border-indigo-600 data-[state=checked]:bg-indigo-600"
+                              className="h-4 w-4 rounded-[4px] border-gray-300 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                             />
                             Remember me
                           </label>
@@ -200,7 +206,7 @@ export default function LoginPage() {
                             type="button"
                             variant={"link"}
                             onClick={() => router.push("?mode=forgot-password")}
-                            className="text-[0.79rem] font-semibold text-indigo-600 transition-opacity hover:opacity-70"
+                            className="text-[0.79rem] font-semibold text-primary transition-opacity hover:opacity-70"
                           >
                             Forgot password?
                           </Button>
@@ -212,7 +218,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-6 bg-blue-700"
+                    className="w-full py-6 bg-primary hover:bg-primary/90"
                   >
                     {isLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -232,14 +238,14 @@ export default function LoginPage() {
                 New to StudentNexus?{" "}
                 <Link
                   href="?mode=signup"
-                  className="font-bold text-indigo-600 transition-opacity hover:opacity-75"
+                  className="font-bold text-primary transition-opacity hover:opacity-75"
                 >
                   Create your verified account →
                 </Link>
               </p>
 
               <div className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
-                <ShieldCheck size={12} className="shrink-0 text-emerald-500" />
+                <ShieldCheck size={12} className="shrink-0 text-primary" />
                 <span className="text-[0.67rem] text-gray-400">
                   Verified via official university email · Trusted by 500+
                   institutions

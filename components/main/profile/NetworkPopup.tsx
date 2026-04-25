@@ -31,7 +31,6 @@ export default function NetworkPopup({ isOpen, onClose, title, users, onAction }
   const [rowLoading, setRowLoading] = useState<Record<string, boolean>>({});
   const [messageLoading, setMessageLoading] = useState<Record<string, boolean>>({});
   const [isMounted, setIsMounted] = useState(false);
-
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -116,8 +115,20 @@ export default function NetworkPopup({ isOpen, onClose, title, users, onAction }
               <div className="space-y-2">
                 {users.map((user) => (
                   <div
+                    onClick={() => {
+                      const role = user.role?.toUpperCase();
+                      if (role === "STUDENT") {
+                        router.push(`/students/${user.id}`);
+                      } else if (role === "TEACHER" || role === "PROFESSOR") {
+                        router.push(`/professors/${user.id}`);
+                      } else if (role === "ALUMNI") {
+                        router.push(`/alumni/${user.id}`);
+                      } else {
+                        router.push(`/profile/${user.id}`);
+                      }
+                    }}
                     key={user.id}
-                    className="flex items-center justify-between p-3 rounded-[1.5rem] bg-white border border-transparent hover:border-indigo-100 hover:shadow-md transition-all group"
+                    className="flex items-center justify-between p-3 rounded-[1.5rem] bg-white border border-transparent hover:border-indigo-100 hover:cursor-pointer hover:shadow-md transition-all group"
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div className="h-12 w-12 rounded-[1rem] overflow-hidden bg-indigo-50 border-2 border-white shadow-sm shrink-0">

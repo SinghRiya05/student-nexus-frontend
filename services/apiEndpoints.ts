@@ -80,6 +80,7 @@ export const API_ENDPOINTS = {
         GET_BY_ID: (id: string) => `/role/${id}`,
         UPDATE: (id: string) => `/role/${id}`,
         DELETE: (id: string) => `/role/${id}`,
+        ASSIGN_ROLE: (id: string) => `/role/${id}/assign`,
     },
     PERMISSION: {
         CREATE: "/permissions",

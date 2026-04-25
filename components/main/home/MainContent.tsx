@@ -81,6 +81,11 @@ export default function MainContent() {
     const { following, sentRequests } = useAppSelector((state) => state.follow);
 
     const { user } = useAppSelector((state) => state.auth);
+    const { me } = useAppSelector((state) => state.user);
+
+    // Use me (populated by getMe() on every load) as source of truth for role
+    // auth.user is no longer persisted, but me is always fetched fresh on mount
+    const currentUser = me || user;
 
     const [fetching, setFetching] = useState({
         classmates: classmates.length === 0,
@@ -96,15 +101,19 @@ export default function MainContent() {
     useEffect(() => {
         let mounted = true;
 
+        const isStudent = currentUser?.roleId?.name === "STUDENT";
+        const isAlumini = currentUser?.roleId?.name === "ALUMINI";
+        const isTeacher = currentUser?.roleId?.name === "TEACHER";
+
         const fetchData = async () => {
-            // Classmates
-            if (classmates.length === 0) {
+            // Classmates (STUDENT only — alumni don't have semesters)
+            if (isStudent && classmates.length === 0) {
                 await dispatch(getStudentsByMatchedSemesterWithCourseAndSameUniversity());
             }
             if (mounted) setFetching(prev => ({ ...prev, classmates: false }));
 
-            // Batchmates
-            if (batchmates.length === 0) {
+            // Batchmates (STUDENT + ALUMINI + TEACHER)
+            if ((isStudent || isAlumini || isTeacher) && batchmates.length === 0) {
                 await dispatch(getStudentsByMatchedCourseAndSameUniversity());
             }
             if (mounted) setFetching(prev => ({ ...prev, batchmates: false }));
@@ -129,7 +138,7 @@ export default function MainContent() {
         fetchData();
 
         return () => { mounted = false; };
-    }, [dispatch]);
+    }, [dispatch, currentUser?._id]);
 
 
 
@@ -165,10 +174,11 @@ export default function MainContent() {
                 <p className="text-black">  Connect, collaborate, and grow with students from your university.</p>
             </div>
 
+
             {/* Class Mates */}
-            {user?.roleId?.name === "STUDENT" && <section>
+            {currentUser?.roleId?.name === "STUDENT" && <section>
                 <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-bold">{user?.universityId?.short_name} University - Class Mates</h2>
+                    <h2 className="text-xl font-bold">{currentUser?.universityId?.short_name} University - Class Mates</h2>
                     <button onClick={() => router.push("/students")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
@@ -188,6 +198,35 @@ export default function MainContent() {
                             ))}
                             {classmates.length === 0 && (
                                 <p className="text-sm px-3 text-gray-400 italic py-5">No classmates discovered yet.</p>
+                            )}
+                        </>
+                    )}
+                </div>
+            </section>}
+
+            {/* Batch Mates */}
+            {(currentUser?.roleId?.name === "STUDENT" || currentUser?.roleId?.name === "ALUMINI" || currentUser?.roleId?.name === "TEACHER") && <section>
+                <div className="flex items-center justify-between mb-4 px-2">
+                    <h2 className="text-xl font-bold">{currentUser?.universityId?.short_name} University - Batch Mates</h2>
+                    <button onClick={() => router.push("/students")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+                    {fetching.batchmates ? (
+                        [1, 2, 3, 4, 5].map((i) => <UserCardSkeletonSecondary key={i} />)
+                    ) : (
+                        <>
+                            {batchmates.slice(0, 5).map((user: any, idx: number) => (
+                                <UserCard
+                                    key={idx}
+                                    userId={user._id}
+                                    name={`${user.firstName} ${user.lastName}`}
+                                    role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                                    image={user.avatar}
+                                    variant="secondary"
+                                />
+                            ))}
+                            {batchmates.length === 0 && (
+                                <p className="text-sm px-3 text-gray-400 italic py-5">No batchmates discovered yet.</p>
                             )}
                         </>
                     )}
@@ -223,35 +262,6 @@ export default function MainContent() {
             </section>}
 
 
-
-            {/* Batch Mates */}
-            {user?.roleId.name === "STUDENT" && <section>
-                <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-bold">{user?.universityId?.short_name} University - Batch Mates</h2>
-                    <button onClick={() => router.push("/students")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                    {fetching.batchmates ? (
-                        [1, 2, 3, 4, 5].map((i) => <UserCardSkeletonSecondary key={i} />)
-                    ) : (
-                        <>
-                            {batchmates.slice(0, 5).map((user: any, idx: number) => (
-                                <UserCard
-                                    key={idx}
-                                    userId={user._id}
-                                    name={`${user.firstName} ${user.lastName}`}
-                                    role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
-                                    image={user.avatar}
-                                    variant="secondary"
-                                />
-                            ))}
-                            {batchmates.length === 0 && (
-                                <p className="text-sm px-3 text-gray-400 italic py-5">No batchmates discovered yet.</p>
-                            )}
-                        </>
-                    )}
-                </div>
-            </section>}
 
             {/* Professors */}
             <section>

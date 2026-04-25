@@ -42,16 +42,16 @@ import { toast } from "react-hot-toast";
 
 const SectionTitle = ({ icon: Icon, title, colorClass }: { icon: any; title: string; colorClass: string }) => (
     <div className="flex items-center gap-3">
-        <div className={cn("h-10 w-10 rounded-2xl flex items-center justify-center transition-transform hover:scale-110", colorClass)}>
-            <Icon size={20} />
+        <div className={cn("h-9 w-9 rounded-2xl flex items-center justify-center transition-transform hover:scale-110", colorClass)}>
+            <Icon size={18} />
         </div>
-        <h3 className="text-xl font-black text-black">{title}</h3>
+        <h3 className="text-lg font-black text-black">{title}</h3>
     </div>
 );
 
 const ExperienceItem = ({ title, role, date, description }: any) => (
     <div className="flex gap-5 group cursor-default">
-        <div className="shrink-0 h-14 w-14 rounded-2xl bg-secondary/5 flex items-center justify-center text-secondary/40 group-hover:bg-secondary/10 group-hover:text-secondary transition-all border border-border group-hover:border-secondary/20">
+        <div className="shrink-0 h-14 w-14  rounded-2xl bg-secondary/5 flex items-center justify-center text-secondary/40 group-hover:bg-secondary/10 group-hover:text-secondary transition-all border border-border group-hover:border-secondary/20">
             <Briefcase size={24} />
         </div>
         <div>
@@ -315,18 +315,15 @@ export default function StudentProfileMain({ id }: { id: string }) {
                         transition={{ duration: 0.5 }}
                     >
                         <Card className=" overflow-hidden rounded-2xl border-border shadow-sm group hover:shadow-md transition-all duration-300 bg-white">
-                            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                                <GraduationCap size={120} />
-                            </div>
                             <CardContent className="p-5 relative z-10">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-inner group-hover:scale-110 transition-transform">
-                                            <Target size={24} />
+                                        <div className="h-9 w-9 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-inner group-hover:scale-110 transition-transform">
+                                            <Target size={18} />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black text-black">Academic Status</h3>
-                                            <p className="text-xs font-bold text-primary/40 uppercase tracking-wider">Course Details</p>
+                                            <h3 className="text-lg font-black text-black">Academic Status</h3>
+                                            <p className="text-[10px] font-bold text-primary/40 uppercase tracking-wider">Course Details</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Auth from "@/components/auth/Auth";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import Header from "@/components/layouts/Header";
@@ -10,7 +10,6 @@ import LeftSection from "@/components/main/home/LeftSection";
 import { useAppSelector, useAppDispatch } from "@/utils/hook";
 import { getMe } from "@/features/users/userThunk";
 import { forceLogout } from "@/features/auth/authSlice";
-import { useEffect } from "react";
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -24,6 +23,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
       dispatch(getMe()).unwrap().catch(() => {
         // If getMe fails, the user likely doesn't exist anymore
         dispatch(forceLogout());
+        localStorage.removeItem("persist:root");
       });
     }
   }, [isAuthenticated, me, dispatch]);

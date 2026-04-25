@@ -22,21 +22,27 @@ export default function AlumniMain() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Initial load: University and Course
-                await Promise.all([
-                    dispatch(fetchAlumniByMyUniversity()).unwrap(),
-                    dispatch(fetchAlumniByMyCourse()).unwrap()
-                ])
+                // Initial load: University and Course only if empty
+                if (universityAlumni.length === 0 && courseAlumni.length === 0) {
+                    await Promise.all([
+                        dispatch(fetchAlumniByMyUniversity()).unwrap(),
+                        dispatch(fetchAlumniByMyCourse()).unwrap()
+                    ])
+                }
 
-                // Background load for grouping tabs
-                dispatch(fetchAlumniByCompany())
-                dispatch(fetchAlumniByJobTitle())
+                // Background load for grouping tabs only if empty
+                if (alumniByCompany.length === 0) {
+                    dispatch(fetchAlumniByCompany())
+                }
+                if (alumniByJobTitle.length === 0) {
+                    dispatch(fetchAlumniByJobTitle())
+                }
             } catch (err) {
                 console.error("Failed to fetch alumni data:", err)
             }
         }
         loadData()
-    }, [dispatch])
+    }, [dispatch, universityAlumni.length, courseAlumni.length, alumniByCompany.length, alumniByJobTitle.length])
 
     const currentAlumniList = activeTab === 'course' ? courseAlumni : (activeTab === 'university' ? universityAlumni : alumni);
 
@@ -48,7 +54,7 @@ export default function AlumniMain() {
 
 
     const tabs = [
-        { id: 'university', label: 'My University', icon: GraduationCap, color: 'text-[#2949ef]', bg: 'bg-[#f0ebff]' },
+        { id: 'university', label: 'My University', icon: GraduationCap, color: 'text-primary', bg: 'bg-primary/10' },
         { id: 'course', label: 'My Course', icon: Users, color: 'text-[#ad3407]', bg: 'bg-[#ffa184]/20' },
         { id: 'company', label: 'By Company', icon: Building2, color: 'text-[#006c5c]', bg: 'bg-[#6bfde0]/20' },
         { id: 'jobTitle', label: 'By Role', icon: Briefcase, color: 'text-[#5d5a86]', bg: 'bg-[#dad6ff]/40' },
@@ -57,12 +63,12 @@ export default function AlumniMain() {
     return (
         <div className="space-y-2 pb-10">
             {/* Hero Section */}
-            <div className="relative overflow-hidden px-6 py-5 md:px-10 md:py-5">
+            <div className="relative overflow-hidden px-6 py-3 md:px-10 ">
                 <div className="relative z-10">
                     <motion.h1
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="text-2xl md:text-4xl font-black text-[#302e56] mb-4 leading-tight"
+                        className="text-2xl md:text-3xl font-black text-[#302e56] mb-4 leading-tight"
                     >
                         Success Stories, Start with Networking
                     </motion.h1>
@@ -78,7 +84,7 @@ export default function AlumniMain() {
 
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1 group">
-                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2949ef]/50 group-focus-within:text-[#2949ef] transition-colors" />
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search by name, company or job title..."
@@ -87,7 +93,7 @@ export default function AlumniMain() {
                                 className="w-full pl-12 pr-6 py-4 bg-white border border-[#b1addd]/20 rounded-2xl text-[#302e56] placeholder:text-[#5d5a86]/40 focus:outline-none focus:ring-2 focus:ring-[#2949ef]/15 transition-all font-bold text-sm"
                             />
                         </div>
-                        <button className="bg-[#2949ef] text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#1a36d1] transition-all shadow-lg shadow-[#2949ef]/10 text-sm">
+                        <button className="bg-primary text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#1a36d1] transition-all shadow-lg shadow-[#2949ef]/10 text-sm">
                             <Filter className="w-4 h-4" />
                             Filters
                         </button>
@@ -119,9 +125,32 @@ export default function AlumniMain() {
             {/* Content Area */}
             <div className="min-h-[400px] px-6 mt-10">
                 {loading && (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4 text-[#2949ef]">
-                        <Loader2 className="w-10 h-10 animate-spin" />
-                        <p className="font-bold text-lg">Discovery Alumni Partners...</p>
+                    <div className="space-y-8 animate-pulse pt-2">
+                        <div className="flex items-center gap-3 px-2 mb-6">
+                            <div className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200"></div>
+                            <div className="h-6 w-48 bg-slate-200 rounded-lg"></div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="bg-white border border-slate-100 p-6 rounded-[2rem] flex flex-col items-center gap-4 shadow-sm h-[340px]">
+                                    <div className="w-full flex justify-end">
+                                        <div className="w-6 h-6 bg-slate-100 rounded-full"></div>
+                                    </div>
+                                    <div className="w-20 h-20 rounded-full bg-slate-200 shrink-0"></div>
+                                    <div className="space-y-3 w-full flex flex-col items-center mt-2">
+                                        <div className="h-5 w-3/4 bg-slate-200 rounded-md"></div>
+                                        <div className="h-3 w-1/2 bg-slate-100 rounded-md"></div>
+                                    </div>
+                                    <div className="w-full pt-4 border-t border-slate-50 mt-auto flex justify-between items-center">
+                                        <div className="h-4 w-1/3 bg-slate-100 rounded"></div>
+                                        <div className="h-4 w-1/4 bg-slate-100 rounded-full"></div>
+                                    </div>
+                                    <div className="w-full space-y-2 mt-4">
+                                        <div className="w-full h-10 bg-slate-100 rounded-2xl"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -138,7 +167,7 @@ export default function AlumniMain() {
                                 <AlumniGroup
                                     title="From Your University"
                                     alumni={filteredAlumni}
-                                    icon={<GraduationCap className="w-5 h-5 text-[#2949ef]" />}
+                                    icon={<GraduationCap className="w-5 h-5 text-primary" />}
                                 />
                             )}
 

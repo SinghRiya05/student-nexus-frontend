@@ -6,17 +6,15 @@ export function middleware(req: NextRequest) {
     const accessToken = req.cookies.get("accessToken")?.value;
     const refreshToken = req.cookies.get("refreshToken")?.value;
 
-    const { pathname, searchParams } = req.nextUrl;
+    const { pathname } = req.nextUrl;
 
-    // root path is our gateway
     const isRoot = pathname === "/";
+    const isDashboard = pathname.startsWith("/dashboard");
 
     // 🔹 check user logged in hai ya nahi
     const isAuthenticated = !!accessToken || !!refreshToken;
 
-    // ❌ AUTH PROTECTION LOGIC
-
-    // 1. If trying to access a PROTECTED path (not root) and not authenticated
+    // 1. If not authenticated and trying to access any non-root route → login
     if (!isAuthenticated && !isRoot) {
         const loginUrl = new URL("/", req.url);
         loginUrl.searchParams.set("mode", "login");
@@ -24,9 +22,10 @@ export function middleware(req: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // 2. We always allow the Root path (/) 
-    // The MainLayoutClient will decide whether to show Dashboard or Login/Signup based on Redux state
-    // This avoids "redirect loops" if Redux and Cookies are temporarily out of sync.
+    // 2. If not authenticated but on root → let MainLayoutClient decide (Auth or Home)
+    // 3. Dashboard route: unauthenticated users already redirected above.
+    //    Role verification (ADMIN only) is handled client-side in AdminDashboardLayout
+    //    because role info is not available in the cookie payload at middleware level.
 
     return NextResponse.next();
 }

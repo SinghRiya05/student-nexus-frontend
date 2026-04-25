@@ -83,13 +83,14 @@ export default function ChatPage() {
 
 
   useEffect(() => {
+    // accessToken is persisted (via transform) specifically for socket auth after page refresh
     if (me?._id && accessToken) {
       initiateSocketConnection(accessToken);
     }
     return () => {
       disconnectSocket();
     };
-  }, [me]);
+  }, [me?._id, accessToken]);
 
   // --- HYDRATION & INITIAL FETCH ---
   useEffect(() => {

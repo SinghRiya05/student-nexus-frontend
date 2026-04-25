@@ -22,9 +22,9 @@ const UniversityRight = () => {
     return (
         <aside className="w-full space-y-6">
             {/* Discover Groups */}
-            <Card className="glass-card border-none rounded-3xl overflow-hidden shadow-xl">
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-6">
+            <Card className="glass-card border-none rounded-2xl overflow-hidden shadow-xl">
+                <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-black uppercase tracking-widest text-slate-800">Discover Groups</h4>
                     </div>
 
@@ -58,9 +58,9 @@ const UniversityRight = () => {
             </Card>
 
             {/* Certification Programs */}
-            <Card className="glass-card border-none rounded-3xl overflow-hidden shadow-xl relative">
+            <Card className="glass-card border-none rounded-2xl overflow-hidden shadow-xl relative">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl -mr-10 -mt-10" />
-                <CardContent className="p-6 relative z-10">
+                <CardContent className="p-4 relative z-10">
                     <h4 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-2 leading-relaxed">Universities Free Certification Programs</h4>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-2">Upcoming Batch</p>
 
@@ -83,7 +83,7 @@ const UniversityRight = () => {
                         ))}
                     </div>
 
-                    <Button className="w-full mt-8 h-12 rounded-2xl bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold shadow-lg shadow-yellow-100 transition-all gap-2 group">
+                    <Button className="w-full mt-8 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/10 transition-all gap-2 group">
                         Explore Courses <ArrowUpRight className="w-4 h-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
                     </Button>
                 </CardContent>

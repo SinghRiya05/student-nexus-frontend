@@ -81,3 +81,23 @@ export const deleteRole = createAsyncThunk(
         }
     },
 );
+
+export const assignRole = createAsyncThunk(
+    "roles/assignRole",
+    async (
+        { id, roleData }: { id: string; roleData: { roleId: string } },
+        { rejectWithValue },
+    ) => {
+        try {
+            const response = await apiClient.put(
+                API_ENDPOINTS.ROLE.ASSIGN_ROLE(id),
+                roleData,
+            );
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to assign role",
+            );
+        }
+    },
+);

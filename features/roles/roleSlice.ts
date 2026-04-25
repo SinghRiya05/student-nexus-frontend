@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IRole, RoleState } from "./roleModel";
 import {
+    assignRole,
     createRole,
     deleteRole,
     getRoleById,
@@ -107,6 +108,24 @@ const roleSlice = createSlice({
                 state.roles = state.roles.filter((role) => role._id !== action.payload);
             })
             .addCase(deleteRole.rejected, (state, action) => {
+                state.roleLoading = false;
+                state.roleError = action.payload as string;
+            });
+
+        // Assign Role
+        builder
+            .addCase(assignRole.pending, (state) => {
+                state.roleLoading = true;
+                state.roleError = null;
+            })
+            .addCase(assignRole.fulfilled, (state, action: PayloadAction<IRole>) => {
+                state.roleLoading = false;
+                const index = state.roles.findIndex((t) => t._id === action.payload._id);
+                if (index !== -1) {
+                    state.roles[index] = action.payload;
+                }
+            })
+            .addCase(assignRole.rejected, (state, action) => {
                 state.roleLoading = false;
                 state.roleError = action.payload as string;
             });

@@ -232,8 +232,22 @@ export default function Studentlist() {
             {/* Grid display using UserCard */}
             <div className="flex-1">
                 {loading ? (
-                    <div className="flex justify-center items-center py-20">
-                        <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 flex flex-col items-center text-center animate-pulse"
+                            >
+                                {/* Avatar circle */}
+                                <div className="w-16 h-16 rounded-full bg-gray-200 mt-2 mb-3" />
+                                {/* Name line */}
+                                <div className="h-4 w-28 bg-gray-200 rounded-full mb-2" />
+                                {/* Role line */}
+                                <div className="h-3 w-20 bg-gray-100 rounded-full mb-4" />
+                                {/* Button */}
+                                <div className="h-8 w-full bg-gray-100 rounded-xl" />
+                            </div>
+                        ))}
                     </div>
                 ) : filteredStudents.length > 0 ? (
                     <motion.div

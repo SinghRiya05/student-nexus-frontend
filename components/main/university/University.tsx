@@ -11,6 +11,7 @@ import UniversitySearch from "./UniversitySearch"
 import { useAppDispatch, useAppSelector } from "@/utils/hook"
 import { getAllUniversities } from "@/features/university/universityThunk"
 import { getMe } from "@/features/users/userThunk"
+import { ASSET_URL } from '@/services/apiEndpoints'
 
 export default function University() {
 
@@ -34,15 +35,18 @@ export default function University() {
     }, [dispatch, safeUniversities.length, user, authUser?._id, universityLoading]);
 
     const featuredUniData = safeUniversities.find((u: any) => u._id === userUniversityId) || safeUniversities[0];
+    console.log(featuredUniData);
 
     const mapUniversityToCard = (uni: any) => {
         if (!uni) return null;
         return {
             id: uni._id,
             name: uni.name || "Unknown University",
+            shortName: uni.short_name || "",
             location: `${uni.city?.name || uni.city || 'Unknown City'}, ${uni.state?.name || uni.state || 'Unknown State'}`.trim(),
             students: uni.userCount || 0,
             type: uni.universityType || "Verified",
+            domain: uni.domain || "",
             image: uni.image,
             logo: uni.logo,
             color: "bg-secondary/10"
@@ -61,7 +65,7 @@ export default function University() {
                 <section className="space-y-6">
                     <div>
                         <span className="text-black font-bold text-sm mb-1 block">Institutional Directory</span>
-                        <h1 className="text-[44px] font-black  leading-tight mb-4">Universities</h1>
+                        <h1 className="text-3xl font-black  leading-tight mb-2">Universities</h1>
                         <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-2xl">
                             The Universities Directory is a structured list of verified institutions that helps users find and connect with students, seniors, and alumni within specific universities, enabling trusted academic networking.
                         </p>
@@ -78,16 +82,55 @@ export default function University() {
 
                 {/* 2. Featured Institution Card (Full Overlay) */}
                 {universityLoading && safeUniversities.length === 0 ? (
-                    <div className="flex items-center justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        <span className="ml-3 text-sm font-medium text-slate-500 animate-pulse">Loading institutions...</span>
+                    <div className="space-y-12 animate-pulse">
+                        {/* Featured Institution Skeleton */}
+                        <div className="relative h-[400px] rounded-2xl bg-slate-100 overflow-hidden border border-slate-200">
+                            <div className="absolute inset-0 p-10 flex flex-col justify-end">
+                                <div className="space-y-6">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                                        <div className="space-y-4 w-full max-w-lg">
+                                            <div className="h-10 bg-slate-200 rounded-lg w-3/4"></div>
+                                            <div className="flex gap-4">
+                                                <div className="h-10 w-32 bg-slate-200 rounded-xl"></div>
+                                                <div className="h-10 w-32 bg-slate-200 rounded-xl"></div>
+                                            </div>
+                                        </div>
+                                        <div className="w-24 h-24 rounded-2xl bg-slate-200 shrink-0"></div>
+                                    </div>
+                                    <div className="h-px bg-slate-200 w-full" />
+                                    <div className="h-12 w-40 bg-slate-200 rounded-xl"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Explore Universities Grid Skeleton */}
+                        <section className="space-y-8">
+                            <div className="h-8 w-64 bg-slate-200 rounded-lg"></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col gap-6">
+                                        <div className="flex gap-4">
+                                            <div className="w-16 h-16 rounded-2xl bg-slate-100 shrink-0"></div>
+                                            <div className="space-y-3 w-full">
+                                                <div className="h-6 w-3/4 bg-slate-200 rounded-lg"></div>
+                                                <div className="h-4 w-1/2 bg-slate-100 rounded-md"></div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-24 bg-slate-100 rounded-lg"></div>
+                                            <div className="h-8 w-24 bg-slate-100 rounded-lg"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
                     </div>
                 ) : (
                     <>
                         {featuredUniData && (
                             <section className="relative h-[400px] rounded-2xl overflow-hidden border-2 border-primary/10 shadow-2xl group cursor-pointer">
                                 <img
-                                    src={featuredUniData.image}
+                                    src={featuredUniData?.image?.startsWith('http') ? featuredUniData?.image : `${ASSET_URL}${featuredUniData?.image}`}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     alt="Featured University"
                                 />
@@ -109,7 +152,7 @@ export default function University() {
                                             </div>
                                             <div className="w-24 h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-2 shadow-2xl overflow-hidden">
                                                 {featuredUniData.logo ? (
-                                                    <img src={featuredUniData.logo} alt="Logo" className="w-full h-full object-contain bg-white rounded-xl" />
+                                                    <img src={featuredUniData.logo} alt="Logo" className="w-full h-full object-cover bg-white rounded-xl" />
                                                 ) : (
                                                     <div className="w-full h-full bg-white rounded-xl flex items-center justify-center font-black text-xs text-primary">
                                                         {featuredUniData.name.substring(0, 2).toUpperCase()}

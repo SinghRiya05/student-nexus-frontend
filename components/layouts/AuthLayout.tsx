@@ -243,7 +243,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex h-screen">
       {/* ── LEFT PANEL ── */}
-      <div className="relative hidden w-[52%] shrink-0 overflow-hidden bg-[#080817] lg:flex lg:flex-col">
+      <div className="relative hidden w-[52%] shrink-0 overflow-hidden bg-[#080d0c] lg:flex lg:flex-col">
 
         {/* Ambient glows */}
         <div className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full blur-[110px]"
@@ -275,12 +275,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* ── Logo ── */}
           <div className="shrink-0" style={{ animation: "snFadeUp 0.5s ease both" }}>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_24px_rgba(99,102,241,0.6)]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-accent text-white shadow-[0_0_24px_rgba(99,102,241,0.6)]">
                 <GraduationCap size={20} />
               </div>
               <div>
                 <p className="text-[1.2rem] font-bold leading-none tracking-tight text-white">
-                  Student<span className="text-indigo-400">Nexus</span>
+                  Student<span className="text-accent">Nexus</span>
                 </p>
                 <p className="mt-0.5 text-[0.6rem] uppercase tracking-[0.16em] text-white/30">
                   Verified Academic Network
@@ -293,7 +293,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="mt-6 shrink-0" style={{ animation: "snFadeUp 0.5s 0.08s ease both" }}>
             <h1 className="text-[2.1rem] font-extrabold leading-[1.16] tracking-tight text-white">
               Your Academic<br />
-              <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-sky-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-secondary via-accent to-primary bg-clip-text text-transparent">
                 Universe Awaits
               </span>
             </h1>
@@ -305,8 +305,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           {/* ── Rotating tagline ── */}
           <div className="mt-3 shrink-0 flex items-center gap-2" style={{ animation: "snFadeUp 0.5s 0.14s ease both" }}>
-            <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-indigo-500/20 text-indigo-400 text-[10px]">✦</span>
-            <p className="text-[0.78rem] font-medium text-indigo-300/80 transition-opacity duration-300 min-h-[1.1rem]"
+            <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-secondary/20 text-secondary text-[10px]">✦</span>
+            <p className="text-[0.78rem] font-medium text-white/60 transition-opacity duration-300 min-h-[1.1rem]"
               style={{ opacity: tagFade ? 1 : 0 }}>
               {taglines[tagIdx]}
             </p>
@@ -319,8 +319,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {/* legend */}
             <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-10">
               {[
-                { color: "#818cf8", name: "Student" },
-                { color: "#f59e0b", name: "Teacher" },
+                { color: "#00B7B5", name: "Student" },
+                { color: "#ff9800", name: "Teacher" },
                 { color: "#34d399", name: "Alumni" },
                 { color: "#f87171", name: "Peer" },
               ].map((n) => (
@@ -336,7 +336,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="mt-4 shrink-0 flex flex-col gap-1.5" style={{ animation: "snFadeUp 0.5s 0.28s ease both" }}>
             {trustItems.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2.5">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-indigo-500/15 text-indigo-400">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-secondary/15 text-secondary">
                   <Icon size={11} strokeWidth={2} />
                 </div>
                 <span className="text-[0.72rem] text-white/40">{text}</span>
@@ -350,7 +350,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {statPills.map(({ icon: Icon, value, label }) => (
               <div key={label}
                 className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-white/[0.03] py-2.5 px-1 hover:border-indigo-500/30 hover:bg-indigo-500/[0.06] transition-all duration-300">
-                <Icon size={12} className="text-indigo-400" strokeWidth={2} />
+                <Icon size={12} className="text-accent" strokeWidth={2} />
                 <p className="text-[0.98rem] font-bold tracking-tight text-white">{value}</p>
                 <p className="text-[0.58rem] uppercase tracking-[0.05em] text-white/25">{label}</p>
               </div>

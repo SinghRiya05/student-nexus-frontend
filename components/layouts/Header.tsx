@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/utils/hook";
 import { logoutUser } from '@/features/auth/authThunk';
 import { ASSET_URL } from "@/services/apiEndpoints";
@@ -60,6 +60,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
@@ -73,6 +74,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const { user: authUser } = useAppSelector((state) => state.auth);
   const { me } = useAppSelector((state) => state.user);
   const { pendingRequests } = useAppSelector((state) => state.follow);
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    // Wipe persisted Redux state so it cannot rehydrate old session on next load
+    localStorage.removeItem("persist:root");
+    toast.success("Logged out successfully");
+    router.push("/?mode=login");
+  };
 
   const closeAll = () => {
     setNotifOpen(false);
@@ -337,7 +346,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
                   <div className="border-t border-gray-100 py-1.5">
                     <button
-                      onClick={() => dispatch(logoutUser())}
+                      onClick={handleLogout}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[0.8rem] font-medium text-rose-500 transition hover:bg-rose-50"
                     >
                       <LogOut size={15} />

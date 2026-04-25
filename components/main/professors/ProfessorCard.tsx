@@ -10,6 +10,7 @@ import { sendFollowRequest, unfollow } from "@/features/follow/followThunk"
 import toast from "react-hot-toast"
 import { cn } from "@/lib/utils"
 import { useState } from 'react'
+import { accessChat } from '@/features/chat/chatThunk'
 
 interface ProfessorCardProps {
     id: string | number
@@ -73,10 +74,14 @@ export default function ProfessorCard({
         }
     };
 
-    const handleMessageAction = () => {
-        // Implement message navigation logic here
-        // For now, let's just toast
-        toast.success("Opening chat...");
+    const handleMessageAction = async () => {
+        const result = await dispatch(accessChat({ userId: String(id) }))
+        if (result.meta.requestStatus === "fulfilled") {
+            toast.success("Chat opened successfully");
+            router.push('/chat');
+        } else {
+            toast.error("Failed to open chat");
+        }
     };
     return (
         <div className="bg-white border rounded-3xl p-6  hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-center text-center">
