@@ -7,6 +7,7 @@ import AuthLayout from "@/components/layouts/AuthLayout";
 import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
 import LeftSection from "@/components/main/home/LeftSection";
+import { ChatBot } from "@/components/common/ChatBot";
 import { useAppSelector, useAppDispatch } from "@/utils/hook";
 import { getMe } from "@/features/users/userThunk";
 import { forceLogout } from "@/features/auth/authSlice";
@@ -68,6 +69,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <Footer />
+      <ChatBot />
     </div>
   );
 }

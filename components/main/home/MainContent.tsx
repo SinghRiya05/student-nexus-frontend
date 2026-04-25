@@ -192,6 +192,7 @@ export default function MainContent() {
                                     userId={user._id}
                                     name={`${user.firstName} ${user.lastName}`}
                                     role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                                    university={user.universityId?.short_name || user.universityId?.name}
                                     image={user.avatar}
                                     variant="primary"
                                 />
@@ -205,7 +206,7 @@ export default function MainContent() {
             </section>}
 
             {/* Batch Mates */}
-            {(currentUser?.roleId?.name === "STUDENT" || currentUser?.roleId?.name === "ALUMINI" || currentUser?.roleId?.name === "TEACHER") && <section>
+            {(currentUser?.roleId?.name === "STUDENT" || currentUser?.roleId?.name === "ALUMINI") && <section>
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h2 className="text-xl font-bold">{currentUser?.universityId?.short_name} University - Batch Mates</h2>
                     <button onClick={() => router.push("/students")} className="text-black cursor-pointer text-sm font-semibold hover:underline">Directory</button>
@@ -221,6 +222,7 @@ export default function MainContent() {
                                     userId={user._id}
                                     name={`${user.firstName} ${user.lastName}`}
                                     role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                                    university={user.universityId?.short_name || user.universityId?.name}
                                     image={user.avatar}
                                     variant="secondary"
                                 />
@@ -249,6 +251,7 @@ export default function MainContent() {
                                     userId={user._id}
                                     name={`${user.firstName} ${user.lastName}`}
                                     role={user.courseIds?.length > 0 ? user.courseIds.map((c: any) => c.course_short_name).join(", ") : "Student"}
+                                    university={user.universityId?.short_name || user.universityId?.name}
                                     image={user.avatar}
                                     variant="primary"
                                 />

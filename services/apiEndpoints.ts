@@ -155,5 +155,8 @@ export const API_ENDPOINTS = {
         CLEAR_MESSAGES: (id: string) => `/chat/clear/${id}`,
         DELETE_CHAT: (id: string) => `/chat/${id}`,
     },
+    AI: {
+        GENERATE: "/ai/generate",
+    }
 
 };

@@ -474,8 +474,8 @@ export function PostCard({
                         >
                           <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 mt-0.5">
                             <img
-                              src={comment.authorId && typeof comment.authorId === 'object' && comment.authorId.avatar && typeof comment.authorId.avatar === 'string' 
-                                ? (comment.authorId.avatar.startsWith('http') ? comment.authorId.avatar : `${ASSET_URL}${comment.authorId.avatar}`) 
+                              src={comment.authorId && typeof comment.authorId === 'object' && comment.authorId.avatar && typeof comment.authorId.avatar === 'string'
+                                ? (comment.authorId.avatar.startsWith('http') ? comment.authorId.avatar : `${ASSET_URL}${comment.authorId.avatar}`)
                                 : `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorId && typeof comment.authorId === 'object' ? comment.authorId.firstName : 'User'}`}
                               className="w-full h-full object-cover"
                             />

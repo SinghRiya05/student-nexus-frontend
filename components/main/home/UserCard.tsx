@@ -18,6 +18,8 @@ interface UserCardProps {
     userId?: string;
     name: string;
     role: string;
+    university?: string;
+    semester?: string;
     variant?: 'primary' | 'secondary';
     image?: string;
     className?: string;
@@ -27,6 +29,8 @@ export const UserCard = ({
     userId,
     name,
     role,
+    university,
+    semester,
     variant = 'primary',
     image,
     className
@@ -127,7 +131,13 @@ export const UserCard = ({
                             <span className="text-lg uppercase">{name?.[0]}</span>
                         )}
                     </div>
-                    <span className="text-xs font-bold mb-3 text-black">{name}</span>
+                    <span className="text-xs font-bold mb-1 text-black">{name}</span>
+                    <div className="flex flex-col items-center gap-0.5 mb-3">
+                        <span className="text-[9px] text-black/50 font-bold uppercase truncate max-w-full px-2">
+                            {role} {university && `• ${university}`}
+                        </span>
+                        {semester && <span className="text-[9px] text-primary/70 font-bold uppercase">{semester}</span>}
+                    </div>
                     <button
                         onClick={handleAction}
                         disabled={localLoading}
@@ -165,8 +175,13 @@ export const UserCard = ({
                             <span className="text-2xl uppercase">{name?.[0]}</span>
                         )}
                     </div>
-                    <h4 className="font-bold text-[#302e56]">{name}</h4>
-                    <p className="text-xs text-[#5d5a86] mb-4">{role}</p>
+                    <h4 className="font-bold text-[#302e56] leading-tight">{name}</h4>
+                    <div className="flex flex-col items-center gap-0.5 mb-4 mt-1">
+                        <p className="text-[10px] font-bold text-[#5d5a86] uppercase tracking-tight">
+                            {role} {university && `• ${university}`}
+                        </p>
+                        {semester && <span className="text-[10px] font-bold text-secondary uppercase tracking-tight">{semester}</span>}
+                    </div>
                     <button
                         onClick={handleAction}
                         disabled={localLoading}

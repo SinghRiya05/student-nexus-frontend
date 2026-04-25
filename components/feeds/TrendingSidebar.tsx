@@ -116,7 +116,7 @@ export function TrendingSidebar() {
                                 {/* Left Side: Media or Avatar */}
                                 <div className="h-12 w-12 shrink-0 rounded-full overflow-hidden bg-background border-2 border-card relative shadow-sm group-hover:border-secondary transition-all duration-500 ring-2 ring-transparent group-hover:ring-secondary/5">
                                     <img
-                                        src={post.media ? `${ASSET_URL}${post.media}` : (post.authorId.avatar ? `${ASSET_URL}${post.authorId.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId.firstName}`)}
+                                        src={post.authorId.avatar}
                                         alt={post.authorId.firstName}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
@@ -153,3 +153,4 @@ export function TrendingSidebar() {
         </div>
     );
 }
+

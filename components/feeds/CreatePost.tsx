@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect } from "react"
 import { Image as ImageIcon, Link2, Hash, Send, X, Plus } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import TextareaAutosize from "react-textarea-autosize"
@@ -14,6 +15,7 @@ import { useAppDispatch, useAppSelector } from "@/utils/hook"
 import { createFeed } from "@/features/feeds/feedThunk"
 import { ASSET_URL } from "@/services/apiEndpoints"
 import { toast } from "react-hot-toast"
+import { getMe } from "@/features/users/userThunk"
 
 const CreatePostSchema = z.object({
   content: z.string().min(1, "Post content cannot be empty"),
@@ -35,7 +37,12 @@ export function CreatePost() {
   const [hashtagInput, setHashtagInput] = React.useState("")
 
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+
+  const { me } = useAppSelector((state) => state.user)
+
+  useEffect(() => {
+    dispatch(getMe())
+  }, [])
 
   const {
     register,
@@ -94,6 +101,7 @@ export function CreatePost() {
     setValue("mediaPreview", null);
   }
 
+
   const addHashtag = () => {
     if (hashtagInput.trim() && !formValues.hashtags.includes(hashtagInput.trim())) {
       const tag = hashtagInput.trim().replace(/^#/, "")
@@ -125,7 +133,7 @@ export function CreatePost() {
               <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-secondary p-0.5 shadow-md group cursor-pointer overflow-hidden">
                 <div className="h-full w-full rounded-full bg-card p-0.5 overflow-hidden">
                   <img
-                    src={user?.avatar && typeof user.avatar === 'string' ? (user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || "Student"}`}
+                    src={me?.avatar && typeof me.avatar === 'string' ? (me.avatar.startsWith('http') ? me.avatar : `${ASSET_URL}${me.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${me?.firstName || "Student"}`}
                     alt="User Avatar"
                     className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform"
                   />
