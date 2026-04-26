@@ -31,8 +31,7 @@ export const assignRolePermission = createAsyncThunk<
 >("rolePermission/assignRolePermission", async (data, { rejectWithValue }) => {
     try {
         const response = await apiClient.post(
-            API_ENDPOINTS.ROLE_PERMISSION.ASSIGN,
-            data
+            API_ENDPOINTS.ROLE_PERMISSION.ASSIGN(data.roleId, data.permissionId)
         );
         return response.data;
     } catch (error: any) {
@@ -43,7 +42,7 @@ export const assignRolePermission = createAsyncThunk<
 // ================= GET =================
 export const getPermissionsByRole = createAsyncThunk<
     any,
-    number,
+    string,
     { rejectValue: string }
 >("rolePermission/getPermissionsByRole", async (roleId, { rejectWithValue }) => {
     try {
@@ -65,9 +64,8 @@ export const removePermissionFromRole = createAsyncThunk<
     "rolePermission/removePermissionFromRole",
     async (data, { rejectWithValue }) => {
         try {
-            const response = await apiClient.post(
-                API_ENDPOINTS.ROLE_PERMISSION.REMOVE,
-                data
+            const response = await apiClient.delete(
+                API_ENDPOINTS.ROLE_PERMISSION.REMOVE(data.roleId, data.permissionId)
             );
             return response.data;
         } catch (error: any) {

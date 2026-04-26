@@ -20,7 +20,8 @@ import {
     Award,
     CheckCircle,
     AlertCircle,
-    Loader2
+    Loader2,
+    Send
 } from "lucide-react";
 import {
     Dialog,

@@ -1,11 +1,11 @@
-import { IPermission } from "../Permissions/permissionModel";
-import { IRole } from "../Roles/RolesModel";
+import { IPermission } from "../permissions/permissionModel";
+import { IRole } from "../roles/roleModel";
 
 // Mapping
 export interface IRolePermission {
-    id: number;
-    created_at: string;
-    modified_at: string;
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
     role: IRole;
     permission: IPermission;
 }
@@ -20,13 +20,13 @@ export interface RolePermissionResponse {
 
 // Requests
 export interface RolePermissionRequest {
-    roleId: number;
-    permissionIds: number[];
+    roleId: string;
+    permissionIds: string[];
 }
 
 export interface AssignRolePermissionRequest {
-    roleId: number;
-    permissionId: number;
+    roleId: string;
+    permissionId: string;
 }
 
 

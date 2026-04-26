@@ -23,14 +23,15 @@ import { getSemestersByCourseId } from "@/features/semester/semesterThunk";
 import { createResource, updateResource } from "@/features/teacher/resources/resourceThunk";
 import { IResource } from "@/features/teacher/resources/resourceModel";
 import apiClient from "@/services/apiClient";
+import toast from "react-hot-toast";
 
 const schema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
     description: z.string().min(10, "Description must be at least 10 characters"),
     courseId: z.string().min(1, "Please select a course"),
     semesterId: z.string().min(1, "Please select a semester"),
-    isPaid: z.boolean().optional(),
-    price: z.coerce.number().optional(),
+    isPaid: z.boolean().default(false),
+    price: z.coerce.number().default(0),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -66,7 +67,7 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
         setValue,
         formState: { errors },
     } = useForm<FormValues>({
-        resolver: zodResolver(schema),
+        resolver: zodResolver(schema) as any,
         defaultValues: {
             isPaid: false,
             price: 0,
@@ -90,8 +91,8 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
             reset({
                 title: editResource.title,
                 description: editResource.description,
-                courseId: (editResource.course as any)?._id || "",
-                semesterId: "",
+                courseId: (editResource.courseId as any)?._id || (editResource as any).course?._id || "",
+                semesterId: (editResource.semesterId as any)?._id || (editResource as any).semester?._id || "",
                 isPaid: editResource.isPaid,
                 price: editResource.price,
             });
@@ -327,7 +328,7 @@ export default function UploadResourceModal({ isOpen, onClose, editResource }: P
                                     <Input
                                         {...register("price")}
                                         type="number"
-                                        min={1}
+                                        min={0}
                                         placeholder="e.g., 99"
                                         className="h-12 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white font-medium text-[#1a1a3b] focus-visible:ring-indigo-500/30"
                                     />

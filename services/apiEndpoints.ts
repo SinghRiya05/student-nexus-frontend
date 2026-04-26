@@ -155,8 +155,13 @@ export const API_ENDPOINTS = {
         CLEAR_MESSAGES: (id: string) => `/chat/clear/${id}`,
         DELETE_CHAT: (id: string) => `/chat/${id}`,
     },
+    ROLE_PERMISSION: {
+        SYNC: "/role-permissions",
+        GET_BY_ROLE: (id: string) => `/role-permissions/${id}`,
+        ASSIGN: (roleId: string, permissionId: string) => `/role-permissions/${roleId}/${permissionId}`,
+        REMOVE: (roleId: string, permissionId: string) => `/role-permissions/${roleId}/${permissionId}`,
+    },
     AI: {
         GENERATE: "/ai/generate",
     }
-
 };

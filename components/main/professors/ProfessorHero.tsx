@@ -69,6 +69,7 @@ export default function ProfessorHero({
   };
 
   const handleUnfollow = async () => {
+    if (!id) return;
     setIsUnfollowing(true);
     try {
       emitUnfollowUser(id);

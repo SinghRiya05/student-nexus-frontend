@@ -34,6 +34,8 @@ export interface IAlumni {
     verificationStatus: boolean;
     followersCount: number;
     followingCount: number;
+    avatar?: string;
+    coverImage?: string;
     aluminiProfile?: IAlumniProfile;
 }
 

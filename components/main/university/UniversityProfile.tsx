@@ -1,20 +1,22 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { motion } from 'framer-motion'
-import { UniversityHeader } from './UniversityHeader'
-import { UniversitySidebar } from './UniversitySidebar'
-import { UniversityDescription } from './UniversityDescription'
-import { UniversityStats } from './UniversityStats'
-import { UniversityCourses } from './UniversityCourses'
-import { UniversityResources } from './UniversityResources'
-import { IUniversity } from '@/features/university/universityModel'
+import React from "react";
+import { motion } from "framer-motion";
+import { UniversityHeader } from "./UniversityHeader";
+import { UniversitySidebar } from "./UniversitySidebar";
+import { UniversityDescription } from "./UniversityDescription";
+import { UniversityStats } from "./UniversityStats";
+import { UniversityCourses } from "./UniversityCourses";
+import { UniversityResources } from "./UniversityResources";
+import { IUniversity } from "@/features/university/universityModel";
 
 interface UniversityProfileProps {
-  data: IUniversity
+  data: IUniversity;
 }
 
-export const UniversityProfile: React.FC<UniversityProfileProps> = ({ data }) => {
+export const UniversityProfile: React.FC<UniversityProfileProps> = ({
+  data,
+}) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 space-y-8 min-h-screen">
       {/* 1. Header Section */}
@@ -30,13 +32,28 @@ export const UniversityProfile: React.FC<UniversityProfileProps> = ({ data }) =>
         <div className="flex-1 w-full space-y-8 pb-20">
           <UniversityDescription description={data?.description || ""} />
 
-          <UniversityStats userCount={data?.userCount || 0} courseCount={data?.courseCount || 0} teacherCount={data?.teacherCount || 0} />
+          <UniversityStats
+            userCount={data?.userCount || 0}
+            courseCount={data?.courseCount || 0}
+            teacherCount={data?.teacherCount || 0}
+          />
 
-          <UniversityCourses courses={data?.courses || []} />
+          <UniversityCourses
+            courses={
+              data?.courses
+                ?.map((c: any) => {
+                  if (typeof c === "string") return c;
+                  if (c.courseName) return c.courseName;
+                  if (c.courseId?.courseName) return c.courseId.courseName;
+                  return null;
+                })
+                .filter(Boolean) || []
+            }
+          />
 
           <UniversityResources />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

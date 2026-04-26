@@ -27,19 +27,13 @@ import { toast } from "react-hot-toast"
 import { ASSET_URL } from "@/services/apiEndpoints"
 import { useAppDispatch, useAppSelector } from "@/utils/hook"
 import { toggleLike, deleteFeed, updateFeed, getAllComments, createComment, deleteComment } from "@/features/feeds/feedThunk"
-import { IComment } from "@/features/feeds/feedModel"
+import { IComment, Author } from "@/features/feeds/feedModel"
 import { formatDistanceToNow } from "date-fns"
 import { Edit2, Trash2, ShieldAlert, Share2, Link2, Loader2, Image as ImageIcon } from "lucide-react"
 
 export interface PostCardProps {
   id: string;
-  author: {
-    firstName: string;
-    lastName: string;
-    avatar: string;
-    roleId?: { name: string };
-    universityId?: { name: string };
-  };
+  author: Author;
   content: string;
   hashtags: string[];
   likesCount: number;

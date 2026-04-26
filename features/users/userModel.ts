@@ -64,9 +64,9 @@ export interface University {
   short_name: string;
   domain: string;
   description: string;
-  country: string;
-  state: string;
-  city: string;
+  country: { _id: string; name: string };
+  state: { _id: string; name: string };
+  city: { _id: string; name: string };
   isVerified: boolean;
   isDeleted: boolean;
   isActive: boolean;

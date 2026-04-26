@@ -30,7 +30,13 @@ import {
   Clock,
   UserCog,
   Edit2,
-  Trash2
+  Trash2,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  Globe,
+  Calendar,
+  BadgeCheck
 } from "lucide-react";
 import {
   Card,
@@ -43,20 +49,20 @@ import AssignRoleDialog from "./AssignRoleDialog";
 import { useAppDispatch, useAppSelector } from "@/utils/hook";
 import { getAllUsers, deleteUser } from "@/features/users/userThunk";
 import { logoutUser } from "@/features/auth/authThunk";
-import { IUser } from "@/features/users/userModel";
 import { toast } from "react-hot-toast";
-import { Loader2, ChevronDown, ChevronUp, Globe, Calendar, BadgeCheck } from "lucide-react";
+
 import { motion, AnimatePresence } from "motion/react";
+import { User } from "@/features/users/userModel";
 
 
 
 export default function UserList() {
   const dispatch = useAppDispatch();
-  const { users, loading, error } = useAppSelector((state) => state.user);
+  const { users, userLoading: loading, userError: error } = useAppSelector((state) => state.user);
   const { user: currentUser } = useAppSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [isRoleDialogOpen, setIsRoleDialogOpen] = React.useState(false);
-  const [selectedUser, setSelectedUser] = React.useState<IUser | null>(null);
+  const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [expandedRowId, setExpandedRowId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -67,7 +73,7 @@ export default function UserList() {
     setExpandedRowId(expandedRowId === id ? null : id);
   };
 
-  const handleManageRole = (user: IUser) => {
+  const handleManageRole = (user: User) => {
     setSelectedUser(user);
     setIsRoleDialogOpen(true);
   };
@@ -242,7 +248,7 @@ export default function UserList() {
                         >
                           {user.status === "ACTIVE" && <CheckCircle2 size={10} />}
                           {user.status !== "ACTIVE" && <XCircle size={10} />}
-                          {user.status.toLowerCase()}
+                          {user.status?.toLowerCase() || "N/A"}
                         </span>
                       </TableCell>
                       <TableCell className="text-right pr-8" onClick={(e) => e.stopPropagation()}>
@@ -319,7 +325,7 @@ export default function UserList() {
                                     <span className="text-[0.65rem] font-black uppercase tracking-widest text-slate-400">Member Since</span>
                                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                                       <Calendar size={14} className="text-slate-400" />
-                                      {new Date(user.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "N/A"}
                                     </div>
                                   </div>
 

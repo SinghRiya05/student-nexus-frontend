@@ -52,6 +52,12 @@ export interface IStudentResponse {
     data: IStudent[];
 }
 
+export interface ISingleStudentResponse {
+    success: boolean;
+    message: string;
+    data: IStudent;
+}
+
 export interface ICurrentUser extends IStudent {
     bio?: string;
     startYear?: number;

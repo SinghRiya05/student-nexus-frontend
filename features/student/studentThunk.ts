@@ -1,7 +1,7 @@
 import apiClient from "@/services/apiClient";
 import { API_ENDPOINTS } from "@/services/apiEndpoints";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { IStudentResponse } from "./studentModel";
+import { ISingleStudentResponse, IStudentResponse } from "./studentModel";
 
 export const getAllStudents = createAsyncThunk<IStudentResponse, void>(
     "student/getAllStudents",
@@ -15,7 +15,7 @@ export const getAllStudents = createAsyncThunk<IStudentResponse, void>(
     }
 );
 
-export const getMyProfile = createAsyncThunk(
+export const getMyProfile = createAsyncThunk<ISingleStudentResponse, void>(
     "student/getMyProfile",
     async (_, { rejectWithValue }) => {
         try {
@@ -51,7 +51,7 @@ export const getStudentsByMatchedHobbyBadge = createAsyncThunk<IStudentResponse,
     }
 );
 
-export const getStudentById = createAsyncThunk<IStudentResponse, string>(
+export const getStudentById = createAsyncThunk<ISingleStudentResponse, string>(
     "student/getStudentById",
     async (id, { rejectWithValue }) => {
         try {

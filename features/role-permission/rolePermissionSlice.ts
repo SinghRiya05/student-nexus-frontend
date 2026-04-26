@@ -47,7 +47,7 @@ const rolePermissionSlice = createSlice({
                 state.success = true;
                 state.rolePermissions = action.payload.data;
                 state.assignedPermissionIds = action.payload.data.map(
-                    (item: IRolePermission) => String(item.permission.id)
+                    (item: IRolePermission) => String(item.permission._id)
                 );
             })
             .addCase(getPermissionsByRole.rejected, (state, action) => {

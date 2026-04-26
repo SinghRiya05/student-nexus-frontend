@@ -356,8 +356,8 @@ export default function MainContent() {
                         <>
                             {alumni.slice(0, 5).map((member, idx) => {
                                 const memberId = String(member._id);
-                                const isFollowing = following.some(f => String(f.following?._id || f.following) === memberId);
-                                const isRequested = sentRequests.some(r => String(r.following?._id || r.following) === memberId);
+                                const isFollowing = following.some(f => String(typeof f.following === 'object' ? f.following._id : f.following) === memberId);
+                                const isRequested = sentRequests.some(r => String(typeof r.following === 'object' ? r.following._id : r.following) === memberId);
 
                                 return (
                                     <div key={idx} onClick={() => router.push(`/alumni/${member._id}`)} className="min-w-[240px] bg-white border border-border/10 p-5 rounded-3xl flex flex-col gap-4 cursor-pointer">

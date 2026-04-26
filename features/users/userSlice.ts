@@ -6,6 +6,7 @@ const initialState: UserInitialSliceState = {
     users: [],
     singleUser: null,
     me: null,
+    mutualFollowers: [],
     userLoading: false,
     userSuccess: false,
     userMessage: null,
