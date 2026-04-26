@@ -1,0 +1,42 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_FRONTEND_HOST }}
+          username: ${{ secrets.EC2_FRONTEND_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+
+            BASE_DIR="/var/www/html/myapp"
+            mkdir -p $BASE_DIR
+            cd $BASE_DIR
+
+            echo "Update frontend repo"
+            if [ -d "student-nexus-frontend/.git" ]; then
+              cd student-nexus-frontend
+              git pull origin main
+              cd ..
+            else
+              git clone git@github.com:SinghRiya05/student-nexus-frontend.git
+            fi
+
+            echo "Ensure backend repo exists (for docker-compose)"
+            if [ ! -d "student-nexus-backend/.git" ]; then
+              git clone git@github.com:SinghRiya05/student-nexus-backend.git
+            fi
+
+            echo "Restart ONLY frontend service"
+            cd student-nexus-backend
+            docker-compose up -d --build frontend
