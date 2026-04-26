@@ -23,7 +23,8 @@ import {
     Send,
     SchoolIcon,
     AlertCircle,
-    Loader2
+    Loader2,
+    UserPlus
 } from "lucide-react";
 import {
     Dialog,
@@ -504,7 +505,7 @@ export default function StudentProfileMain({ id }: { id: string }) {
                             Connect with {student.firstName} to share notes, collaborate on projects, and grow your network.
                         </p>
                         <Button
-                            variant="primary"
+                            variant="default"
                             onClick={handleFollowAction}
                             onMouseEnter={() => setIsHoveringFollow(true)}
                             onMouseLeave={() => setIsHoveringFollow(false)}
