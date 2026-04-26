@@ -7,6 +7,7 @@ import { useAppSelector, useAppDispatch } from "@/utils/hook";
 import { logoutUser } from '@/features/auth/authThunk';
 import { ASSET_URL } from "@/services/apiEndpoints";
 import { getFollowing, getPendingFollowRequests, getSentRequests, getFollowers, acceptFollowRequest, rejectFollowRequest } from "@/features/follow/followThunk";
+import { emitAcceptFollowRequest, emitRejectFollowRequest } from "@/services/socket";
 import { getMe } from "@/features/users/userThunk";
 import {
   GraduationCap,
@@ -204,26 +205,18 @@ export default function Header({ onMenuClick }: HeaderProps) {
                           </div>
                           <div className="flex gap-2 shrink-0">
                             <button
-                              onClick={async () => {
-                                try {
-                                  await dispatch(acceptFollowRequest(req._id)).unwrap();
-                                  toast.success("Request accepted");
-                                } catch (err: any) {
-                                  toast.error(err?.message || String(err) || "Failed to accept");
-                                }
+                              onClick={() => {
+                                console.log("Header: Accept request clicked for:", req._id);
+                                emitAcceptFollowRequest(req._id);
                               }}
                               className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition"
                             >
                               Accept
                             </button>
                             <button
-                              onClick={async () => {
-                                try {
-                                  await dispatch(rejectFollowRequest(req._id)).unwrap();
-                                  toast.success("Request declined");
-                                } catch (err: any) {
-                                  toast.error(err?.message || String(err) || "Failed to decline");
-                                }
+                              onClick={() => {
+                                console.log("Header: Reject request clicked for:", req._id);
+                                emitRejectFollowRequest(req._id);
                               }}
                               className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition"
                             >

@@ -1,10 +1,19 @@
 "use client"
-import React from 'react'
-import { Send, Building2, Briefcase, GraduationCap, CheckCircle2, MoreVertical, Star, Clock } from "lucide-react"
+import React, { useState, useEffect } from 'react'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { AlertCircle, Loader2, Send, Building2, Briefcase, GraduationCap, CheckCircle2, MoreVertical, Star, Clock } from "lucide-react"
 import { IAlumni } from '@/features/alumni/alumniModel'
 import { motion } from "framer-motion"
 import { useAppDispatch, useAppSelector } from '@/utils/hook'
 import { sendFollowRequest, unfollow } from '@/features/follow/followThunk'
+import { emitFollowUser, emitUnfollowUser } from '@/services/socket'
 import { cn } from '@/lib/utils'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useRouter } from 'next/navigation'
@@ -18,20 +27,55 @@ export default function AlumniCard({ member }: AlumniCardProps) {
     const router = useRouter()
     const { following, sentRequests, loading } = useAppSelector(state => state.follow)
 
-    const userId = member._id
-    const isFollowingObj = following.find((f: any) => f.following?._id === userId || f.following === userId)
+    const userId = String(member._id)
+    const [isUnfollowDialogOpen, setIsUnfollowDialogOpen] = useState(false)
+    const [isUnfollowing, setIsUnfollowing] = useState(false)
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    const isFollowingObj = following.find((f: any) =>
+        String(f.following?._id || f.following) === userId
+    )
     const isFollowing = !!isFollowingObj
-    const isRequestedObj = sentRequests.find((r: any) => r.following?._id === userId || r.following === userId)
+    const isRequestedObj = sentRequests.find((r: any) =>
+        String(r.following?._id || r.following) === userId
+    )
     const isRequested = !!isRequestedObj
+
+    // Debug log to see why it might not be updating
+    React.useEffect(() => {
+        if (isFollowing || isRequested) {
+            console.log(`AlumniCard [${member.firstName}]: State updated`, { isFollowing, isRequested });
+        }
+    }, [isFollowing, isRequested, member.firstName]);
 
     const handleNetworkAction = (e: React.MouseEvent) => {
         e.stopPropagation()
-        if (!isFollowing && !isRequested) {
-            dispatch(sendFollowRequest(userId))
+        if (isFollowing || isRequested) {
+            setIsUnfollowDialogOpen(true)
+            return
+        }
+        console.log("AlumniCard: handleNetworkAction (follow) called for:", userId);
+        emitFollowUser(userId);
+    }
+
+    const handleUnfollow = async () => {
+        setIsUnfollowing(true)
+        try {
+            emitUnfollowUser(userId)
+            setIsUnfollowDialogOpen(false)
+        } catch (err) {
+            console.error("Failed to unfollow:", err)
+        } finally {
+            setIsUnfollowing(false)
         }
     }
 
     return (
+        <>
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -50,7 +94,8 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    dispatch(unfollow(isFollowingObj._id));
+                                    console.log("AlumniCard: Unfollow clicked for:", userId);
+                                    emitUnfollowUser(userId);
                                 }}
                                 className="w-full text-left px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition"
                             >
@@ -112,7 +157,7 @@ export default function AlumniCard({ member }: AlumniCardProps) {
             <div className="w-full space-y-2">
                 <button
                     onClick={handleNetworkAction}
-                    disabled={isRequested || loading}
+                    disabled={loading || isUnfollowing}
                     className={cn(
                         "w-full py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2",
                         isFollowing
@@ -135,5 +180,44 @@ export default function AlumniCard({ member }: AlumniCardProps) {
                 </button>
             </div>
         </motion.div>
+
+        {/* Unfollow Confirmation Dialog */}
+        <Dialog open={isUnfollowDialogOpen} onOpenChange={setIsUnfollowDialogOpen}>
+            <DialogContent className="sm:max-w-[400px] rounded-3xl p-8 border-none shadow-2xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] bg-white">
+                <DialogHeader className="space-y-4">
+                    <div className="mx-auto w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 mb-2">
+                        <AlertCircle className="w-8 h-8" />
+                    </div>
+                    <DialogTitle className="text-2xl font-black text-center text-slate-900">
+                        Unfollow {member.firstName}?
+                    </DialogTitle>
+                    <DialogDescription className="text-center text-slate-500 font-bold leading-relaxed">
+                        Are you sure you want to disconnect? You'll stop seeing their updates in your feed.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsUnfollowDialogOpen(false);
+                        }}
+                        className="flex-1 rounded-2xl h-12 font-black border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleUnfollow();
+                        }}
+                        disabled={isUnfollowing}
+                        className="flex-1 rounded-2xl h-12 font-black bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                        {isUnfollowing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Yes, Unfollow"}
+                    </button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    </>
     )
 }

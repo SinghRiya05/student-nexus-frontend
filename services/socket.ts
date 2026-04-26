@@ -1,16 +1,43 @@
 import { io, Socket } from "socket.io-client";
+import toast from "react-hot-toast";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
 
 let socket: Socket | null = null;
 
 export const initiateSocketConnection = (token: string) => {
+	// If socket already exists and token is the same, do nothing
+	if (socket && (socket as any).auth?.token === token) {
+		return;
+	}
+
+	// If socket exists but token is different, disconnect first
+	if (socket) {
+		console.log("Token changed, reconnecting socket...");
+		socket.disconnect();
+		socket = null;
+	}
+
 	if (!socket) {
 		socket = io(SOCKET_URL, {
 			auth: { token },
 			transports: ["websocket"],
 		});
-		console.log("Socket connected");
+		(socket as any).auth = { token }; // Store token for later comparison
+		console.log("Socket connected with URL:", SOCKET_URL);
+		
+		socket.on("connect", () => {
+			console.log("Socket established connection:", socket?.id);
+		});
+
+		socket.on("connect_error", (err) => {
+			console.error("Socket connection error:", err);
+		});
+
+		socket.on("error_message", (data) => {
+			console.error("Socket error message:", data.message);
+			toast.error(data.message);
+		});
 	}
 };
 
@@ -141,7 +168,6 @@ export const onCallEnded = (cb: () => void) => {
 export const onScreenShareStatus = (cb: (data: { isSharing: boolean }) => void) => {
 	if (socket) socket.on("screen_share_status", cb);
 };
-
 export const offCallEvents = () => {
 	if (socket) {
 		socket.off("call_user");
@@ -149,5 +175,71 @@ export const offCallEvents = () => {
 		socket.off("ice_candidate");
 		socket.off("call_ended");
 		socket.off("screen_share_status");
+	}
+};
+
+// --- FOLLOW EVENTS ---
+
+export const emitFollowUser = (userId: string) => {
+	console.log("Emitting follow_user for:", userId);
+	if (socket) socket.emit("follow_user", { userId });
+	else console.error("Socket not connected during emitFollowUser");
+};
+
+export const emitUnfollowUser = (userId: string) => {
+	console.log("Emitting unfollow_user for:", userId);
+	if (socket) socket.emit("unfollow_user", { userId });
+	else console.error("Socket not connected during emitUnfollowUser");
+};
+
+export const emitAcceptFollowRequest = (requestId: string) => {
+	console.log("Emitting accept_follow_request for:", requestId);
+	if (socket) socket.emit("accept_follow_request", { requestId });
+	else console.error("Socket not connected during emitAcceptFollowRequest");
+};
+
+export const emitRejectFollowRequest = (requestId: string) => {
+	console.log("Emitting reject_follow_request for:", requestId);
+	if (socket) socket.emit("reject_follow_request", { requestId });
+	else console.error("Socket not connected during emitRejectFollowRequest");
+};
+
+export const onFollowReceived = (cb: (follow: any) => void) => {
+	if (socket) socket.on("follow_received", cb);
+};
+
+export const onUnfollowReceived = (cb: (data: { followerId: string }) => void) => {
+	if (socket) socket.on("unfollow_received", cb);
+};
+
+export const onFollowAccepted = (cb: (follow: any) => void) => {
+	if (socket) socket.on("follow_accepted", cb);
+};
+
+export const onFollowAcceptedSelf = (cb: (follow: any) => void) => {
+	if (socket) socket.on("follow_accepted_self", cb);
+};
+
+export const onFollowSuccess = (cb: (follow: any) => void) => {
+	if (socket) socket.on("follow_success", cb);
+};
+
+export const onUnfollowSuccess = (cb: (data: { userId: string }) => void) => {
+	if (socket) socket.on("unfollow_success", cb);
+};
+
+export const onFollowRejectedSuccess = (cb: (data: { requestId: string }) => void) => {
+	if (socket) socket.on("follow_rejected_success", cb);
+};
+
+export const offFollowEvents = () => {
+	if (socket) {
+		socket.off("follow_received");
+		socket.off("unfollow_received");
+		socket.off("follow_accepted");
+		socket.off("follow_accepted_self");
+		socket.off("follow_success");
+		socket.off("unfollow_success");
+		socket.off("follow_rejected_success");
 	}
 };

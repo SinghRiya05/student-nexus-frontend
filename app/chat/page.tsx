@@ -82,15 +82,7 @@ export default function ChatPage() {
   }, [activeConversation, mutualFollowers]);
 
 
-  useEffect(() => {
-    // accessToken is persisted (via transform) specifically for socket auth after page refresh
-    if (me?._id && accessToken) {
-      initiateSocketConnection(accessToken);
-    }
-    return () => {
-      disconnectSocket();
-    };
-  }, [me?._id, accessToken]);
+  // Socket connection is now handled globally by SocketListener in layout.tsx
 
   // --- HYDRATION & INITIAL FETCH ---
   useEffect(() => {
@@ -116,11 +108,14 @@ export default function ChatPage() {
       }
     });
 
+    // Redundant: SocketListener handles global notifications
+    /*
     subscribeToNotifications((err, msg: IMessage) => {
       if (msg) {
         dispatch(addMessage(msg));
       }
     });
+    */
 
     onTyping((chatId: string) => {
       if (selectedChatId === chatId) {
@@ -160,7 +155,7 @@ export default function ChatPage() {
     });
     return () => {
       unsubscribeFromMessages();
-      unsubscribeFromNotifications();
+      // unsubscribeFromNotifications(); // Keep global listener active
       offTyping();
       offStopTyping();
       offMessageSeen();

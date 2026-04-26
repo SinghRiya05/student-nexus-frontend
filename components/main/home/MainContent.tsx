@@ -11,7 +11,8 @@ import { getStudentsByMatchedCourseAndSameUniversity, getStudentsByMatchedSemest
 import { useEffect, useState } from "react"
 import { getTeachersFromSameUniversity } from '@/features/teacher/teacherThunk'
 import { fetchAlumniByMyUniversity } from '@/features/alumni/alumniThunk'
-import { sendFollowRequest, unfollow, getFollowing, getSentRequests } from '@/features/follow/followThunk'
+import { getFollowing, getSentRequests } from '@/features/follow/followThunk'
+import { emitFollowUser, emitUnfollowUser } from '@/services/socket'
 import toast from 'react-hot-toast'
 import {
     Dialog,
@@ -146,8 +147,7 @@ export default function MainContent() {
         if (!userToUnfollow) return;
         setIsUnfollowing(true);
         try {
-            await dispatch(unfollow(userToUnfollow.id)).unwrap();
-            toast.success(`Unfollowed ${userToUnfollow.name}`);
+            emitUnfollowUser(userToUnfollow.id);
             setIsUnfollowDialogOpen(false);
             setUserToUnfollow(null);
         } catch (err: any) {
@@ -355,8 +355,9 @@ export default function MainContent() {
                     ) : (
                         <>
                             {alumni.slice(0, 5).map((member, idx) => {
-                                const isFollowing = following.some(f => (f.following?._id || f.following) === member._id);
-                                const isRequested = sentRequests.some(r => (r.following?._id || r.following) === member._id);
+                                const memberId = String(member._id);
+                                const isFollowing = following.some(f => String(f.following?._id || f.following) === memberId);
+                                const isRequested = sentRequests.some(r => String(r.following?._id || r.following) === memberId);
 
                                 return (
                                     <div key={idx} onClick={() => router.push(`/alumni/${member._id}`)} className="min-w-[240px] bg-white border border-border/10 p-5 rounded-3xl flex flex-col gap-4 cursor-pointer">
@@ -376,20 +377,14 @@ export default function MainContent() {
                                         <button
                                             onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (isFollowing) {
-                                                    setUserToUnfollow({ id: member._id, name: `${member.firstName} ${member.lastName}` });
+                                                if (isFollowing || isRequested) {
+                                                    setUserToUnfollow({ id: memberId, name: `${member.firstName} ${member.lastName}` });
                                                     setIsUnfollowDialogOpen(true);
                                                     return;
                                                 }
-                                                if (isRequested) return;
-                                                try {
-                                                    await dispatch(sendFollowRequest(member._id)).unwrap();
-                                                    toast.success("Follow request sent!");
-                                                } catch (err: any) {
-                                                    toast.error(err || "Failed to follow");
-                                                }
+                                                emitFollowUser(memberId);
                                             }}
-                                            disabled={isRequested}
+                                            disabled={false}
                                             className={cn(
                                                 "w-full py-2 cursor-pointer rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2",
                                                 isFollowing ? "bg-green-100 text-green-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 border border-transparent" :

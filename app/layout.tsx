@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import ReduxProvider from "@/utils/ReduxProvider";
 import { Toaster } from "react-hot-toast";
+import SocketListener from "@/components/common/SocketListener";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${inter.variable} font-sans antialiased min-h-screen bg-slate-50 text-slate-900`}>
         <ReduxProvider>
+          <SocketListener />
           {children}
         </ReduxProvider>
         <Toaster

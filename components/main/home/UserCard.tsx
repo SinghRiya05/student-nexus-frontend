@@ -8,6 +8,7 @@ import { Loader2, MessageSquare, AlertCircle } from "lucide-react"
 import { useAppSelector, useAppDispatch } from "@/utils/hook"
 import { useRouter } from "next/navigation"
 import { sendFollowRequest, unfollow } from "@/features/follow/followThunk"
+import { emitFollowUser, emitUnfollowUser } from "@/services/socket"
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'react-hot-toast'
@@ -82,35 +83,16 @@ export const UserCard = ({
         }
 
         if (!isFollowing && !isRequested) {
-            setOptimisticStatus('REQUESTED')
-            setLocalLoading(true)
-            try {
-                await dispatch(sendFollowRequest(userId)).unwrap()
-            } catch (err) {
-                setOptimisticStatus(null) // Rollback
-                toast.error("Failed to follow")
-            } finally {
-                setLocalLoading(false)
-                setOptimisticStatus(null)
-            }
+            console.log("UserCard: handleAction (follow) called for:", userId);
+            emitFollowUser(userId);
         }
     }
 
     const handleUnfollow = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!isFollowingObj) return;
-
-        setOptimisticStatus('NONE')
-        setLocalLoading(true)
-        try {
-            await dispatch(unfollow(userId)).unwrap()
-        } catch (err) {
-            setOptimisticStatus(null) // Rollback
-            toast.error("Failed to unfollow")
-        } finally {
-            setLocalLoading(false)
-            setOptimisticStatus(null)
-        }
+        if (!userId) return;
+        console.log("UserCard: handleUnfollow called for:", userId);
+        emitUnfollowUser(userId);
     }
 
     return (

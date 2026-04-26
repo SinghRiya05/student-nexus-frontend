@@ -11,6 +11,7 @@ import AlumniCard from './AlumniCard'
 import AlumniGroup from './AlumniGroup'
 import { Search, GraduationCap, Building2, Briefcase, Users, Loader2, Filter } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getFollowers, getFollowing, getSentRequests } from '@/features/follow/followThunk'
 
 export default function AlumniMain() {
     const dispatch = useAppDispatch()
@@ -26,8 +27,16 @@ export default function AlumniMain() {
                 if (universityAlumni.length === 0 && courseAlumni.length === 0) {
                     await Promise.all([
                         dispatch(fetchAlumniByMyUniversity()).unwrap(),
-                        dispatch(fetchAlumniByMyCourse()).unwrap()
+                        dispatch(fetchAlumniByMyCourse()).unwrap(),
+                        dispatch(getFollowers()),
+                        dispatch(getFollowing()),
+                        dispatch(getSentRequests())
                     ])
+                } else {
+                    // Always refresh follow state to ensure real-time accuracy
+                    dispatch(getFollowers());
+                    dispatch(getFollowing());
+                    dispatch(getSentRequests());
                 }
 
                 // Background load for grouping tabs only if empty

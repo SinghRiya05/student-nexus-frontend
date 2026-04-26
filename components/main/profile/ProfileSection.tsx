@@ -47,6 +47,8 @@ import NetworkPopup from "./NetworkPopup";
 import { deleteResource, getAllResourcesByTeacherId } from "@/features/teacher/resources/resourceThunk";
 import { IResource } from "@/features/teacher/resources/resourceModel";
 import { getFollowers, getFollowing, getSentRequests, sendFollowRequest, unfollow } from "@/features/follow/followThunk";
+import { emitFollowUser, emitUnfollowUser } from "@/services/socket";
+import { cn } from '@/lib/utils'
 
 // ─── Sections ─────────────────────────────────────────────────────────────
 
@@ -211,18 +213,11 @@ export default function ProfileSection() {
     ];
 
     const handleNetworkAction = async (id: string, isCurrentlyFollowing: boolean) => {
-        try {
-            if (isCurrentlyFollowing) {
-                // If following, trigger unfollow
-                await dispatch(unfollow(id)).unwrap();
-                toast.success("Unfollowed successfully");
-            } else {
-                // If not following, trigger follow request
-                await dispatch(sendFollowRequest(id)).unwrap();
-                toast.success("Follow request sent");
-            }
-        } catch (error: any) {
-            toast.error(String(error || "Action failed"));
+        console.log("ProfileSection: handleNetworkAction called. id:", id, "isCurrentlyFollowing:", isCurrentlyFollowing);
+        if (isCurrentlyFollowing) {
+            emitUnfollowUser(id);
+        } else {
+            emitFollowUser(id);
         }
     };
 
@@ -243,6 +238,14 @@ export default function ProfileSection() {
         const avatarUrl = u.avatar
             ? (u.avatar.startsWith('http') ? u.avatar : `${ASSET_URL}${u.avatar}`)
             : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`;
+
+        const handleNetworkAction = (e: React.MouseEvent, userId: string) => {
+            e.stopPropagation()
+            if (!isFollowing && !isRequested) {
+                console.log("ProfileSection: handleNetworkAction (follow) called for:", userId);
+                emitFollowUser(userId);
+            }
+        }
 
         return {
             id: u._id,

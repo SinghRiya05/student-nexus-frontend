@@ -7,6 +7,7 @@ import { Star, Mail, UserPlus, CheckCircle, MessageSquare } from "lucide-react"
 import Link from 'next/link'
 import { useAppDispatch, useAppSelector } from "@/utils/hook"
 import { sendFollowRequest, unfollow } from "@/features/follow/followThunk"
+import { emitFollowUser, emitUnfollowUser } from "@/services/socket"
 import toast from "react-hot-toast"
 import { cn } from "@/lib/utils"
 import { useState } from 'react'
@@ -60,17 +61,15 @@ export default function ProfessorCard({
     const isMutual = isFollowing && isFollower;
 
     const handleFollowAction = async () => {
-        if (!id) return;
-        try {
-            if (isFollowing) {
-                await dispatch(unfollow(String(id))).unwrap();
-                toast.success("Unfollowed successfully");
-            } else if (!isRequested) {
-                await dispatch(sendFollowRequest(String(id))).unwrap();
-                toast.success("Follow request sent");
-            }
-        } catch (error: any) {
-            toast.error(error || "Action failed");
+        const userId = String(id);
+        console.log("ProfessorCard: handleFollowAction called. id:", userId);
+        if (!userId) return;
+        if (isFollowing) {
+            console.log("ProfessorCard: Calling emitUnfollowUser");
+            emitUnfollowUser(userId);
+        } else if (!isRequested) {
+            console.log("ProfessorCard: Calling emitFollowUser");
+            emitFollowUser(userId);
         }
     };
 

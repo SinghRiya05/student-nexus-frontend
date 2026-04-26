@@ -16,11 +16,20 @@ import {
     Calendar,
     Clock,
     Mail,
-    Send,
     Building2,
     Award,
-    CheckCircle
+    CheckCircle,
+    AlertCircle,
+    Loader2
 } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
@@ -31,6 +40,7 @@ import { fetchAlumniById } from "@/features/alumni/alumniThunk";
 import { getFollowers, getFollowing, getSentRequests, sendFollowRequest, unfollow } from "@/features/follow/followThunk";
 import { accessChat } from "@/features/chat/chatThunk";
 import { setSelectedChatId } from "@/features/chat/chatSlice";
+import { emitFollowUser, emitUnfollowUser } from "@/services/socket";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -110,6 +120,8 @@ export default function AlumniProfileMain({ id }: { id: string }) {
     const { user: authUser } = useAppSelector(state => state.auth);
 
     const [isHoveringFollow, setIsHoveringFollow] = useState(false);
+    const [isUnfollowDialogOpen, setIsUnfollowDialogOpen] = useState(false);
+    const [isUnfollowing, setIsUnfollowing] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -130,17 +142,26 @@ export default function AlumniProfileMain({ id }: { id: string }) {
     const isMutual = isFollowing && isFollower;
 
     const handleFollowAction = async () => {
-        if (!id) return;
+        const userId = String(id);
+        console.log("AlumniProfile: handleFollowAction called. id:", userId);
+        if (!userId) return;
+        if (isFollowing) {
+            setIsUnfollowDialogOpen(true);
+        } else if (!isRequested) {
+            console.log("AlumniProfile: Calling emitFollowUser");
+            emitFollowUser(userId);
+        }
+    };
+
+    const handleUnfollow = async () => {
+        setIsUnfollowing(true);
         try {
-            if (isFollowing) {
-                await dispatch(unfollow(id)).unwrap();
-                toast.success("Unfollowed successfully");
-            } else if (!isRequested) {
-                await dispatch(sendFollowRequest(id)).unwrap();
-                toast.success("Follow request sent");
-            }
-        } catch (error: any) {
-            toast.error(error || "Action failed");
+            emitUnfollowUser(id);
+            setIsUnfollowDialogOpen(false);
+        } catch (error) {
+            console.error("Failed to unfollow:", error);
+        } finally {
+            setIsUnfollowing(false);
         }
     };
 
@@ -233,7 +254,7 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                             <div className="flex items-center gap-3 shrink-0">
                                 {authUser?._id !== id && (
                                     <>
-                                        {isMutual ? (
+                                        {isFollowing && (
                                             <Button
                                                 variant="outline"
                                                 className="h-11 px-5 rounded-2xl border-2 border-border font-black text-sm text-primary hover:bg-gray-50 flex gap-2"
@@ -242,30 +263,27 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                                                 <Send className="w-4 h-4 text-primary" />
                                                 Message
                                             </Button>
-                                        ) : (
-                                            <Button
-                                                onClick={handleFollowAction}
-                                                onMouseEnter={() => setIsHoveringFollow(true)}
-                                                onMouseLeave={() => setIsHoveringFollow(false)}
-                                                disabled={(isRequested && !isFollowing) || followLoading}
-                                                className={cn(
-                                                    "h-11 px-6 md:px-8 rounded-2xl font-black text-sm flex gap-2 transition-all",
-                                                    isFollowing
-                                                        ? (isHoveringFollow ? "bg-rose-500 text-white" : "bg-primary text-white")
-                                                        : isRequested
-                                                            ? "bg-background text-primary/20 cursor-not-allowed border border-border"
-                                                            : "bg-white text-primary hover:bg-primary/10 border border-primary/20 shadow-sm"
-                                                )}
-                                            >
-                                                {isFollowing ? (
-                                                    isHoveringFollow ? "Unfollow" : <><CheckCircle className="w-4 h-4" /> Connected</>
-                                                ) : isRequested ? (
-                                                    "Requested"
-                                                ) : (
-                                                    <><UserPlus className="w-4 h-4" /> Follow</>
-                                                )}
-                                            </Button>
                                         )}
+                                        <Button
+                                            onClick={handleFollowAction}
+                                            disabled={followLoading || isUnfollowing}
+                                            className={cn(
+                                                "h-11 px-6 md:px-8 rounded-2xl font-black text-sm flex gap-2 transition-all shadow-sm",
+                                                isFollowing
+                                                    ? "bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-500 hover:text-white"
+                                                    : isRequested
+                                                        ? "bg-background text-primary/20 cursor-not-allowed border border-border"
+                                                        : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
+                                            )}
+                                        >
+                                            {isFollowing ? (
+                                                <><AlertCircle className="w-4 h-4" /> Unfollow</>
+                                            ) : isRequested ? (
+                                                "Requested"
+                                            ) : (
+                                                <><UserPlus className="w-4 h-4" /> Follow</>
+                                            )}
+                                        </Button>
                                     </>
                                 )}
                             </div>
@@ -463,6 +481,39 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                     </Card>
                 </div>
             </div>
+            {/* Unfollow Confirmation Dialog */}
+            <Dialog open={isUnfollowDialogOpen} onOpenChange={setIsUnfollowDialogOpen}>
+                <DialogContent className="sm:max-w-[400px] rounded-3xl p-8 border-none shadow-2xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] bg-white">
+                    <DialogHeader className="space-y-4">
+                        <div className="mx-auto w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 mb-2">
+                            <AlertCircle className="w-8 h-8" />
+                        </div>
+                        <DialogTitle className="text-2xl font-black text-center text-slate-900">
+                            Unfollow {alumni.firstName}?
+                        </DialogTitle>
+                        <DialogDescription className="text-center text-slate-500 font-bold leading-relaxed">
+                            Are you sure you want to disconnect? You'll stop seeing their updates in your feed.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsUnfollowDialogOpen(false)}
+                            className="flex-1 rounded-2xl h-12 font-black border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleUnfollow}
+                            disabled={isUnfollowing}
+                            variant="destructive"
+                            className="flex-1 rounded-2xl h-12 font-black bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-200 transition-all flex items-center justify-center gap-2"
+                        >
+                            {isUnfollowing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Yes, Unfollow"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
