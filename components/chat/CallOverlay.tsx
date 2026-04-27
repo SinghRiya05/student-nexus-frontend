@@ -246,6 +246,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         const videoTrack = localStreamRef.current.getVideoTracks()[0];
         const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
         if (sender && videoTrack) sender.replaceTrack(videoTrack);
+        
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+        }
       }
       setCallType(initialType);
       emitScreenShareToggle({ to: isIncoming ? callerId! : targetUserId, isSharing: false });
@@ -259,6 +263,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         if (peerConnectionRef.current) {
           const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
           if (sender) sender.replaceTrack(screenTrack);
+        }
+
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
         }
 
         setCallType('screen-share');
@@ -372,20 +380,11 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                ) : (
                 <div className="w-full h-full relative bg-black">
                     <video 
-                      ref={idx === 0 ? null : remoteVideoRef} 
+                      ref={remoteVideoRef} 
                       autoPlay 
                       playsInline 
                       className="w-full h-full object-cover"
                     />
-                    {idx === 0 && (
-                      <video 
-                        ref={localVideoRef} 
-                        autoPlay 
-                        muted 
-                        playsInline 
-                        className="w-full h-full object-cover opacity-30" 
-                      />
-                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 </div>
                )}
@@ -453,7 +452,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             className="absolute bottom-24 right-4 md:right-8 w-32 md:w-48 h-44 md:h-64 bg-zinc-900 rounded-2xl md:rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl z-40 group"
           >
-            {isCameraOff ? (
+            {isCameraOff && callType !== 'screen-share' ? (
               <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800">
                 <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-2">
                    <img src={participants[0]?.avatar} className="w-full h-full object-cover rounded-full" alt="me" />
