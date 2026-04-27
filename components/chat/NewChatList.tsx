@@ -24,7 +24,7 @@ export const NewChatList: React.FC<NewChatListProps> = ({ followers, onSelect, o
       {/* Header */}
       <div className="p-4 border-b border-border/40 shrink-0 bg-primary/5">
         <div className="flex items-center gap-4 mb-4">
-          <button 
+          <button
             onClick={onBack}
             className="p-2 hover:bg-primary/10 rounded-full transition-colors text-primary"
           >
@@ -49,8 +49,8 @@ export const NewChatList: React.FC<NewChatListProps> = ({ followers, onSelect, o
       <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-40 space-y-3">
-             <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Finding mutuals...</p>
+            <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Finding mutuals...</p>
           </div>
         ) : filtered.length > 0 ? (
           filtered.map((user) => (
@@ -62,13 +62,17 @@ export const NewChatList: React.FC<NewChatListProps> = ({ followers, onSelect, o
               className="w-full flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 hover:bg-primary/5 group"
             >
               <div className="relative shrink-0">
-                <img
-                  src={user.avatar 
-                    ? (user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`) 
-                    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.firstName}`}
-                  alt={user.firstName}
-                  className="w-12 h-12 object-cover rounded-xl shadow-sm border border-border/40 group-hover:border-primary/30 transition-all"
-                />
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.firstName}
+                    className="w-12 h-12 object-cover rounded-xl shadow-sm border border-border/40 group-hover:border-primary/30 transition-all"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center font-bold text-lg text-primary shadow-sm border border-border/40 group-hover:border-primary/30 transition-all">
+                    {user.firstName?.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -76,7 +80,7 @@ export const NewChatList: React.FC<NewChatListProps> = ({ followers, onSelect, o
                   {user.firstName} {user.lastName}
                 </h3>
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-tighter opacity-60">
-                   Mutual Follower
+                  Mutual Follower
                 </p>
               </div>
             </motion.div>

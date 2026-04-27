@@ -10,11 +10,12 @@ interface MessageBubbleProps {
   timestamp: string;
   isOwn: boolean;
   isRead?: boolean;
-  senderAvatar?: string;
+  senderAvatar?: string | null;
+  senderName?: string;
   attachments?: Attachment[];
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ text, timestamp, isOwn, isRead, senderAvatar, attachments }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ text, timestamp, isOwn, isRead, senderAvatar, senderName, attachments }) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -24,6 +25,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ text, timestamp, i
         isOwn ? "justify-end" : "justify-start"
       )}
     >
+      {!isOwn && (
+        <div className="shrink-0 mr-2 mt-auto">
+          {senderAvatar ? (
+            <img src={senderAvatar} alt="" className="w-8 h-8 rounded-lg object-cover border border-border/40" />
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-xs text-primary border border-border/40">
+              {senderName?.charAt(0).toUpperCase() || 'U'}
+            </div>
+          )}
+        </div>
+      )}
       <div className={cn(
         "relative group p-1.5 px-2.5 shadow-sm transition-all duration-300 max-w-[85%] w-fit",
         isOwn
@@ -65,7 +77,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ text, timestamp, i
             })}
           </div>
         )}
-        
+
         <div className="flex items-end justify-end gap-2 flex-wrap">
           {text && (
             <p className="leading-[1.2] text-[13px] font-medium whitespace-pre-wrap break-words flex-1 min-w-0">

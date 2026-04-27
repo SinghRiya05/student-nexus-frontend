@@ -68,14 +68,23 @@ export const ChatList: React.FC<ChatListProps> = ({ conversations, activeId, onS
 
               {/* Avatar Container */}
               <div className="relative shrink-0 z-10">
-                <img
-                  src={conv.participant.avatar}
-                  alt={conv.participant.name}
-                  className={cn(
-                    "w-12 h-12 object-cover rounded-xl transition-all shadow-sm",
-                    activeId === conv.id ? "ring-2 ring-white/30" : ""
-                  )}
-                />
+                {conv.participant.avatar ? (
+                  <img
+                    src={conv.participant.avatar}
+                    alt={conv.participant.name}
+                    className={cn(
+                      "w-12 h-12 object-cover rounded-xl transition-all shadow-sm",
+                      activeId === conv.id ? "ring-2 ring-white/30" : ""
+                    )}
+                  />
+                ) : (
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all",
+                    activeId === conv.id ? "bg-white/20 text-white ring-2 ring-white/30" : "bg-primary/10 text-primary"
+                  )}>
+                    {conv.participant.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 {conv.participant.status === 'online' && (
                   <span className={cn(
                     "absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2",

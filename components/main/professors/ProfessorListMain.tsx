@@ -81,15 +81,15 @@ export default function ProfessorListMain() {
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 pb-20 animate-fade-in-up">
+    <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 pb-20 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
       {/* Main Content (Left/Center) */}
       <div className="flex-1 min-w-0 space-y-5">
         {/* Page Header */}
         <section className="space-y-2">
-          <h1 className="text-3xl text-primary font-bold tracking-tight">
+          <h1 className="text-2xl text-primary font-bold tracking-tight">
             Academic Directory
           </h1>
-          <p className=" text-gray-600 text-base max-w-2xl font-medium leading-relaxed italic">
+          <p className=" text-gray-600 text-sm max-w-2xl font-medium leading-relaxed ">
             Find and connect with mentors, researchers, and faculty members driving the future of innovation.
           </p>
         </section>
@@ -111,9 +111,9 @@ export default function ProfessorListMain() {
 
         {/* Directory Grid */}
         <section id="faculty-directory" className="space-y-8 pt-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
             <h2 className="text-xl font-bold text-on-surface">Browse All Faculty</h2>
-            <div className="flex gap-2 mr-5 text-on-surface-variant text-sm font-medium">
+            <div className="flex gap-2 sm:mr-5 text-on-surface-variant text-sm font-medium">
               <span>Showing {currentTeachers.length} of {filteredTeachers.length} results</span>
             </div>
           </div>

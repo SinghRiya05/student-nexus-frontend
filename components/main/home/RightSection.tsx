@@ -1,15 +1,42 @@
 "use client"
 
-import React from 'react'
-import { Hash, Code, LayoutGrid, Layers, Send, Calendar as CalendarIcon, Users } from "lucide-react"
+import React, { useEffect } from 'react'
+import { Hash, Code, LayoutGrid, Layers, Send, Building2, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAppDispatch, useAppSelector } from "@/utils/hook"
+import { getAllUniversities } from "@/features/university/universityThunk"
+import { useRouter } from 'next/navigation'
 
 export default function RightSection() {
-    const events = [
-        { title: "Cricket Match", date: "12", month: "SEP", time: "2:00 PM", location: "Sports Ground", color: "primary" },
-        { title: "IT Competition", date: "15", month: "SEP", time: "10:00 AM", location: "Lab 4", color: "secondary" },
-        { title: "Quiz Competition", date: "18", month: "SEP", time: "1:30 PM", location: "Main Hall", color: "tertiary" },
-    ]
+    const dispatch = useAppDispatch();
+    const router = useRouter();
+    const { universities, universityLoading } = useAppSelector((state) => state.university);
+
+    const safeUniversities = Array.isArray(universities) ? universities : [];
+
+    useEffect(() => {
+        if (safeUniversities.length === 0 && !universityLoading) {
+            dispatch(getAllUniversities());
+        }
+    }, [dispatch, safeUniversities.length, universityLoading]);
+
+    const formatCount = (count: number) => {
+        if (!count) return "0";
+        if (count >= 1000) return (count / 1000).toFixed(1) + 'k';
+        return count.toString();
+    };
+
+    const topUniversities = [...safeUniversities]
+        .sort((a, b) => (b.userCount || 0) - (a.userCount || 0))
+        .slice(0, 3)
+        .map((uni, idx) => ({
+            id: uni._id,
+            name: uni.name || "Unknown University",
+            rank: `0${idx + 1}`,
+            students: formatCount(uni.userCount || 0),
+            location: `${uni.city?.name || uni.city || 'Unknown'}`,
+            color: idx === 0 ? "primary" : idx === 1 ? "secondary" : "tertiary"
+        }));
 
     const groups = [
         { name: "Web Development", members: "2.4k Members", icon: Code, color: "text-[#2949ef]" },
@@ -26,33 +53,32 @@ export default function RightSection() {
 
     return (
         <aside className="w-full space-y-6">
-            {/* Upcoming Events */}
+            {/* Top 3 Universities */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/10">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-[#302e56] font-headline">Upcoming Events</h3>
-                    <CalendarIcon className="text-[#5d5a86] w-5 h-5" />
+                    <h3 className="font-bold text-[#302e56] font-headline">Top 3 Universities</h3>
+                    <Building2 className="text-[#5d5a86] w-5 h-5" />
                 </div>
                 <div className="space-y-4">
-                    {events.map((event, idx) => (
+                    {topUniversities.map((uni, idx) => (
                         <div key={idx} className="group cursor-pointer">
                             <div className="flex gap-4">
                                 <div className={cn(
                                     "h-10 w-10 min-w-[40px] rounded-xl flex flex-col items-center justify-center",
-                                    event.color === 'primary' ? "bg-[#2949ef]/10 text-[#2949ef]" :
-                                        event.color === 'secondary' ? "bg-[#006c5c]/10 text-[#006c5c]" :
+                                    uni.color === 'primary' ? "bg-[#2949ef]/10 text-[#2949ef]" :
+                                        uni.color === 'secondary' ? "bg-[#006c5c]/10 text-[#006c5c]" :
                                             "bg-[#ad3407]/10 text-[#ad3407]"
                                 )}>
-                                    <span className="text-[10px] font-bold">{event.month}</span>
-                                    <span className="text-sm font-black">{event.date}</span>
+                                    <span className="text-sm font-black">{uni.rank}</span>
                                 </div>
                                 <div>
                                     <h5 className={cn(
                                         "text-xs font-bold transition-colors",
-                                        event.color === 'primary' ? "group-hover:text-[#2949ef]" :
-                                            event.color === 'secondary' ? "group-hover:text-[#006c5c]" :
+                                        uni.color === 'primary' ? "group-hover:text-[#2949ef]" :
+                                            uni.color === 'secondary' ? "group-hover:text-[#006c5c]" :
                                                 "group-hover:text-[#ad3407]"
-                                    )}>{event.title}</h5>
-                                    <p className="text-[10px] text-[#5d5a86]">{event.location} • {event.time}</p>
+                                    )}>{uni.name.toUpperCase()}</h5>
+                                    <p className="text-[10px] text-[#5d5a86]">{uni.location} • {uni.students} Students</p>
                                 </div>
                             </div>
                         </div>

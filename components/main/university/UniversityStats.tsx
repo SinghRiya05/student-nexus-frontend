@@ -21,7 +21,7 @@ export const UniversityStats = ({ userCount, courseCount, teacherCount }: Univer
     { label: 'Departments', value: '85', icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'hover:border-indigo-200', glow: 'shadow-indigo-500/10' },
   ]
   return (
-    <Card className="rounded-3xl border border-border/40 bg-white shadow-sm overflow-hidden mb-10">
+    <Card className="rounded-2xl border border-border/40 bg-white shadow-sm overflow-hidden mb-10">
       <CardHeader className="flex flex-row items-center gap-3 border-b border-border/40 bg-primary/20 py-4 px-6">
         <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
           <BarChart2 className="w-4 h-4" />

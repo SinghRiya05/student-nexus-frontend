@@ -221,7 +221,11 @@ export default function AlumniProfileMain({ id }: { id: string }) {
                         {/* Avatar */}
                         <div className="relative group shrink-0">
                             <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-white overflow-hidden bg-primary/5 ring-2 ring-primary/50 flex items-center justify-center font-black text-4xl md:text-5xl text-primary">
-                                {alumni?.avatar ? <img src={alumni?.avatar} alt="" /> : <span>{alumni.firstName.charAt(0).toUpperCase()}</span>}
+                                {alumni?.avatar ? (
+                                    <img src={alumni?.avatar} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="uppercase">{alumni.firstName.charAt(0).toUpperCase()}</span>
+                                )}
                             </div>
                         </div>
 

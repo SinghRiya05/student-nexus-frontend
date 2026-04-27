@@ -131,12 +131,16 @@ export default function NetworkPopup({ isOpen, onClose, title, users, onAction }
                     className="flex items-center justify-between p-3 rounded-[1.5rem] bg-white border border-transparent hover:border-indigo-100 hover:cursor-pointer hover:shadow-md transition-all group"
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="h-12 w-12 rounded-[1rem] overflow-hidden bg-indigo-50 border-2 border-white shadow-sm shrink-0">
-                        <img
-                          src={user.avatar}
-                          alt={user.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
+                      <div className="h-12 w-12 rounded-[1rem] overflow-hidden bg-indigo-50 border-2 border-white shadow-sm shrink-0 flex items-center justify-center text-indigo-600 font-bold">
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                        ) : (
+                          <span className="text-lg uppercase">{user.name?.[0]}</span>
+                        )}
                       </div>
                       <div className="min-w-0">
                         <h4 className="font-black text-[#1a1a3b] text-sm group-hover:text-indigo-600 transition-colors truncate">{user.name}</h4>

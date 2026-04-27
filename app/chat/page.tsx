@@ -38,9 +38,7 @@ export default function ChatPage() {
       participant: {
         id: participant._id,
         name: `${participant.firstName} ${participant.lastName || ''}`,
-        avatar: participant.avatar 
-          ? (participant.avatar.startsWith('http') ? participant.avatar : `${ASSET_URL}${participant.avatar}`) 
-          : `https://api.dicebear.com/7.x/avataaars/svg?seed=${participant.firstName}`,
+        avatar: participant.avatar || null,
         status: 'online',
         role: participant.roleId?.name || 'STUDENT'
       },

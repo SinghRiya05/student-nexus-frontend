@@ -18,7 +18,7 @@ export default function ProfessorSearch({ searchQuery, onSearchChange, onSearch 
   };
 
   return (
-    <section className="py-5 flex gap-3">
+    <section className="py-3 sm:py-5 flex flex-col sm:flex-row gap-3">
       <div className="relative group flex-1">
         <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-outline">
           <Search className="h-5 w-5" />
@@ -32,10 +32,10 @@ export default function ProfessorSearch({ searchQuery, onSearchChange, onSearch 
           onKeyDown={handleKeyDown}
         />
       </div>
-      <div className="">
+      <div className="w-full sm:w-auto">
         <Button 
           onClick={onSearch}
-          className="py-6 cursor-pointer rounded-3xl px-5 hover:bg-primary/90"
+          className="w-full sm:w-auto py-6 cursor-pointer rounded-3xl px-5 hover:bg-primary/90"
         >
           Search
         </Button>

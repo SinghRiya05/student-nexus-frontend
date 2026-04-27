@@ -29,12 +29,12 @@ import { clearChatMessages, deleteChatConversation } from '@/features/chat/chatT
 import { useRouter } from 'next/navigation';
 import { ASSET_URL } from '@/services/apiEndpoints';
 import { toast } from 'react-hot-toast';
-import { 
-  emitTyping, 
-  emitStopTyping, 
-  emitMessageSeen, 
-  onIncomingCall, 
-  offCallEvents 
+import {
+  emitTyping,
+  emitStopTyping,
+  emitMessageSeen,
+  onIncomingCall,
+  offCallEvents
 } from '@/services/socket';
 import { Conversation, Message } from './types';
 import { MessageBubble } from './MessageBubble';
@@ -71,7 +71,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [incomingCall, setIncomingCall] = useState<{ signal: any; from: string; name: string; type: 'audio' | 'video' } | null>(null);
   const [isIncomingCall, setIsIncomingCall] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -143,7 +143,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       toast((t) => (
         <span className="flex items-center gap-3">
           <b>{data.name}</b> is calling you...
-          <button 
+          <button
             onClick={() => {
               toast.dismiss(t.id);
               setIsCallOverlayOpen(true);
@@ -248,16 +248,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </button>
           )}
 
-          <div 
+          <div
             onClick={handleViewProfile}
             className="flex items-center gap-4 cursor-pointer group/header transition-opacity hover:opacity-80"
           >
             <div className="relative">
-              <img
-                src={participant.avatar}
-                alt={participant.name}
-                className="w-12 h-12 rounded-xl object-cover shadow-sm border border-border/50 group-hover/header:ring-2 group-hover/header:ring-primary/20 transition-all"
-              />
+              {participant.avatar ? (
+                <img
+                  src={participant.avatar}
+                  alt={participant.name}
+                  className="w-12 h-12 rounded-xl object-cover shadow-sm border border-border/50 group-hover/header:ring-2 group-hover/header:ring-primary/20 transition-all"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center font-bold text-lg text-primary shadow-sm border border-border/50 group-hover/header:ring-2 group-hover/header:ring-primary/20 transition-all">
+                  {participant.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               {participant.status === 'online' && (
                 <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-card rounded-full" />
               )}
@@ -429,9 +435,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               isOwn={msg.isOwn}
               isRead={msg.isRead}
               senderAvatar={msg.isOwn
-                ? (me?.avatar ? `${ASSET_URL}${me.avatar}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${me?.firstName || 'Me'}`)
-                : participant.avatar
+                ? (me?.avatar ? me.avatar : null)
+                : (participant.avatar ? participant.avatar : null)
               }
+              senderName={msg.isOwn ? (me?.firstName || 'Me') : participant.name}
               attachments={msg.attachments}
             />
           ))}
@@ -445,11 +452,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               className="flex justify-start items-center gap-3 mt-4"
             >
               <div className="shrink-0">
-                <img
-                  src={participant.avatar}
-                  alt="typing"
-                  className="w-8 h-8 rounded-lg object-cover border border-border/40"
-                />
+                {participant.avatar ? (
+                  <img
+                    src={participant.avatar}
+                    alt="typing"
+                    className="w-8 h-8 rounded-lg object-cover border border-border/40"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-xs text-primary border border-border/40">
+                    {participant.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               <div className="bg-background border border-border/60 p-3 px-5 rounded-2xl rounded-tl-none flex gap-1.5 shadow-sm">
                 <motion.span
@@ -535,8 +548,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             >
               <div className="flex-1 flex items-end gap-2 bg-primary/5 border border-primary/10 rounded-[2rem] p-2 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-card transition-all relative">
                 <div className="relative shrink-0">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                     className={cn(
                       "p-3 transition-colors",

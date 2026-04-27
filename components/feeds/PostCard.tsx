@@ -160,12 +160,16 @@ export function PostCard({
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="relative group cursor-pointer">
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 transition-all duration-300 group-hover:border-primary/50">
-                  <img
-                    src={author.avatar && typeof author.avatar === 'string' ? (author.avatar.startsWith('http') ? author.avatar : `${ASSET_URL}${author.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${author.firstName}`}
-                    alt={`${author.firstName} ${author.lastName}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 transition-all duration-300 group-hover:border-primary/50 bg-primary/10 flex items-center justify-center text-primary font-bold">
+                  {author.avatar && typeof author.avatar === 'string' ? (
+                    <img
+                      src={author.avatar}
+                      alt={`${author.firstName} ${author.lastName}`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <span className="text-lg uppercase">{author.firstName?.[0]}</span>
+                  )}
                 </div>
               </div>
               <div>
@@ -427,11 +431,15 @@ export function PostCard({
                 >
                   {/* Comment Input */}
                   <div className="flex gap-3 mb-8">
-                    <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 ring-2 ring-primary/10">
-                      <img
-                        src={user?.avatar && typeof user.avatar === 'string' ? (user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName}`}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 ring-2 ring-primary/10 bg-primary/5 flex items-center justify-center text-primary font-bold">
+                      {user?.avatar && typeof user.avatar === 'string' ? (
+                        <img
+                          src={user.avatar}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs uppercase">{user?.firstName?.[0]}</span>
+                      )}
                     </div>
                     <div className="flex-1 relative group">
                       <Input
@@ -466,13 +474,17 @@ export function PostCard({
                           key={comment._id}
                           className="flex gap-3 group"
                         >
-                          <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 mt-0.5">
-                            <img
-                              src={comment.authorId && typeof comment.authorId === 'object' && comment.authorId.avatar && typeof comment.authorId.avatar === 'string'
-                                ? (comment.authorId.avatar.startsWith('http') ? comment.authorId.avatar : `${ASSET_URL}${comment.authorId.avatar}`)
-                                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorId && typeof comment.authorId === 'object' ? comment.authorId.firstName : 'User'}`}
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 mt-0.5 bg-secondary/10 flex items-center justify-center text-secondary-foreground font-bold">
+                            {comment.authorId && typeof comment.authorId === 'object' && comment.authorId.avatar && typeof comment.authorId.avatar === 'string' ? (
+                              <img
+                                src={comment.authorId.avatar}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-xs uppercase">
+                                {comment.authorId && typeof comment.authorId === 'object' ? comment.authorId.firstName?.[0] : "U"}
+                              </span>
+                            )}
                           </div>
                           <div className="flex-1">
                             <div className="bg-gray-50/80 p-3 rounded-2xl rounded-tl-none relative border border-gray-100/50">
@@ -485,8 +497,6 @@ export function PostCard({
                                 </span>
                               </div>
                               <p className="text-[12px] text-[#1a1a3b]/80 leading-relaxed font-medium">{comment.content}</p>
-
-                              {/* Delete Comment - Restricted visibility */}
                               {/* {((comment.authorId && typeof comment.authorId === 'object' && comment.authorId._id === user?._id) || isAuthor) && (
                                 <button
                                   onClick={() => handleDeleteComment(comment._id)}

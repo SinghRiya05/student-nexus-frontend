@@ -102,11 +102,11 @@ export const UserCard = ({
                     onClick={() => router.push(`/students/${userId}`)}
                     whileHover={{ y: -5 }}
                     className={cn(
-                        "relative min-w-[180px] snap-start bg-secondary/8 p-4 rounded-2xl flex flex-col items-center",
+                        "relative min-w-[150px] sm:min-w-[180px] snap-start bg-secondary/8 p-3 sm:p-4 rounded-2xl flex flex-col items-center",
                         className
                     )}
                 >
-                    <div className="w-12 h-12 rounded-full mb-2 overflow-hidden bg-secondary/10 flex items-center justify-center text-primary font-bold border border-primary/30 mt-2">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mb-2 overflow-hidden bg-secondary/10 flex items-center justify-center text-primary font-bold border border-primary/30 mt-2">
                         {image ? (
                             <img src={image} alt={name} className="w-full h-full object-cover" />
                         ) : (
@@ -146,11 +146,11 @@ export const UserCard = ({
                     onClick={() => router.push(`/students/${userId}`)}
                     whileHover={{ y: -5 }}
                     className={cn(
-                        "relative min-w-[240px] snap-start bg-white p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 hover:shadow-md transition-shadow flex flex-col items-center text-center",
+                        "relative min-w-[200px] sm:min-w-[240px] snap-start bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-[#b1addd]/10 hover:shadow-md transition-shadow flex flex-col items-center text-center",
                         className
                     )}
                 >
-                    <div className="w-16 h-16 rounded-full mb-3 overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold border-2 border-primary/10 mt-2">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full mb-3 overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold border-2 border-primary/10 mt-2">
                         {image ? (
                             <img src={image} alt={name} className="w-full h-full object-cover" />
                         ) : (

@@ -90,22 +90,21 @@ const ProfileSkeleton = () => (
     <div className="space-y-8 animate-pulse duration-1000">
         {/* Cover & Top Bar */}
         <div className="bg-background rounded-2xl overflow-hidden border border-border shadow-sm">
-            <div className="h-32 bg-secondary/5 w-full" />
-            <div className="px-10 py-8 flex md:flex-row items-center md:items-start gap-5">
+            <div className="h-24 sm:h-32 bg-secondary/5 w-full" />
+            <div className="px-4 sm:px-10 py-6 sm:py-8 flex flex-col md:flex-row items-center md:items-start gap-5">
                 <div className="relative group shrink-0">
-                    <div className="h-32 w-32 rounded-[2rem] border-4 border-background bg-secondary/5 shadow-sm" />
+                    <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-[2rem] border-4 border-background bg-secondary/5 shadow-sm" />
                 </div>
-                <div className="flex flex-col lg:flex-row items-start md:items-center justify-between gap-5 w-full">
-                    <div className="space-y-3 w-full max-w-sm">
-                        <div className="h-7 w-3/4 bg-gray-200 rounded-lg" />
-                        <div className="flex gap-4">
+                <div className="flex flex-col lg:flex-row items-center lg:items-center justify-between gap-5 w-full">
+                    <div className="space-y-3 w-full max-w-sm text-center md:text-left">
+                        <div className="h-7 w-3/4 bg-gray-200 rounded-lg mx-auto md:mx-0" />
+                        <div className="flex justify-center md:justify-start gap-4">
                             <div className="h-4 w-20 bg-gray-100 rounded-full" />
                             <div className="h-4 w-32 bg-gray-100 rounded-full" />
                         </div>
                     </div>
                     <div className="flex gap-3 shrink-0">
-                        <div className="h-10 w-32 bg-gray-100 rounded-2xl" />
-                        <div className="h-10 w-32 bg-gray-200 rounded-2xl" />
+                        <div className="h-10 w-28 sm:w-32 bg-gray-100 rounded-2xl" />
                     </div>
                 </div>
             </div>
@@ -235,9 +234,7 @@ export default function ProfileSection() {
             (req.following?._id === u._id || req.following === u._id)
         );
 
-        const avatarUrl = u.avatar
-            ? (u.avatar.startsWith('http') ? u.avatar : `${ASSET_URL}${u.avatar}`)
-            : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`;
+        const avatarUrl = u.avatar || null;
 
         const handleNetworkAction = (e: React.MouseEvent, userId: string) => {
             e.stopPropagation()
@@ -262,9 +259,7 @@ export default function ProfileSection() {
         .map((f: any) => {
             const u = f.following;
             if (!u || typeof u === 'string') return null;
-            const avatarUrl = u.avatar
-                ? (u.avatar.startsWith('http') ? u.avatar : `${ASSET_URL}${u.avatar}`)
-                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.firstName || 'user'}`;
+            const avatarUrl = u.avatar || null;
 
             return {
                 id: u._id,
@@ -282,11 +277,11 @@ export default function ProfileSection() {
             {/* 1. Hero Header */}
             <div className=" rounded-2xl overflow-hidden border border-border shadow-xl shadow-gray-200/40">
                 {/* Cover Photo */}
-                <div className="h-32 relative overflow-hidden group bg-primary/5 flex items-center justify-center">
+                <div className="h-24 sm:h-32 relative overflow-hidden group bg-primary/5 flex items-center justify-center">
                     <div className="absolute inset-0 bg-primary/20" />
                     {user?.coverImage ? (
                         <img
-                            src={user.coverImage.startsWith('http') ? user.coverImage : `${ASSET_URL}${user.coverImage}`}
+                            src={user.coverImage}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             alt="Cover"
                         />
@@ -296,13 +291,13 @@ export default function ProfileSection() {
                 </div>
 
                 {/* Profile Info — Below Cover, No Overlay */}
-                <div className="px-10 py-8 flex bg-white  md:flex-row items-center md:items-start gap-5">
+                <div className="px-4 sm:px-10 py-6 sm:py-8 flex flex-col md:flex-row bg-white items-center md:items-start gap-5">
                     {/* Avatar */}
                     <div className="relative group shrink-0">
-                        <div className="h-32 w-32 rounded-[2rem] border-4 border-card overflow-hidden shadow-2xl bg-secondary/5 ring-2 ring-secondary/10 flex items-center justify-center font-black text-4xl text-secondary">
+                        <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl sm:rounded-[2rem] border-4 border-card overflow-hidden shadow-2xl bg-secondary/5 ring-2 ring-secondary/10 flex items-center justify-center font-black text-3xl sm:text-4xl text-secondary">
                             {user?.avatar ? (
                                 <img
-                                    src={user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`}
+                                    src={user.avatar}
                                     className="w-full h-full object-cover"
                                     alt="Profile"
                                 />
@@ -313,25 +308,25 @@ export default function ProfileSection() {
                     </div>
 
                     {/* Text Info + Action Buttons */}
-                    <div className=" flex flex-col lg:flex-row items-start md:items-center justify-between gap-5 w-full">
+                    <div className="flex flex-col lg:flex-row items-center lg:items-center justify-between gap-5 w-full text-center md:text-left">
                         {/* Name & Meta */}
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-3">
+                        <div className="space-y-2 flex flex-col items-center md:items-start">
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3">
                                 <h2 className="text-xl md:text-2xl font-black text-[#1a1a3b] leading-tight">
                                     {user?.firstName} {user?.lastName}
                                 </h2>
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${user?.roleId?.name === "STUDENT" ? 'bg-emerald-100 text-emerald-700' :
+                                <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${user?.roleId?.name === "STUDENT" ? 'bg-emerald-100 text-emerald-700' :
                                     user?.roleId?.name === "TEACHER" ? 'bg-indigo-100 text-indigo-700' : 'bg-rose-100 text-rose-700'
                                     }`}>
                                     {user?.roleId?.name || "Member"}
                                 </span>
                                 {user?.verificationStatus && (
-                                    <span className="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
+                                    <span className="bg-blue-100 text-blue-600 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
                                         Verified <CheckCircle size={10} />
                                     </span>
                                 )}
                             </div>
-                            <div className="flex flex-wrap items-center gap-5 text-gray-500 font-bold text-sm">
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-5 text-gray-500 font-bold text-xs sm:text-sm">
                                 {user?.startYear && (
                                     <div className="flex items-center gap-2">
                                         <Briefcase className="w-4 h-4 text-gray-400" />
@@ -366,11 +361,11 @@ export default function ProfileSection() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
                             <Button
                                 onClick={() => router.push(`/profile/edit/${user?._id}`)}
                                 variant="outline"
-                                className="h-10 px-5 rounded-2xl border-2 border-border font-black text-sm text-primary hover:bg-gray-50 flex gap-2 shadow-sm"
+                                className="h-10 w-full sm:w-auto px-5 rounded-2xl border-2 border-border font-black text-sm text-primary hover:bg-gray-50 flex gap-2 shadow-sm"
                             >
                                 <Edit3 className="w-4 h-4 text-secondary" />
                                 Edit Profile
@@ -396,18 +391,18 @@ export default function ProfileSection() {
                                 </div>
                                 <h3 className="text-xl font-black text-primary">Educational Background</h3>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Designation</p>
-                                    <p className="text-lg font-bold text-secondary">{user?.teacherProfile?.designation || user?.Profile?.designation || "Not specified"}</p>
+                                    <p className="text-base sm:text-lg font-bold text-secondary">{user?.teacherProfile?.designation || user?.Profile?.designation || "Not specified"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Department</p>
-                                    <p className="text-lg font-bold text-gray-700">{user?.teacherProfile?.department || user?.Profile?.department || "Not specified"}</p>
+                                    <p className="text-base sm:text-lg font-bold text-gray-700">{user?.teacherProfile?.department || user?.Profile?.department || "Not specified"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Experience</p>
-                                    <p className="text-lg font-bold text-gray-700">{user?.teacherProfile?.experienceYears || user?.Profile?.experienceYears || 0} Years</p>
+                                    <p className="text-base sm:text-lg font-bold text-gray-700">{user?.teacherProfile?.experienceYears || user?.Profile?.experienceYears || 0} Years</p>
                                 </div>
                             </div>
                         </Card>
@@ -421,18 +416,18 @@ export default function ProfileSection() {
                                 </div>
                                 <h3 className="text-lg font-black text-primary">Career Summary</h3>
                             </div>
-                            <div className="grid grid-cols-1 px-5 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 px-4 sm:px-5 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Current Company</p>
-                                    <p className="text-lg font-bold text-secondary">{user?.aluminiProfile?.currentCompany || user?.Profile?.currentCompany || "Not specified"}</p>
+                                    <p className="text-base sm:text-lg font-bold text-secondary">{user?.aluminiProfile?.currentCompany || user?.Profile?.currentCompany || "Not specified"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Job Title</p>
-                                    <p className="text-lg font-bold text-gray-700">{user?.aluminiProfile?.jobTitle || user?.Profile?.jobTitle || "Not specified"}</p>
+                                    <p className="text-base sm:text-lg font-bold text-gray-700">{user?.aluminiProfile?.jobTitle || user?.Profile?.jobTitle || "Not specified"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Experience</p>
-                                    <p className="text-lg font-bold text-gray-700">{user?.aluminiProfile?.experienceYears || user?.Profile?.experienceYears || 0} Years</p>
+                                    <p className="text-base sm:text-lg font-bold text-gray-700">{user?.aluminiProfile?.experienceYears || user?.Profile?.experienceYears || 0} Years</p>
                                 </div>
                             </div>
                         </Card>
@@ -465,8 +460,8 @@ export default function ProfileSection() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-8 px-5">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-6 sm:space-y-8 px-4 sm:px-5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                             <div className="p-4 rounded-2xl bg-gray-50/50 border border-border hover:border-accent/30 hover:bg-accent/5 transition-all group/item">
                                                 <div className="flex items-center gap-3 mb-2">
                                                     <div className="h-8 w-8 rounded-xl bg-background flex items-center justify-center text-gray-400 group-hover/item:text-accent shadow-sm transition-colors">
@@ -474,7 +469,7 @@ export default function ProfileSection() {
                                                     </div>
                                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Enrolled Course</p>
                                                 </div>
-                                                <p className="text-base px-10 font-black text-primary leading-tight group-hover/item:text-accent transition-colors">
+                                                <p className="text-sm sm:text-base px-1 sm:px-10 font-black text-primary leading-tight group-hover/item:text-accent transition-colors">
                                                     {user?.courseIds?.[0]?.courseName || "Not assigned"}
                                                 </p>
                                             </div>
@@ -486,7 +481,7 @@ export default function ProfileSection() {
                                                     </div>
                                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Period</p>
                                                 </div>
-                                                <p className="text-base px-10 font-black text-primary leading-tight group-hover/item:text-secondary transition-colors">
+                                                <p className="text-sm sm:text-base px-1 sm:px-10 font-black text-primary leading-tight group-hover/item:text-secondary transition-colors">
                                                     {user?.studentProfile?.semesterId?.name || user?.Profile?.semesterId?.name || "Not set"}
                                                 </p>
                                             </div>
@@ -642,10 +637,10 @@ export default function ProfileSection() {
                             </div>
                             <h3 className="text-base text-primary font-black text-black">Skills</h3>
                         </div>
-                        <div className="flex flex-wrap gap-3 p-4">
+                        <div className="flex flex-wrap gap-2 sm:gap-3 p-3 sm:p-4">
                             {(user?.Profile?.skills?.length ?? 0) > 0 ? (
                                 user?.Profile?.skills?.map((skill: string, i: number) => (
-                                    <span key={i} className={`px-6 py-3 rounded-2xl font-black text-sm transition-all cursor-default shadow-sm
+                                    <span key={i} className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm transition-all cursor-default shadow-sm
                                         ${i % 3 === 0 ? 'bg-primary/10 text-primary' : i % 3 === 1 ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent'}
                                         hover:scale-105
                                     `}>

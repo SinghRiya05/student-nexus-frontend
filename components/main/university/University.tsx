@@ -54,10 +54,9 @@ export default function University() {
     };
 
     const remainingUniversities = safeUniversities.filter((u: any) => u._id !== featuredUniData?._id);
-    console.log(remainingUniversities)
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:gap-10 px-4 sm:px-6 lg:px-8 pb-20">
             {/* Main Content (Left 70%) */}
             <div className="lg:col-span-7 space-y-12">
 
@@ -73,20 +72,15 @@ export default function University() {
 
                     {/* Search & Filters */}
                     <UniversitySearch />
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h5 className="text-[15px] font-black uppercase tracking-widest text-slate-800">Top Universities</h5>
-                        </div>
-                    </div>
                 </section>
 
                 {/* 2. Featured Institution Card (Full Overlay) */}
                 {universityLoading && safeUniversities.length === 0 ? (
                     <div className="space-y-12 animate-pulse">
                         {/* Featured Institution Skeleton */}
-                        <div className="relative h-[400px] rounded-2xl bg-slate-100 overflow-hidden border border-slate-200">
-                            <div className="absolute inset-0 p-10 flex flex-col justify-end">
-                                <div className="space-y-6">
+                        <div className="relative h-[300px] sm:h-[400px] rounded-2xl bg-slate-100 overflow-hidden border border-slate-200">
+                            <div className="absolute inset-0 p-5 sm:p-10 flex flex-col justify-end">
+                                <div className="space-y-4 sm:space-y-6">
                                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                                         <div className="space-y-4 w-full max-w-lg">
                                             <div className="h-10 bg-slate-200 rounded-lg w-3/4"></div>
@@ -95,7 +89,7 @@ export default function University() {
                                                 <div className="h-10 w-32 bg-slate-200 rounded-xl"></div>
                                             </div>
                                         </div>
-                                        <div className="w-24 h-24 rounded-2xl bg-slate-200 shrink-0"></div>
+                                        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-slate-200 shrink-0"></div>
                                     </div>
                                     <div className="h-px bg-slate-200 w-full" />
                                     <div className="h-12 w-40 bg-slate-200 rounded-xl"></div>
@@ -128,18 +122,18 @@ export default function University() {
                 ) : (
                     <>
                         {featuredUniData && (
-                            <section className="relative h-[400px] rounded-2xl overflow-hidden border-2 border-primary/10 shadow-2xl group cursor-pointer">
+                            <section className="relative h-[300px] sm:h-[400px] rounded-2xl overflow-hidden border-2 border-primary/10 shadow-2xl group cursor-pointer">
                                 <img
                                     src={featuredUniData?.image?.startsWith('http') ? featuredUniData?.image : `${ASSET_URL}${featuredUniData?.image}`}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     alt="Featured University"
                                 />
-                                <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent p-10 flex flex-col justify-end">
-                                    <div className="space-y-6">
-                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                                            <div className="space-y-4">
-                                                <h2 className="text-[35px] font-black text-white leading-tight drop-shadow-lg">{featuredUniData.name?.toUpperCase()}</h2>
-                                                <div className="flex flex-wrap items-center gap-8 text-[14px] text-white/90 font-bold">
+                                <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent p-5 sm:p-10 flex flex-col justify-end">
+                                    <div className="space-y-4 sm:space-y-6">
+                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
+                                            <div className="space-y-2 sm:space-y-4">
+                                                <h2 className="text-2xl sm:text-[35px] font-black text-white leading-tight drop-shadow-lg">{featuredUniData.name?.toUpperCase()}</h2>
+                                                <div className="flex flex-wrap items-center gap-3 sm:gap-8 text-xs sm:text-[14px] text-white/90 font-bold">
                                                     <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
                                                         <MapPin className="w-4 h-4 text-orange-400" />
                                                         {`${featuredUniData.city?.name || featuredUniData.city || 'Unknown City'}, ${featuredUniData.state?.name || featuredUniData.state || 'Unknown State'}`.trim()}
@@ -150,7 +144,7 @@ export default function University() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="w-24 h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-2 shadow-2xl overflow-hidden">
+                                            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-2 shadow-2xl overflow-hidden hidden sm:flex">
                                                 {featuredUniData.logo ? (
                                                     <img src={featuredUniData.logo} alt="Logo" className="w-full h-full object-cover bg-white rounded-xl" />
                                                 ) : (
@@ -163,8 +157,8 @@ export default function University() {
 
                                         <div className="h-px bg-white/20 w-full" />
 
-                                        <div className="flex justify-between items-center">
-                                            <button onClick={() => { router.push(`/university/${featuredUniData._id}`) }} className="px-6 py-3 rounded-xl bg-secondary cursor-pointer text-white font-black text-sm flex items-center gap-3 hover:bg-secondary/90 hover:translate-x-2 transition-all shadow-xl shadow-secondary/20">
+                                        <div className="flex justify-between items-center w-full sm:w-auto">
+                                            <button onClick={() => { router.push(`/university/${featuredUniData._id}`) }} className="w-full sm:w-auto px-6 py-3 rounded-xl bg-secondary cursor-pointer text-white font-black text-sm flex items-center justify-center sm:justify-start gap-3 hover:bg-secondary/90 hover:translate-x-2 transition-all shadow-xl shadow-secondary/20">
                                                 View Details
                                                 <ArrowRight className="w-5 h-5" />
                                             </button>
@@ -176,7 +170,7 @@ export default function University() {
 
                         {/* 3. Explore Universities (Grid Overlay) */}
                         <section className="space-y-8">
-                            <h2 className="text-[30px] font-black text-black">Explore Universities</h2>
+                            <h2 className="text-2xl sm:text-[30px] font-black text-black">Explore Universities</h2>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {remainingUniversities.map((uni: any, idx: number) => (

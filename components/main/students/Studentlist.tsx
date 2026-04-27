@@ -103,7 +103,7 @@ export default function Studentlist() {
     return (
         <div className="flex flex-col w-full h-full">
             {/* Header Area */}
-            <div className="bg-white p-6 rounded-3xl border border-indigo-100 shadow-sm shadow-indigo-100/50 mb-6 relative overflow-hidden">
+            <div className=" px-3 py-5 sm:px-6 rounded-3xl mb-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <Sparkles size={120} />
                 </div>
@@ -120,7 +120,7 @@ export default function Studentlist() {
                             placeholder="Search by name or course..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full md:w-64 pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium placeholder:text-gray-400"
+                            className="w-full md:w-64 pl-10 pr-4 py-3 bg-gray-50 border border-secondary/20 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-secondary/10 focus:border-secondary/40 transition-all font-medium placeholder:text-gray-400"
                         />
                     </div>
                 </div>
@@ -137,7 +137,7 @@ export default function Studentlist() {
                                 onClick={() => setActiveTab(tab)}
                                 className={cn(
                                     "relative flex-1 sm:flex-none px-5 sm:px-7 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-colors duration-300 outline-none text-center",
-                                    isActive ? "text-indigo-600" : "text-gray-500 hover:text-gray-800"
+                                    isActive ? "text-primary" : "text-gray-500 hover:text-gray-800"
                                 )}
                             >
                                 {isActive && (
@@ -156,8 +156,8 @@ export default function Studentlist() {
 
                 <Popover open={isPopoverOpen} onOpenChange={handleOpenChange}>
                     <PopoverTrigger asChild>
-                        <button className="px-5 py-2.5 w-full md:w-auto bg-white border border-gray-200 rounded-xl text-gray-700 font-bold text-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-indigo-200 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 group data-[state=open]:border-indigo-300 data-[state=open]:text-indigo-600 data-[state=open]:bg-indigo-50/30 outline-none">
-                            <Filter size={15} className="group-data-[state=open]:text-indigo-500" />
+                        <button className="px-5 py-2.5 w-full md:w-auto bg-white border border-gray-200 rounded-xl text-gray-700 font-bold text-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 group data-[state=open]:border-primary/30 data-[state=open]:text-primary data-[state=open]:bg-primary/10 outline-none">
+                            <Filter size={15} className="group-data-[state=open]:text-primary" />
                             <span>Advanced Filters</span>
                             <ChevronDown size={14} className="opacity-50 group-data-[state=open]:rotate-180 transition-transform hidden sm:block" />
                         </button>
@@ -177,8 +177,8 @@ export default function Studentlist() {
                                             className={cn(
                                                 "text-[11px] px-3 py-2 rounded-lg font-bold text-center transition-all border",
                                                 tempSortBy === sortOption
-                                                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                                                    : "bg-white text-gray-600 border-gray-200 hover:border-indigo-200 hover:text-indigo-600"
+                                                    ? "bg-primary text-white border-primary shadow-sm"
+                                                    : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
                                             )}
                                         >
                                             {sortOption}
@@ -200,7 +200,7 @@ export default function Studentlist() {
                                             className={cn(
                                                 "text-[11px] px-3 py-1.5 rounded-full font-bold transition-all border",
                                                 tempSelectedCourse === course
-                                                    ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+                                                    ? "bg-primary/10 text-primary border-primary"
                                                     : "bg-gray-50 text-gray-500 border-transparent hover:bg-gray-100"
                                             )}
                                         >
@@ -219,7 +219,7 @@ export default function Studentlist() {
                                 </button>
                                 <button
                                     onClick={applyDraftFilters}
-                                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors"
+                                    className="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-dark shadow-sm shadow-primary-dark/20 transition-colors"
                                 >
                                     Apply
                                 </button>
