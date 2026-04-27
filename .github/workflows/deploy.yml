@@ -39,4 +39,4 @@ jobs:
 
             echo "Restart ONLY frontend service"
             cd student-nexus-backend
-            docker-compose up -d --build frontend
+            docker compose up -d --build frontend
