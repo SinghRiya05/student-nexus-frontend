@@ -33,7 +33,7 @@ export default function RightSection() {
             id: uni._id,
             name: uni.name || "Unknown University",
             rank: `0${idx + 1}`,
-            students: formatCount(uni.userCount),
+            students: formatCount(uni.userCount || 0),
             location: `${uni.city?.name || uni.city || 'Unknown'}`,
             color: idx === 0 ? "primary" : idx === 1 ? "secondary" : "tertiary"
         }));
