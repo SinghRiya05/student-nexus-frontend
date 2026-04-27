@@ -21,7 +21,6 @@ export const initiateSocketConnection = (token: string) => {
 	if (!socket) {
 		socket = io(SOCKET_URL, {
 			auth: { token },
-			transports: ["websocket"],
 		});
 		(socket as any).auth = { token }; // Store token for later comparison
 		console.log("Socket connected with URL:", SOCKET_URL);
