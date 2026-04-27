@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PhoneOff, 
@@ -67,6 +67,25 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
+  const iceCandidateBufferRef = useRef<any[]>([]);
+
+  const setLocalVideoRef = useCallback((node: HTMLVideoElement | null) => {
+    localVideoRef.current = node;
+    if (node) {
+      const targetStream = callType === 'screen-share' && screenStreamRef.current ? screenStreamRef.current : localStreamRef.current;
+      if (node.srcObject !== targetStream) {
+        node.srcObject = targetStream;
+      }
+    }
+  }, [callType]);
+
+  const setRemoteVideoRef = useCallback((node: HTMLVideoElement | null) => {
+    remoteVideoRef.current = node;
+    if (node && remoteStreamRef.current && node.srcObject !== remoteStreamRef.current) {
+      node.srcObject = remoteStreamRef.current;
+    }
+  }, []);
 
   const [allParticipants, setAllParticipants] = useState<ParticipantType[]>(participants);
 
@@ -75,14 +94,38 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
   // --- INITIALIZE CALL ---
   useEffect(() => {
-    if (isOpen) {
-      if (isIncoming && incomingSignal && callerId) {
-        handleAnswerCall();
-      } else {
-        handleStartCall();
-      }
+    if (!isOpen) return;
+
+    const socket = getSocket();
+    const handleIce = (candidate: any) => {
+       if (peerConnectionRef.current && peerConnectionRef.current.remoteDescription) {
+           peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate)).catch(()=>{});
+       } else {
+           iceCandidateBufferRef.current.push(candidate);
+       }
+    };
+    
+    if (socket) {
+       socket.on("ice_candidate", handleIce);
+       socket.on("call_ended", () => { toast("Call ended"); onClose(); });
+       socket.on("screen_share_status", ({ isSharing }) => {
+          if (isSharing) setCallType('screen-share');
+          else setCallType(initialType);
+       });
     }
+
+    if (isIncoming && incomingSignal && callerId) {
+      setCallStatus('idle'); // Wait for user to accept
+    } else {
+      handleStartCall();
+    }
+
     return () => {
+      if (socket) {
+         socket.off("ice_candidate", handleIce);
+         socket.off("call_ended");
+         socket.off("screen_share_status");
+      }
       cleanup();
     };
   }, [isOpen]);
@@ -110,7 +153,13 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
     stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
+    const hasVideo = stream.getVideoTracks().length > 0;
+    if (!hasVideo) {
+      pc.addTransceiver('video', { direction: 'sendrecv' });
+    }
+
     pc.ontrack = (event) => {
+      remoteStreamRef.current = event.streams[0];
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = event.streams[0];
       }
@@ -153,9 +202,13 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       onCallAccepted(async (signal) => {
         await pc.setRemoteDescription(new RTCSessionDescription(signal));
         setCallStatus('connected');
+        
+        // Process buffered candidates
+        iceCandidateBufferRef.current.forEach(c => {
+           pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
+        });
+        iceCandidateBufferRef.current = [];
       });
-
-      setupSignalListeners(pc);
 
     } catch (err) {
       console.error("Error starting call:", err);
@@ -177,37 +230,23 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       const pc = setupPeerConnection(stream, callerId!);
 
       await pc.setRemoteDescription(new RTCSessionDescription(incomingSignal));
+      
+      // Process buffered candidates
+      iceCandidateBufferRef.current.forEach(c => {
+         pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
+      });
+      iceCandidateBufferRef.current = [];
+
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
       emitAnswerCall({ to: callerId!, signal: answer });
       setCallStatus('connected');
 
-      setupSignalListeners(pc);
-
     } catch (err) {
       console.error("Error answering call:", err);
       onClose();
     }
-  };
-
-  const setupSignalListeners = (pc: RTCPeerConnection) => {
-    onReceiveIceCandidate(async (candidate) => {
-      try {
-        await pc.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (e) {}
-    });
-
-    onCallEnded(() => {
-      toast("Call ended");
-      onClose();
-    });
-
-    onScreenShareStatus(({ isSharing }) => {
-      // Remote user screen share status
-      if (isSharing) setCallType('screen-share');
-      else setCallType(initialType);
-    });
   };
 
   const handleEndCall = () => {
@@ -244,8 +283,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       }
       if (localStreamRef.current && peerConnectionRef.current) {
         const videoTrack = localStreamRef.current.getVideoTracks()[0];
-        const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
-        if (sender && videoTrack) sender.replaceTrack(videoTrack);
+        const videoTransceiver = peerConnectionRef.current.getTransceivers().find(t => t.receiver.track.kind === 'video');
+        if (videoTransceiver && videoTransceiver.sender && videoTrack) {
+          videoTransceiver.sender.replaceTrack(videoTrack);
+        }
         
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = localStreamRef.current;
@@ -261,8 +302,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         const screenTrack = stream.getVideoTracks()[0];
 
         if (peerConnectionRef.current) {
-          const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
-          if (sender) sender.replaceTrack(screenTrack);
+          const videoTransceiver = peerConnectionRef.current.getTransceivers().find(t => t.receiver.track.kind === 'video');
+          if (videoTransceiver && videoTransceiver.sender) {
+            videoTransceiver.sender.replaceTrack(screenTrack);
+          }
         }
 
         if (localVideoRef.current) {
@@ -321,6 +364,60 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   };
 
   if (!isOpen) return null;
+
+  if (isIncoming && callStatus === 'idle') {
+     return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden"
+      >
+        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+          <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-primary/30 blur-[120px] rounded-full" />
+          <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-blue-600/30 blur-[120px] rounded-full" />
+        </div>
+        
+        <div className="z-10 flex flex-col items-center">
+            <motion.div 
+                initial={{ scale: 0.8 }}
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-32 h-32 rounded-full border-4 border-primary/50 overflow-hidden shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)] mb-8"
+            >
+                <img src={participants[0]?.avatar} alt="Caller" className="w-full h-full object-cover" />
+            </motion.div>
+            
+            <h2 className="text-3xl font-black text-white tracking-tight mb-2">{participants[0]?.name}</h2>
+            <p className="text-white/50 uppercase tracking-widest font-bold text-sm mb-12">
+               Incoming {initialType} call...
+            </p>
+            
+            <div className="flex gap-8">
+               <button 
+                 onClick={handleEndCall}
+                 className="flex flex-col items-center gap-3 group"
+               >
+                  <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform">
+                     <PhoneOff className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-white/50 uppercase tracking-wider group-hover:text-red-400 transition-colors">Decline</span>
+               </button>
+               
+               <button 
+                 onClick={handleAnswerCall}
+                 className="flex flex-col items-center gap-3 group"
+               >
+                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform animate-bounce">
+                     <Video className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-white/50 uppercase tracking-wider group-hover:text-green-400 transition-colors">Accept</span>
+               </button>
+            </div>
+        </div>
+      </motion.div>
+     );
+  }
 
   return (
     <motion.div 
@@ -384,7 +481,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                ) : (
                 <div className="w-full h-full relative bg-black">
                     <video 
-                      ref={remoteVideoRef} 
+                      ref={setRemoteVideoRef} 
                       autoPlay 
                       playsInline 
                       className="w-full h-full object-cover"
@@ -470,7 +567,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
             ) : (
                 <div className="w-full h-full bg-zinc-800 relative">
                      <video 
-                        ref={localVideoRef} 
+                        ref={setLocalVideoRef} 
                         autoPlay 
                         muted 
                         playsInline 
