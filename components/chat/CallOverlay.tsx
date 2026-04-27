@@ -67,6 +67,21 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
+
+  const setLocalVideoRef = (node: HTMLVideoElement | null) => {
+    localVideoRef.current = node;
+    if (node) {
+      node.srcObject = callType === 'screen-share' && screenStreamRef.current ? screenStreamRef.current : localStreamRef.current;
+    }
+  };
+
+  const setRemoteVideoRef = (node: HTMLVideoElement | null) => {
+    remoteVideoRef.current = node;
+    if (node && remoteStreamRef.current) {
+      node.srcObject = remoteStreamRef.current;
+    }
+  };
 
   const [allParticipants, setAllParticipants] = useState<ParticipantType[]>(participants);
 
@@ -110,7 +125,13 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
     stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
+    const hasVideo = stream.getVideoTracks().length > 0;
+    if (!hasVideo) {
+      pc.addTransceiver('video', { direction: 'sendrecv' });
+    }
+
     pc.ontrack = (event) => {
+      remoteStreamRef.current = event.streams[0];
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = event.streams[0];
       }
@@ -244,8 +265,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       }
       if (localStreamRef.current && peerConnectionRef.current) {
         const videoTrack = localStreamRef.current.getVideoTracks()[0];
-        const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
-        if (sender && videoTrack) sender.replaceTrack(videoTrack);
+        const videoTransceiver = peerConnectionRef.current.getTransceivers().find(t => t.receiver.track.kind === 'video');
+        if (videoTransceiver && videoTransceiver.sender && videoTrack) {
+          videoTransceiver.sender.replaceTrack(videoTrack);
+        }
         
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = localStreamRef.current;
@@ -261,8 +284,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         const screenTrack = stream.getVideoTracks()[0];
 
         if (peerConnectionRef.current) {
-          const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
-          if (sender) sender.replaceTrack(screenTrack);
+          const videoTransceiver = peerConnectionRef.current.getTransceivers().find(t => t.receiver.track.kind === 'video');
+          if (videoTransceiver && videoTransceiver.sender) {
+            videoTransceiver.sender.replaceTrack(screenTrack);
+          }
         }
 
         if (localVideoRef.current) {
@@ -380,7 +405,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                ) : (
                 <div className="w-full h-full relative bg-black">
                     <video 
-                      ref={remoteVideoRef} 
+                      ref={setRemoteVideoRef} 
                       autoPlay 
                       playsInline 
                       className="w-full h-full object-cover"
@@ -462,7 +487,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
             ) : (
                 <div className="w-full h-full bg-zinc-800 relative">
                      <video 
-                        ref={localVideoRef} 
+                        ref={setLocalVideoRef} 
                         autoPlay 
                         muted 
                         playsInline 
