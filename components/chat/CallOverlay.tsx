@@ -383,9 +383,15 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                 initial={{ scale: 0.8 }}
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-32 h-32 rounded-full border-4 border-primary/50 overflow-hidden shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)] mb-8"
+                className="w-32 h-32 rounded-full border-4 border-primary/50 overflow-hidden shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)] mb-8 flex items-center justify-center bg-primary/10"
             >
-                <img src={participants[0]?.avatar} alt="Caller" className="w-full h-full object-cover" />
+                {participants[0]?.avatar ? (
+                    <img src={participants[0].avatar} alt="Caller" className="w-full h-full object-cover" />
+                ) : (
+                    <span className="text-5xl font-black text-primary uppercase">
+                        {participants[0]?.name?.charAt(0) || '?'}
+                    </span>
+                )}
             </motion.div>
             
             <h2 className="text-3xl font-black text-white tracking-tight mb-2">{participants[0]?.name}</h2>
@@ -557,9 +563,11 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
               <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800">
                 <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-2 overflow-hidden">
                    {participants[0]?.avatar ? (
-                       <img src={participants[0]?.avatar} className="w-full h-full object-cover" alt="me" />
+                       <img src={participants[0].avatar} className="w-full h-full object-cover" alt="me" />
                    ) : (
-                       <span className="text-xl font-bold text-white/20 uppercase">{participants[0]?.name.charAt(0)}</span>
+                       <span className="text-xl font-bold text-white/20 uppercase">
+                           {participants[0]?.name?.charAt(0) || '?'}
+                       </span>
                    )}
                 </div>
                 <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">You (Paused)</span>
