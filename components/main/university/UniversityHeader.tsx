@@ -3,19 +3,22 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { MapPin, UserPlus } from 'lucide-react'
+import { MapPin, UserPlus, Globe } from 'lucide-react'
+import { ASSET_URL } from '@/services/apiEndpoints'
 
 interface UniversityHeaderProps {
   name: string
   location: string
   bannerImage?: string
   logoImage?: string
+  domain?: string
 }
 
 export const UniversityHeader: React.FC<UniversityHeaderProps> = ({
   name,
   location,
-  bannerImage
+  bannerImage,
+  domain
 }) => {
   return (
     <motion.div
@@ -24,22 +27,30 @@ export const UniversityHeader: React.FC<UniversityHeaderProps> = ({
       className="w-full rounded-3xl overflow-hidden border border-border/40 bg-card shadow-sm"
     >
       {/* Banner Image with location overlay */}
-      <div className="relative h-52 md:h-64 lg:h-72 w-full overflow-hidden">
+      <div className="relative h-40 md:h-56 lg:h-64 w-full overflow-hidden bg-slate-50">
         {bannerImage ? (
           <img
-            src={bannerImage}
+            src={bannerImage.startsWith('http') ? bannerImage : `${ASSET_URL}${bannerImage}`}
             alt="University Banner"
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+            className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
           />
         ) : (
           <div className="w-full h-full bg-primary/5 grid-overlay" />
         )}
         {/* Bottom gradient for readability */}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/50 to-transparent" />
-        {/* Location pill overlaid on image */}
-        <div className="absolute bottom-4 left-5 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg">
-          <MapPin className="w-3.5 h-3.5 text-white" />
-          <span className="text-white text-xs font-bold tracking-tight">{location}</span>
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/60 to-transparent" />
+        {/* Location & Domain pill overlaid on image */}
+        <div className="absolute bottom-4 left-4 sm:left-5 flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg">
+            <MapPin className="w-3.5 h-3.5 text-white" />
+            <span className="text-white text-[10px] sm:text-xs font-bold tracking-tight">{location}</span>
+          </div>
+          {domain && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg">
+              <Globe className="w-3.5 h-3.5 text-white" />
+              <span className="text-white text-[10px] sm:text-xs font-bold tracking-tight">{domain}</span>
+            </div>
+          )}
         </div>
       </div>
 

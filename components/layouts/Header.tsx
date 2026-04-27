@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/utils/hook";
+import { cn } from "@/lib/utils";
 import { logoutUser } from '@/features/auth/authThunk';
 import { ASSET_URL } from "@/services/apiEndpoints";
 import { getFollowing, getPendingFollowRequests, getSentRequests, getFollowers, acceptFollowRequest, rejectFollowRequest } from "@/features/follow/followThunk";
-import { emitAcceptFollowRequest, emitRejectFollowRequest } from "@/services/socket";
+import { emitAcceptFollowRequest, emitRejectFollowRequest, emitFollowUser } from "@/services/socket";
 import { getMe } from "@/features/users/userThunk";
 import {
   GraduationCap,
@@ -67,6 +68,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [requestsOpen, setRequestsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSearchActive, setMobileSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const unreadCount = NOTIFICATIONS.filter((n) => n.unread).length;
@@ -74,7 +76,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const dispatch = useAppDispatch();
   const { user: authUser } = useAppSelector((state) => state.auth);
   const { me } = useAppSelector((state) => state.user);
-  const { pendingRequests } = useAppSelector((state) => state.follow);
+  const { pendingRequests, followers, following } = useAppSelector((state) => state.follow);
+
+  // Compute users who follow the current user, but the current user does not follow back
+  const followingIds = new Set(following?.map((f: any) => f.following?._id));
+  const acceptedButNotFollowedBack = followers?.filter((f: any) => f.follower && !followingIds.has(f.follower._id)) || [];
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
@@ -111,43 +117,63 @@ export default function Header({ onMenuClick }: HeaderProps) {
       )}
 
       <header className="sticky top-0 z-40 w-full border-b border-primary/10 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 lg:px-6">
+        <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-2 px-4 lg:px-6">
 
           {/* ── Logo ── */}
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <div className="flex items-center">
-              <img src="/logo.png" alt="logo" className="w-55 h-40" />
-            </div>
-          </Link>
+          {!mobileSearchActive && (
+            <Link href="/" className="flex shrink-0 items-center gap-2.5">
+              <div className="flex items-center overflow-visible">
+                <img
+                  src="/logo.png"
+                  alt="logo"
+                  className="
+          w-[140px]
+          h-[140px]
+
+          sm:w-[240px]
+          sm:h-[240px]
+
+          object-contain
+        "
+                />
+              </div>
+            </Link>
+          )}
 
           {/* ── Desktop Nav ── */}
-          <nav className="ml-4 hidden items-center gap-1 lg:flex">
-            {NAV_LINKS.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-[0.82rem] font-semibold transition-all ${active
-                    ? "bg-secondary/10 text-secondary"
-                    : "text-primary hover:bg-secondary/10 "
-                    }`}
-                >
-                  <Icon size={15} />
-                  {label}
-                  {active && (
-                    <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+          {!mobileSearchActive && (
+            <nav className="ml-4 hidden items-center gap-1 lg:flex">
+              {NAV_LINKS.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-[0.82rem] font-semibold transition-all ${active
+                      ? "bg-secondary/10 text-secondary"
+                      : "text-primary hover:bg-secondary/10 "
+                      }`}
+                  >
+                    <Icon size={15} />
+                    {label}
+                    {active && (
+                      <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
 
           {/* ── Spacer ── */}
           <div className="flex-1" />
 
-          {/* ── Search Bar (Desktop) ── */}
-          <div className={`hidden items-center lg:flex transition-all duration-300 ${searchOpen ? "w-140" : "w-120"}`}>
+          {/* ── Search Bar (Responsive) ── */}
+          <div className={cn(
+            "items-center transition-all duration-300",
+            mobileSearchActive ? "flex flex-1" : "hidden lg:flex",
+            searchOpen ? "w-full lg:w-[400px]" : "w-full lg:w-[320px]"
+          )}>
             <div className="relative w-full">
               <Search
                 size={14}
@@ -160,17 +186,30 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 onFocus={() => setSearchOpen(true)}
                 onBlur={() => setSearchOpen(false)}
                 placeholder="Search anything…"
-                className="h-9 w-full rounded-xl border border-gray-200 bg-secondary/10 pl-8 pr-3 text-[0.8rem] text-gray-800 placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/15 transition-all"
+                className="h-9 w-full rounded-xl border border-gray-200 bg-secondary/5 pl-8 pr-10 text-[0.85rem] text-gray-800 placeholder:text-gray-400 focus:border-secondary/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-secondary/5 transition-all"
               />
+              {mobileSearchActive && (
+                <button
+                  onClick={() => setMobileSearchActive(false)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
           </div>
 
           {/* ── Icon Group ── */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             {/* Search (mobile) */}
-            <button className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 lg:hidden">
-              <Search size={17} />
-            </button>
+            {!mobileSearchActive && (
+              <button
+                onClick={() => setMobileSearchActive(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 lg:hidden"
+              >
+                <Search size={17} />
+              </button>
+            )}
 
             {/* Follow Requests */}
             <div className="relative">
@@ -179,103 +218,91 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100"
               >
                 <Users size={17} />
-                {pendingRequests?.length > 0 && (
+                {((pendingRequests?.length || 0) + acceptedButNotFollowedBack.length) > 0 && (
                   <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500 text-[0.55rem] font-bold text-white ring-2 ring-white">
-                    {pendingRequests.length}
+                    {(pendingRequests?.length || 0) + acceptedButNotFollowedBack.length}
                   </span>
                 )}
               </button>
 
               {/* Requests Dropdown */}
               {requestsOpen && (
-                <div className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
+                <div className="fixed inset-x-4 top-16 z-50 sm:absolute sm:inset-auto sm:right-0 sm:top-11 w-auto sm:w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
                   <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
                     <p className="text-[0.82rem] font-bold text-gray-900">Follow Requests</p>
                   </div>
                   <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
-                    {pendingRequests?.length === 0 ? (
+                    {(pendingRequests?.length === 0 && acceptedButNotFollowedBack.length === 0) ? (
                       <div className="px-4 py-5 text-center text-sm text-gray-500 italic">No pending requests</div>
                     ) : (
-                      pendingRequests.map((req: any) => (
-                        <div key={req._id} className="flex gap-3 px-4 py-3 transition hover:bg-gray-50 items-center">
-                          <img src={req.follower?.avatar ? `${ASSET_URL}${req.follower.avatar}` : "/user.png"} alt="avatar" className="h-9 w-9 rounded-full object-cover shrink-0" />
-                          <div className="flex-1">
-                            <p className="text-[0.78rem] font-bold text-gray-800">{req.follower?.firstName} {req.follower?.lastName}</p>
-                            <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
+                      <>
+                        {pendingRequests?.map((req: any) => (
+                          <div key={req._id} className="flex gap-3 px-4 py-3 transition hover:bg-gray-50 items-center">
+                            <div className="h-9 w-9 rounded-full overflow-hidden shrink-0 bg-primary/10 flex items-center justify-center text-primary font-bold">
+                              {req.follower?.avatar ? (
+                                <img src={req.follower.avatar} alt="avatar" className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="text-sm uppercase">{req.follower?.firstName?.[0]}</span>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-[0.78rem] font-bold text-gray-800">{req.follower?.firstName} {req.follower?.lastName}</p>
+                              <p className="mt-0.5 text-[0.67rem] text-gray-400">Wants to follow you</p>
+                            </div>
+                            <div className="flex gap-2 shrink-0">
+                              <button
+                                onClick={() => {
+                                  emitAcceptFollowRequest(req._id);
+                                }}
+                                className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => {
+                                  emitRejectFollowRequest(req._id);
+                                }}
+                                className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition"
+                              >
+                                Decline
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex gap-2 shrink-0">
-                            <button
-                              onClick={() => {
-                                console.log("Header: Accept request clicked for:", req._id);
-                                emitAcceptFollowRequest(req._id);
-                              }}
-                              className="h-7 px-3 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={() => {
-                                console.log("Header: Reject request clicked for:", req._id);
-                                emitRejectFollowRequest(req._id);
-                              }}
-                              className="h-7 px-3 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition"
-                            >
-                              Decline
-                            </button>
+                        ))}
+                        {acceptedButNotFollowedBack.map((req: any) => (
+                          <div key={req._id} className="flex gap-3 px-4 py-3 transition hover:bg-gray-50 items-center bg-indigo-50/30">
+                            <div className="h-9 w-9 rounded-full overflow-hidden shrink-0 ring-2 ring-indigo-100 bg-indigo-100/50 flex items-center justify-center text-indigo-600 font-bold">
+                              {req.follower?.avatar ? (
+                                <img src={req.follower.avatar} alt="avatar" className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="text-sm uppercase">{req.follower?.firstName?.[0]}</span>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-[0.78rem] font-bold text-gray-800">{req.follower?.firstName} {req.follower?.lastName}</p>
+                              <p className="mt-0.5 text-[0.67rem] text-indigo-600 font-semibold">Started following you</p>
+                            </div>
+                            <div className="flex gap-2 shrink-0">
+                              <button
+                                onClick={() => {
+                                  emitFollowUser(req.follower._id);
+                                  toast.success(`You started following ${req.follower.firstName}`);
+                                }}
+                                className="h-7 px-3 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-gray-800 transition"
+                              >
+                                Follow back
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        ))}
+                      </>
                     )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Notifications */}
-            <div className="relative">
-              <button
-                onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); setRequestsOpen(false); }}
-                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100"
-              >
-                <Bell size={17} />
-                {unreadCount > 0 && (
-                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[0.55rem] font-bold text-white ring-2 ring-white">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Notifications Dropdown */}
-              {notifOpen && (
-                <div className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
-                  <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                    <p className="text-[0.82rem] font-bold text-gray-900">Notifications</p>
-                    <button className="text-[0.72rem] font-semibold text-indigo-600 hover:opacity-70">
-                      Mark all read
-                    </button>
-                  </div>
-                  <div className="divide-y divide-gray-50">
-                    {NOTIFICATIONS.map((n) => (
-                      <div
-                        key={n.id}
-                        className={`flex gap-3 px-4 py-3 transition hover:bg-gray-50 ${n.unread ? "bg-indigo-50/40" : ""}`}
-                      >
-                        <div className={`mt-1 h-2 w-2 shrink-0 rounded-full ${n.unread ? "bg-indigo-500" : "bg-gray-200"}`} />
-                        <div className="flex-1">
-                          <p className="text-[0.78rem] leading-snug text-gray-800">{n.text}</p>
-                          <p className="mt-0.5 text-[0.67rem] text-gray-400">{n.time}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-gray-100 px-4 py-2.5 text-center">
-                    <button className="text-[0.75rem] font-semibold text-indigo-600 hover:opacity-70">
-                      View all notifications
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Notifications (Removed as per user request to save space) */}
 
             {/* Profile Dropdown */}
             <div className="relative ml-1">
@@ -301,7 +328,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
               {/* Profile Dropdown */}
               {profileOpen && (
-                <div className="absolute right-0 top-11 z-50 w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
+                <div className="fixed inset-x-4 top-16 z-50 sm:absolute sm:inset-auto sm:right-0 sm:top-11 w-auto sm:w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
                   {/* User info */}
                   <div className="border-b border-gray-100 p-4">
                     <div className="flex items-center gap-3">
@@ -351,18 +378,20 @@ export default function Header({ onMenuClick }: HeaderProps) {
             </div>
 
             {/* Mobile hamburger */}
-            <button
-              className="ml-1 flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 lg:hidden"
-              onClick={() => {
-                if (onMenuClick) {
-                  onMenuClick();
-                } else {
-                  setMobileOpen((v) => !v);
-                }
-              }}
-            >
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
+            {!mobileSearchActive && (
+              <button
+                className="ml-1 flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 lg:hidden"
+                onClick={() => {
+                  if (onMenuClick) {
+                    onMenuClick();
+                  } else {
+                    setMobileOpen((v) => !v);
+                  }
+                }}
+              >
+                {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            )}
           </div>
         </div>
 

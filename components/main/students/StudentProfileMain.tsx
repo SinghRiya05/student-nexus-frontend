@@ -229,7 +229,7 @@ export default function StudentProfileMain({ id }: { id: string }) {
                 <div className="h-24 md:h-36 relative overflow-hidden bg-background border-b border-border">
                     {student.coverImage ? (
                         <img
-                            src={`${student.coverImage}`}
+                            src={student.coverImage}
                             className="w-full h-full object-cover"
                             alt="Cover"
                         />
@@ -246,12 +246,14 @@ export default function StudentProfileMain({ id }: { id: string }) {
                             <div className="h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] border-[6px] border-background overflow-hidden bg-primary/5 ring-2 ring-primary/50 flex items-center justify-center font-black text-4xl md:text-5xl text-primary">
                                 {student.avatar ? (
                                     <img
-                                        src={`${student.avatar}`}
+                                        src={student.avatar}
                                         className="w-full h-full object-cover"
                                         alt="Profile"
                                     />
                                 ) : (
-                                    student.firstName.charAt(0).toUpperCase()
+                                    <span className="text-4xl md:text-5xl uppercase">
+                                        {student.firstName.charAt(0).toUpperCase()}
+                                    </span>
                                 )}
                             </div>
                             <div className="absolute bottom-2 right-2 h-6 w-6 bg-primary border-4 border-background rounded-full"></div>

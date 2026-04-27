@@ -388,7 +388,7 @@ export default function EditProfileSection() {
       const formatUrl = (path: any) => {
         if (!path) return null;
         if (path.startsWith("http") || path.startsWith("blob:")) return path;
-        return `${ASSET_URL}${path}`;
+        return path;
       };
 
       const initialAvatar =
@@ -549,7 +549,7 @@ export default function EditProfileSection() {
             <div className="px-10 pb-10 relative">
               <div className="relative -mt-14 inline-block group">
                 <div className="h-28 w-28 rounded-3xl bg-white p-1.5 shadow-2xl ring-1 ring-black/5">
-                  <div className="h-full w-full rounded-[1.2rem] overflow-hidden bg-indigo-50 border-2 border-white flex items-center justify-center">
+                  <div className="h-full w-full rounded-[1.2rem] overflow-hidden bg-indigo-50 border-2 border-white flex items-center justify-center text-indigo-600 font-bold">
                     {avatarUrl ? (
                       <img
                         src={avatarUrl}
@@ -557,7 +557,7 @@ export default function EditProfileSection() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-4xl font-black text-indigo-200 uppercase">
+                      <span className="text-4xl uppercase">
                         {singleUser?.firstName?.[0] || "?"}
                       </span>
                     )}

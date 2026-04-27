@@ -18,7 +18,7 @@ export interface Message {
 export interface User {
   id: string;
   name: string;
-  avatar: string;
+  avatar: string | null;
   status: 'online' | 'offline' | 'away';
   role: string;
 }

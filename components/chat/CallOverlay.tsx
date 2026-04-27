@@ -365,8 +365,12 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                                 />
                             )}
                         </AnimatePresence>
-                        <div className="relative z-10 w-24 md:w-32 h-24 md:h-32 rounded-full border-4 border-white/10 overflow-hidden shadow-2xl">
-                            <img src={p.avatar} className="w-full h-full object-cover" alt={p.name} />
+                        <div className="relative z-10 w-24 md:w-32 h-24 md:h-32 rounded-full border-4 border-white/10 overflow-hidden shadow-2xl flex items-center justify-center bg-zinc-800">
+                            {p.avatar ? (
+                                <img src={p.avatar} className="w-full h-full object-cover" alt={p.name} />
+                            ) : (
+                                <span className="text-4xl md:text-5xl font-black text-white/20 uppercase">{p.name.charAt(0)}</span>
+                            )}
                         </div>
                     </div>
                     <div className="text-center">
@@ -454,8 +458,12 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           >
             {isCameraOff && callType !== 'screen-share' ? (
               <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800">
-                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-2">
-                   <img src={participants[0]?.avatar} className="w-full h-full object-cover rounded-full" alt="me" />
+                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-2 overflow-hidden">
+                   {participants[0]?.avatar ? (
+                       <img src={participants[0]?.avatar} className="w-full h-full object-cover" alt="me" />
+                   ) : (
+                       <span className="text-xl font-bold text-white/20 uppercase">{participants[0]?.name.charAt(0)}</span>
+                   )}
                 </div>
                 <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">You (Paused)</span>
               </div>
