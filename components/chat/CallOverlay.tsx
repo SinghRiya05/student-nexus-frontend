@@ -130,6 +130,21 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           if (isSharing) setCallType('screen-share');
           else setCallType(initialType);
        });
+       socket.on("call_accepted", async (signal) => {
+          if (!peerConnectionRef.current) return;
+          try {
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(signal));
+            setCallStatus('connected');
+            
+            // Process buffered candidates
+            iceCandidateBufferRef.current.forEach(c => {
+               peerConnectionRef.current!.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
+            });
+            iceCandidateBufferRef.current = [];
+          } catch (err) {
+            console.error("Error setting remote description:", err);
+          }
+       });
     }
 
     if (isIncoming && incomingSignal && callerId) {
@@ -143,6 +158,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
          socket.off("ice_candidate", handleIce);
          socket.off("call_ended");
          socket.off("screen_share_status");
+         socket.off("call_accepted");
       }
       cleanup();
     };
@@ -216,18 +232,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         type: initialType
       });
 
-      // Listen for acceptance
-      onCallAccepted(async (signal) => {
-        await pc.setRemoteDescription(new RTCSessionDescription(signal));
-        setCallStatus('connected');
-        
-        // Process buffered candidates
-        iceCandidateBufferRef.current.forEach(c => {
-           pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
-        });
-        iceCandidateBufferRef.current = [];
-      });
-
+      // Listen for acceptance is now handled globally in useEffect to prevent stale listeners
     } catch (err) {
       console.error("Error starting call:", err);
       toast.error("Could not access camera/microphone");
@@ -282,12 +287,39 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
     }
   };
 
-  const toggleCamera = () => {
+  const toggleCamera = async () => {
     if (localStreamRef.current) {
-      const videoTrack = localStreamRef.current.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsCameraOff(!videoTrack.enabled);
+      const videoTracks = localStreamRef.current.getVideoTracks();
+      if (videoTracks.length > 0) {
+        // Toggle existing video track
+        videoTracks[0].enabled = !videoTracks[0].enabled;
+        setIsCameraOff(!videoTracks[0].enabled);
+      } else {
+        // Upgrade audio call to video call
+        try {
+          const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const newVideoTrack = videoStream.getVideoTracks()[0];
+          
+          localStreamRef.current.addTrack(newVideoTrack);
+          setIsCameraOff(false);
+          setCallType('video');
+          
+          if (peerConnectionRef.current) {
+             const videoTransceiver = peerConnectionRef.current.getTransceivers().find(t => t.receiver.track.kind === 'video');
+             if (videoTransceiver && videoTransceiver.sender) {
+                videoTransceiver.sender.replaceTrack(newVideoTrack);
+             } else {
+                peerConnectionRef.current.addTrack(newVideoTrack, localStreamRef.current);
+             }
+          }
+          
+          if (localVideoRef.current) {
+             localVideoRef.current.srcObject = localStreamRef.current;
+          }
+        } catch (err) {
+          console.error("Could not get video track", err);
+          toast.error("Could not access camera");
+        }
       }
     }
   };
@@ -624,14 +656,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           </button>
           
           <button 
-             onClick={() => {
-                if (callType === 'audio') {
-                    setCallType('video');
-                    setIsCameraOff(false);
-                } else {
-                    toggleCamera();
-                }
-             }}
+             onClick={toggleCamera}
              className={cn(
                 "w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center transition-all duration-300",
                 isCameraOff ? "bg-zinc-700 text-white/50" : "bg-white/5 hover:bg-white/10 text-white hover:scale-105"
