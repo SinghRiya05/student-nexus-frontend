@@ -5,6 +5,7 @@ import { fetchChats, accessChat, sendMessage, getMessages, clearChatMessages, de
 const initialState: ChatState = {
     chats: [],
     messages: {},
+    pagination: {},
     typingUsers: {},
     unreadCounts: {},
     selectedChatId: null,
@@ -28,6 +29,10 @@ const chatSlice = createSlice({
             
             if (!state.messages[chatId]) {
                 state.messages[chatId] = [];
+            }
+
+            if (!state.pagination[chatId]) {
+                state.pagination[chatId] = { page: 1, hasMore: true };
             }
             // Check for duplicates
             if (!state.messages[chatId].find(m => m._id === action.payload._id)) {
@@ -158,12 +163,26 @@ const chatSlice = createSlice({
             })
             .addCase(getMessages.fulfilled, (state, action) => {
                 state.loading = false;
-                if (action.payload.data.length > 0) {
-                    const chatId = typeof action.payload.data[0].chat === 'string' 
-                        ? action.payload.data[0].chat 
-                        : action.payload.data[0].chat._id;
-                    state.messages[chatId] = action.payload.data;
+                const { chatId, page = 1, limit = 20 } = action.meta.arg as any;
+                const fetchedMessages = action.payload.data;
+                
+                const chronologicalMessages = [...fetchedMessages].reverse();
+
+                if (!state.messages[chatId]) {
+                    state.messages[chatId] = [];
                 }
+
+                if (page === 1) {
+                    state.messages[chatId] = chronologicalMessages;
+                } else {
+                    // Prepend older messages
+                    state.messages[chatId] = [...chronologicalMessages, ...state.messages[chatId]];
+                }
+
+                state.pagination[chatId] = {
+                    page: page,
+                    hasMore: fetchedMessages.length === limit
+                };
             })
             .addCase(getMessages.rejected, (state, action) => {
                 state.loading = false;

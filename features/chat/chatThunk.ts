@@ -76,11 +76,13 @@ export const deleteChatConversation = createAsyncThunk(
     }
 );
 
-export const getMessages = createAsyncThunk<FetchMessagesResponse, string>(
+export const getMessages = createAsyncThunk<FetchMessagesResponse, { chatId: string, page?: number, limit?: number }>(
     "chat/getMessages",
-    async (chatId, { rejectWithValue }) => {
+    async ({ chatId, page = 1, limit = 20 }, { rejectWithValue }) => {
         try {
-            const response = await apiClient.get<FetchMessagesResponse>(API_ENDPOINTS.CHAT.GET_MESSAGES(chatId));
+            const response = await apiClient.get<FetchMessagesResponse>(
+                `${API_ENDPOINTS.CHAT.GET_MESSAGES(chatId)}?page=${page}&limit=${limit}`
+            );
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || "Failed to get messages");

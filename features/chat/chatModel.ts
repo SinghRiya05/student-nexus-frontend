@@ -67,6 +67,7 @@ export type FetchMessagesResponse = ApiResponse<IMessage[]>;
 export interface ChatState {
     chats: IChat[];
     messages: Record<string, IMessage[]>;
+    pagination: Record<string, { page: number; hasMore: boolean }>;
     typingUsers: Record<string, string[]>;
     unreadCounts: Record<string, number>;
     selectedChatId: string | null;
