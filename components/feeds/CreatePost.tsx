@@ -84,7 +84,8 @@ export function CreatePost() {
         setIsFocused(false);
       }
     } catch (error: any) {
-      toast.error(error || "Failed to publish post");
+      const errorMessage = typeof error === 'string' ? error : (error?.message || "Failed to publish post");
+      toast.error(errorMessage);
     }
   }
 
