@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 const SOCKET_URL = process.env.NEXT_PUBLIC_ASSET_BACKEND_BASEURL;
 
 let socket: Socket | null = null;
+let activeChatId: string | null = null;
 
 export const initiateSocketConnection = (token: string) => {
 	// If socket already exists and token is the same, do nothing
@@ -21,12 +22,21 @@ export const initiateSocketConnection = (token: string) => {
 	if (!socket) {
 		socket = io(SOCKET_URL, {
 			auth: { token },
+			reconnection: true,
+			reconnectionAttempts: Infinity,
+			reconnectionDelay: 1000,
+			reconnectionDelayMax: 5000,
+			timeout: 20000
 		});
 		(socket as any).auth = { token }; // Store token for later comparison
 		console.log("Socket connected with URL:", SOCKET_URL);
-		
+
 		socket.on("connect", () => {
 			console.log("Socket established connection:", socket?.id);
+			if (activeChatId) {
+				socket?.emit("join_chat", activeChatId);
+				console.log("Rejoined chat:", activeChatId);
+			}
 		});
 
 		socket.on("connect_error", (err) => {
@@ -48,6 +58,7 @@ export const disconnectSocket = () => {
 };
 
 export const subscribeToChat = (chatId: string) => {
+	activeChatId = chatId;
 	if (socket) {
 		socket.emit("join_chat", chatId);
 	}
