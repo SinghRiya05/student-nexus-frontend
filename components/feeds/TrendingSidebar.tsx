@@ -116,8 +116,8 @@ export function TrendingSidebar() {
                                 {/* Left Side: Media or Avatar */}
                                 <div className="h-12 w-12 shrink-0 rounded-full overflow-hidden bg-background border-2 border-card relative shadow-sm group-hover:border-secondary transition-all duration-500 ring-2 ring-transparent group-hover:ring-secondary/5">
                                     <img
-                                        src={post.authorId.avatar}
-                                        alt={post.authorId.firstName}
+                                        src={post.authorId?.avatar ? (post.authorId.avatar.startsWith('http') ? post.authorId.avatar : `${ASSET_URL}${post.authorId.avatar}`) : "/user.svg"}
+                                        alt={post.authorId?.firstName || "User"}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                 </div>
@@ -126,11 +126,11 @@ export function TrendingSidebar() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between">
                                         <h4 className="font-black text-[12px] text-primary truncate uppercase tracking-tight group-hover:text-secondary transition-colors">
-                                            {post.authorId.firstName} {post.authorId.lastName}
+                                            {post.authorId?.firstName || "Unknown"} {post.authorId?.lastName || "User"}
                                         </h4>
                                     </div>
                                     <p className="text-[11px] font-bold text-muted-foreground/80 line-clamp-2 leading-relaxed lowercase first-letter:uppercase">
-                                        {post.content.split(' ').slice(0, 10).join(' ')}{post.content.split(' ').length > 10 ? '...' : ''}
+                                        {post.content ? (post.content.split(' ').slice(0, 10).join(' ') + (post.content.split(' ').length > 10 ? '...' : '')) : "No content available"}
                                     </p>
                                 </div>
                             </motion.div>

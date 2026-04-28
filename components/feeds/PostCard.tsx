@@ -58,7 +58,7 @@ export function PostCard({
 }: PostCardProps) {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const isAuthor = user?._id === author._id;
+  const isAuthor = user?._id && author?._id && user._id === author._id;
 
   const [isLiked, setIsLiked] = React.useState(initialLiked)
   const [isSaved, setIsSaved] = React.useState(false)
@@ -76,7 +76,11 @@ export function PostCard({
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false)
   const [editContent, setEditContent] = React.useState(content)
   const [editMedia, setEditMedia] = React.useState<File | null>(null)
-  const [editMediaPreview, setEditMediaPreview] = React.useState<string | null>(media ? `${ASSET_URL}${media}` : null)
+  const [editMediaPreview, setEditMediaPreview] = React.useState<string | null>(
+    media 
+      ? (typeof media === 'string' && media.startsWith('http') ? media : `${ASSET_URL}${media}`) 
+      : null
+  )
   const [mediaRemoved, setMediaRemoved] = React.useState(false)
   const [editLoading, setEditLoading] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -161,23 +165,23 @@ export function PostCard({
             <div className="flex items-center gap-3">
               <div className="relative group cursor-pointer">
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 transition-all duration-300 group-hover:border-primary/50 bg-primary/10 flex items-center justify-center text-primary font-bold">
-                  {author.avatar && typeof author.avatar === 'string' ? (
+                  {author?.avatar && typeof author.avatar === 'string' ? (
                     <img
-                      src={author.avatar}
+                      src={author.avatar.startsWith('http') ? author.avatar : `${ASSET_URL}${author.avatar}`}
                       alt={`${author.firstName} ${author.lastName}`}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <span className="text-lg uppercase">{author.firstName?.[0]}</span>
+                    <span className="text-lg uppercase">{author?.firstName?.[0] || 'U'}</span>
                   )}
                 </div>
               </div>
               <div>
                 <h3 className="text-base font-bold leading-none mb-1 cursor-pointer hover:text-primary transition-colors uppercase tracking-tight">
-                  {author.firstName} {author.lastName}
+                  {author?.firstName || 'User'} {author?.lastName || ''}
                 </h3>
                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest leading-none">
-                  {author.roleId?.name || "Member"} • <span className="text-primary/70">{author.universityId?.name || "StudentNexus"}</span>
+                  {author?.roleId?.name || "Member"} • <span className="text-primary/70">{author?.universityId?.name || "StudentNexus"}</span>
                 </p>
               </div>
             </div>
@@ -407,7 +411,9 @@ export function PostCard({
 
                 <div className="hidden sm:block">
                   <span className="text-[10px] text-muted-foreground/30 font-black uppercase tracking-widest bg-gray-50/50 px-2.5 py-1 rounded-lg border border-gray-100/50">
-                    {formatDistanceToNow(new Date(publishedAt), { addSuffix: true })}
+                    {publishedAt && !isNaN(new Date(publishedAt).getTime()) 
+                      ? formatDistanceToNow(new Date(publishedAt), { addSuffix: true })
+                      : 'Recently'}
                   </span>
                 </div>
               </div>
@@ -416,7 +422,9 @@ export function PostCard({
             {/* Mobile Published At */}
             <div className="sm:hidden flex justify-end">
               <span className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
-                {formatDistanceToNow(new Date(publishedAt), { addSuffix: true })}
+                {publishedAt && !isNaN(new Date(publishedAt).getTime()) 
+                  ? formatDistanceToNow(new Date(publishedAt), { addSuffix: true })
+                  : 'Recently'}
               </span>
             </div>
 
@@ -434,11 +442,11 @@ export function PostCard({
                     <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 ring-2 ring-primary/10 bg-primary/5 flex items-center justify-center text-primary font-bold">
                       {user?.avatar && typeof user.avatar === 'string' ? (
                         <img
-                          src={user.avatar}
+                          src={user.avatar.startsWith('http') ? user.avatar : `${ASSET_URL}${user.avatar}`}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-xs uppercase">{user?.firstName?.[0]}</span>
+                        <span className="text-xs uppercase">{user?.firstName?.[0] || 'U'}</span>
                       )}
                     </div>
                     <div className="flex-1 relative group">
@@ -477,7 +485,7 @@ export function PostCard({
                           <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 mt-0.5 bg-secondary/10 flex items-center justify-center text-secondary-foreground font-bold">
                             {comment.authorId && typeof comment.authorId === 'object' && comment.authorId.avatar && typeof comment.authorId.avatar === 'string' ? (
                               <img
-                                src={comment.authorId.avatar}
+                                src={comment.authorId.avatar.startsWith('http') ? comment.authorId.avatar : `${ASSET_URL}${comment.authorId.avatar}`}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -493,7 +501,9 @@ export function PostCard({
                                   {comment.authorId && typeof comment.authorId === 'object' ? `${comment.authorId.firstName} ${comment.authorId.lastName}` : "User"}
                                 </span>
                                 <span className="text-[9px] text-muted-foreground/60 font-medium">
-                                  {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                                  {comment.createdAt && !isNaN(new Date(comment.createdAt).getTime())
+                                    ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })
+                                    : 'Recently'}
                                 </span>
                               </div>
                               <p className="text-[12px] text-[#1a1a3b]/80 leading-relaxed font-medium">{comment.content}</p>
