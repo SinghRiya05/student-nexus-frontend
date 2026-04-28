@@ -84,7 +84,7 @@ const AdminDashboardLayout = ({ children }: AdminDashboardLayoutProps) => {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full flex overflow-hidden bg-slate-50">
+    <div className="fixed inset-0 w-full h-full flex overflow-hidden bg-white">
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 

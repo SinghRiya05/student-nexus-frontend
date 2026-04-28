@@ -163,5 +163,8 @@ export const API_ENDPOINTS = {
     },
     AI: {
         GENERATE: "/ai/generate",
+    },
+    DASHBOARD: {
+        STATS: "/dashboard/stats",
     }
 };
