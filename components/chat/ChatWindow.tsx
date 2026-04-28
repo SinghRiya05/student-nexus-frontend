@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/utils/hook';
-import { clearChatMessages, deleteChatConversation } from '@/features/chat/chatThunk';
+import { clearChatMessages, deleteChatConversation, getMessages } from '@/features/chat/chatThunk';
 import { useRouter } from 'next/navigation';
 import { ASSET_URL } from '@/services/apiEndpoints';
 import { toast } from 'react-hot-toast';
@@ -77,10 +77,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { me } = useAppSelector(state => state.user);
-  const { typingUsers } = useAppSelector(state => state.chat);
+  const { typingUsers, pagination, loading } = useAppSelector(state => state.chat);
 
+  const chatPagination = conversation ? pagination[conversation.id] : null;
   const chatTypingUsers = conversation ? (typingUsers[conversation.id] || []) : [];
   const otherTypingUsers = chatTypingUsers.filter(id => id !== me?._id);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevScrollHeightRef = useRef<number>(0);
+  const isInitialLoadRef = useRef<boolean>(true);
 
   const handleViewProfile = () => {
     if (!conversation) return;
@@ -116,10 +121,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive (only if on page 1 or near bottom)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (isInitialLoadRef.current && messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+      isInitialLoadRef.current = false;
+    } else if (!loading && prevScrollHeightRef.current > 0) {
+      // Maintain scroll position after loading older messages
+      if (scrollContainerRef.current) {
+        const newScrollHeight = scrollContainerRef.current.scrollHeight;
+        const heightDifference = newScrollHeight - prevScrollHeightRef.current;
+        scrollContainerRef.current.scrollTop = heightDifference;
+        prevScrollHeightRef.current = 0;
+      }
+    } else if (messages.length > 0) {
+      // For new incoming messages, scroll to bottom
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, loading]);
+
+  useEffect(() => {
+    // Reset initial load when conversation changes
+    isInitialLoadRef.current = true;
+  }, [conversation?.id]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight } = e.currentTarget;
+    if (scrollTop === 0 && chatPagination?.hasMore && !loading && conversation) {
+      prevScrollHeightRef.current = scrollHeight;
+      dispatch(getMessages({ 
+        chatId: conversation.id, 
+        page: (chatPagination.page || 1) + 1 
+      }));
+    }
+  };
 
   // --- SEEN LOGIC ---
   useEffect(() => {
@@ -421,10 +456,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       {/* Messages Area - Background Mesh */}
       <div className="absolute inset-0 z-0 opacity-40 mix-blend-overlay pointer-events-none grid-overlay" />
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-2 z-10 scrollbar-hide">
-        {/* --- INTEGRATION: Date Dividers ---
-          Render dynamic date dividers based on message timestamps.
-        */}
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 md:p-8 space-y-2 z-10 scrollbar-hide"
+      >
+        {chatPagination?.hasMore && (
+          <div className="flex justify-center py-4">
+            {loading ? (
+              <Loader2 className="w-6 h-6 animate-spin text-primary/40" />
+            ) : (
+              <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Scroll up to load more</span>
+            )}
+          </div>
+        )}
 
         <AnimatePresence initial={false}>
           {messages.map((msg) => (

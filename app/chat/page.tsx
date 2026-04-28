@@ -165,7 +165,7 @@ export default function ChatPage() {
     if (selectedChatId) {
       subscribeToChat(selectedChatId);
       if (!messages[selectedChatId]) {
-        dispatch(getMessages(selectedChatId));
+        dispatch(getMessages({ chatId: selectedChatId, page: 1 }));
       }
       if (window.innerWidth < 1024) {
         setIsMobileListVisible(false);

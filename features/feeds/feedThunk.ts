@@ -10,7 +10,7 @@ export const getAllFeeds = createAsyncThunk<IFeed[], void>(
             const response = await apiClient.get(API_ENDPOINTS.FEED.GET_ALL);
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to fetch feeds");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch feeds");
         }
     }
 )
@@ -22,7 +22,7 @@ export const getSingleFeed = createAsyncThunk<IFeed, string>(
             const response = await apiClient.get(API_ENDPOINTS.FEED.GET_BY_ID(id));
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to fetch feed");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch feed");
         }
     }
 )
@@ -34,7 +34,7 @@ export const createFeed = createAsyncThunk<IFeed, CreateFeedRequest>(
             const response = await apiClient.post(API_ENDPOINTS.FEED.CREATE, feedData);
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to create feed");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to create feed");
         }
     }
 )
@@ -46,7 +46,7 @@ export const updateFeed = createAsyncThunk<IFeed, { id: string, feedData: Update
             const response = await apiClient.put(API_ENDPOINTS.FEED.UPDATE(id), feedData);
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to update feed");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to update feed");
         }
     }
 )
@@ -57,7 +57,7 @@ export const deleteFeed = createAsyncThunk<void, string>(
         try {
             await apiClient.delete(API_ENDPOINTS.FEED.DELETE(id));
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to delete feed");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete feed");
         }
     }
 )
@@ -69,7 +69,7 @@ export const getAllComments = createAsyncThunk<IComment[], string>(
             const response = await apiClient.get(API_ENDPOINTS.FEED.COMMENT.GET_ALL(id));
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to fetch comments");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch comments");
         }
     }
 )
@@ -80,7 +80,7 @@ export const deleteComment = createAsyncThunk<void, string>(
         try {
             await apiClient.delete(API_ENDPOINTS.FEED.COMMENT.DELETE(commentId));
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to delete comment");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete comment");
         }
     }
 )
@@ -92,7 +92,7 @@ export const createComment = createAsyncThunk<IComment, { id: string, commentDat
             const response = await apiClient.post(API_ENDPOINTS.FEED.COMMENT.CREATE(id), commentData);
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to create comment");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to create comment");
         }
     }
 )
@@ -104,7 +104,7 @@ export const toggleLike = createAsyncThunk<IToggleLikeResponse, string>(
             const response = await apiClient.post(API_ENDPOINTS.FEED.LIKE.TOGGLE(id));
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to toggle like");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to toggle like");
         }
     }
 )
@@ -116,7 +116,7 @@ export const getTrendingHashtags = createAsyncThunk<string[], void>(
             const response = await apiClient.get(API_ENDPOINTS.FEED.TRENDING_HASHTAGS);
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to fetch trending hashtags");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch trending hashtags");
         }
     }
 )
@@ -130,7 +130,7 @@ export const getTopPosts = createAsyncThunk<IFeed[], void>(
             });
             return response.data.data;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message || "Failed to fetch top posts");
+            return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch top posts");
         }
     }
 )
