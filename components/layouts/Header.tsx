@@ -10,6 +10,8 @@ import { ASSET_URL } from "@/services/apiEndpoints";
 import { getFollowing, getPendingFollowRequests, getSentRequests, getFollowers, acceptFollowRequest, rejectFollowRequest } from "@/features/follow/followThunk";
 import { emitAcceptFollowRequest, emitRejectFollowRequest, emitFollowUser } from "@/services/socket";
 import { getMe } from "@/features/users/userThunk";
+import { searchUsers } from "@/features/search/searchThunk";
+import { clearSearchResults } from "@/features/search/searchSlice";
 import {
   GraduationCap,
   Search,
@@ -33,6 +35,7 @@ import {
   Bookmark,
   User2Icon,
   Check,
+  Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -77,6 +80,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const { user: authUser } = useAppSelector((state) => state.auth);
   const { me } = useAppSelector((state) => state.user);
   const { pendingRequests, followers, following } = useAppSelector((state) => state.follow);
+  const { results: searchResults, loading: searchLoading } = useAppSelector((state) => state.search);
 
   // Compute users who follow the current user, but the current user does not follow back
   const followingIds = new Set(following?.map((f: any) => f.following?._id));
@@ -94,6 +98,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     setNotifOpen(false);
     setProfileOpen(false);
     setRequestsOpen(false);
+    setSearchOpen(false);
   };
 
   useEffect(() => {
@@ -106,10 +111,38 @@ export default function Header({ onMenuClick }: HeaderProps) {
     }
   }, [authUser?._id, dispatch]);
 
+  // Debounced search logic
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        dispatch(searchUsers(searchQuery));
+      } else {
+        dispatch(clearSearchResults());
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, dispatch]);
+
+  const handleUserClick = (user: any) => {
+    let route = "/profile";
+    if (user.studentProfile) {
+      route = `/students/${user._id}`;
+    } else if (user.aluminiProfile) {
+      route = `/alumni/${user._id}`;
+    } else if (user.teacherProfile) {
+      route = `/professors/${user._id}`;
+    }
+    router.push(route);
+    setSearchQuery("");
+    setSearchOpen(false);
+    setMobileSearchActive(false);
+  };
+
   return (
     <>
       {/* Backdrop for dropdowns */}
-      {(notifOpen || profileOpen || requestsOpen) && (
+      {(notifOpen || profileOpen || requestsOpen || (searchOpen && searchQuery)) && (
         <div
           className="fixed inset-0 z-30"
           onClick={closeAll}
@@ -184,10 +217,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchOpen(true)}
-                onBlur={() => setSearchOpen(false)}
                 placeholder="Search anything…"
                 className="h-9 w-full rounded-xl border border-gray-200 bg-secondary/5 pl-8 pr-10 text-[0.85rem] text-gray-800 placeholder:text-gray-400 focus:border-secondary/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-secondary/5 transition-all"
               />
+              {searchLoading && (
+                <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                  <Loader2 size={14} className="animate-spin text-gray-400" />
+                </div>
+              )}
               {mobileSearchActive && (
                 <button
                   onClick={() => setMobileSearchActive(false)}
@@ -195,6 +232,46 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 >
                   <X size={16} />
                 </button>
+              )}
+
+              {/* Desktop Search Suggestions */}
+              {searchOpen && searchQuery && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-2 max-h-[400px] overflow-y-auto rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
+                  {searchLoading && searchResults.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-2">
+                      {searchResults.map((user) => (
+                        <button
+                          key={user._id}
+                          onClick={() => handleUserClick(user)}
+                          className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-gray-50"
+                        >
+                          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.firstName} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold uppercase">
+                                {user.firstName[0]}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-[0.85rem] font-bold text-gray-900 truncate">
+                              {user.firstName} {user.lastName}
+                            </p>
+                            <p className="text-[0.7rem] text-gray-500 truncate">
+                              {user.teacherProfile?.designation || user.aluminiProfile?.jobTitle || user.semester?.name || "Student"}
+                              {user.university?.short_name && ` • ${user.university.short_name}`}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-sm text-gray-500 italic">No users found</div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -422,9 +499,56 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchOpen(true)}
                 placeholder="Search anything…"
-                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 pl-8 pr-3 text-[0.82rem] placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/15"
+                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 pl-8 pr-10 text-[0.82rem] placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/15"
               />
+              {searchLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loader2 size={14} className="animate-spin text-gray-400" />
+                </div>
+              )}
+
+              {/* Mobile Search Suggestions */}
+              {searchOpen && searchQuery && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-2 max-h-[300px] overflow-y-auto rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)]">
+                  {searchLoading && searchResults.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-2">
+                      {searchResults.map((user) => (
+                        <button
+                          key={user._id}
+                          onClick={() => handleUserClick(user)}
+                          className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-gray-50"
+                        >
+                          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.firstName} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold uppercase text-xs">
+                                {user.firstName[0]}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-[0.8rem] font-bold text-gray-900 truncate">
+                              {user.firstName} {user.lastName}
+                            </p>
+                            <p className="text-[0.65rem] text-gray-500 truncate">
+                              {user.teacherProfile?.designation || user.aluminiProfile?.jobTitle || user.semester?.name || "Student"}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-sm text-gray-500 italic">No users found</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

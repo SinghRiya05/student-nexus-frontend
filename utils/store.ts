@@ -19,6 +19,7 @@ import resourceReducer from "@/features/teacher/resources/resourceSlice";
 import feedReducer from "@/features/feeds/feedSlice";
 import chatReducer from "@/features/chat/chatSlice";
 import aiReducer from "@/features/ai/aiSlice";
+import searchReducer from "@/features/search/searchSlice";
 const rootReducer = combineReducers({
     country: countryReducer,
     role: roleReducer,
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
     feed: feedReducer,
     chat: chatReducer,
     ai: aiReducer,
+    search: searchReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

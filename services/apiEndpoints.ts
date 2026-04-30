@@ -166,5 +166,8 @@ export const API_ENDPOINTS = {
     },
     DASHBOARD: {
         STATS: "/dashboard/stats",
+    },
+    SEARCH: {
+        GET_GLOBAL_SEARCH: (query: string) => `/auth/search-users?query=${query}`,
     }
-};
+}; 
