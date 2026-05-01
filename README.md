@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ✨ Student Nexus - Frontend Application
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Redux](https://img.shields.io/badge/Redux-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
 
-First, run the development server:
+The user interface for **Student Nexus**, a modern networking platform for the academic community. Built with performance, accessibility, and aesthetics in mind.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🎨 Design Philosophy
+
+- **Premium Aesthetics**: Clean layouts with glassmorphism and subtle gradients.
+- **Fluid Interactions**: Smooth page transitions and micro-animations via Framer Motion.
+- **Responsive First**: Optimized for everything from mobile phones to ultra-wide monitors.
+- **Modern Stack**: Utilizing Next.js 15 App Router and Tailwind CSS 4 for cutting-edge development.
+
+---
+
+## 🚀 Interactive Features
+
+- **⚡ Instant Feed**: Real-time social feed with optimistic updates.
+- **💬 Live Chat**: Seamless messaging experience with typing indicators and read receipts.
+- **🎓 Smart Directory**: Easily discover peers, professors, and alumni with AI-powered search.
+- **🛠️ Role-Based UI**: Dynamic interfaces that change based on whether you are a Student, Alumini, or Teacher.
+- **🌓 Dark Mode Support**: Beautifully crafted dark and light themes.
+
+---
+
+## 📂 Project Structure
+
+```text
+student-nexus-frontend/
+├── app/                # Next.js App Router (Pages & Layouts)
+│   ├── (main)/         # Main application shell (Feed, Profile, etc.)
+│   ├── (dashboard)/    # Admin/Management dashboards
+│   └── chat/           # Real-time communication interface
+├── components/         # Reusable UI components
+│   ├── layouts/        # Header, Sidebar, Footer
+│   └── ui/             # Shadcn & Custom atomic components
+├── features/           # Redux slices and business logic (Thunks)
+├── services/           # Axios API clients and Socket.io config
+├── lib/                # Shared utilities and library configurations
+└── public/             # Static assets (Logos, Icons)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Getting Started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Installation
+1. **Clone the repository**
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+3. **Environment Setup**
+   Create a `.env.local` file with the following:
+   ```env
+   NEXT_PUBLIC_BACKEND_BASEURL=http://localhost:5000/api/v1
+   NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
+   NEXT_PUBLIC_ASSET_BACKEND_BASEURL=http://localhost:5000
+   ```
+4. **Run Dev Server**
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🧪 Tech Stack Details
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Framework**: Next.js 15 (App Router)
+- **State**: Redux Toolkit (Thunks for Async logic)
+- **UI Components**: Shadcn UI + Radix UI
+- **Styling**: Tailwind CSS 4
+- **Forms**: React Hook Form + Zod
+- **Real-time**: Socket.io-client
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Developed with ❤️ for the student community.
