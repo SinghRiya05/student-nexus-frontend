@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { useAppDispatch, useAppSelector } from "@/utils/hook"
 import { generateAIResponse } from "@/features/ai/aiThunk"
 import { clearChat } from "@/features/ai/aiSlice"
+import ReactMarkdown from 'react-markdown'
 
 
 interface Message {
@@ -141,7 +142,22 @@ export function ChatBot() {
                             ? "bg-secondary text-white rounded-tr-none"
                             : "bg-gray-50 text-[#1a1a3b] border border-gray-100 rounded-tl-none"
                         )}>
-                          {msg.content}
+                          {msg.role === "assistant" ? (
+                            <ReactMarkdown
+                              components={{
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                strong: ({ children }) => <strong className="font-black text-primary">{children}</strong>,
+                                ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
+                                li: ({ children }) => <li className="mb-1">{children}</li>,
+                                code: ({ children }) => <code className="bg-primary/10 px-1 rounded text-primary font-bold">{children}</code>
+                              }}
+                            >
+                              {msg.content}
+                            </ReactMarkdown>
+                          ) : (
+                            msg.content
+                          )}
                         </div>
                       </div>
                     </div>
